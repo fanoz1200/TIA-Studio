@@ -1,36 +1,13 @@
 /**
  * TIA Studio — غرفة التحكم المعمارية
- * Blueprint blue, deliberate editorial spacing, and the orange fragnet layer
- * keep the analytical evidence more prominent than the interface chrome.
+ * زرقة المخططات وطبقة الـ Fragnet البرتقالية تجعل القرار الحسابي أوضح من واجهة التطبيق.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Activity as ActivityIcon,
-  AlertTriangle,
-  ArrowUpRight,
-  BarChart3,
-  BookOpenCheck,
-  CalendarDays,
-  CheckCircle2,
-  ChevronLeft,
-  Clock3,
-  Download,
-  FileSpreadsheet,
-  FileText,
-  FolderOpen,
-  GitBranch,
-  Info,
-  LayoutDashboard,
-  Network,
-  Play,
-  Plus,
-  Printer,
-  Route,
-  ShieldCheck,
-  Sparkles,
-  Upload,
-  X,
-  Zap,
+  Activity as ActivityIcon, AlertTriangle, BarChart3, BookOpenCheck, CalendarClock, CalendarDays,
+  CheckCircle2, ChevronLeft, Clock3, Download, FileCode2, FileSpreadsheet, FileText, GitBranch,
+  LibraryBig, Network, Play, Plus, Printer, Route, ScanSearch, ShieldCheck, Sparkles, TextQuote,
+  Upload, X, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -40,23 +17,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  dateToRelativeDay,
-  runCPM,
-  runTIA,
-  type Activity,
-  type CpmResult,
-  type Fragnet,
-  type Relationship,
-  type RelationshipType,
-  type Schedule,
-  type TiaResult,
+  calendarDayCalendar, dateToRelativeDay, fiveDayCalendar, generateDelayAnalysisNarrative, runCPM,
+  runTIA, runWindowTIA, type Activity, type AnalysisWindow, type DelayCause, type Fragnet,
+  type Relationship, type RelationshipType, type Schedule, type TiaResult, type WindowTiaResult,
 } from "@/lib/cpm";
+import { importXerSchedule, type XerImportSummary } from "@/lib/xer";
+import { sclMethods, sclSources } from "@/lib/scl-methods";
 
 const logoUrl = "/manus-storage/tia-studio-symbol_a5a70021.png";
 const workspaceImageUrl = "/manus-storage/tia-studio-workspace-hero_f79d49ba.png";
 const reportTextureUrl = "/manus-storage/tia-studio-report-texture_0415e3ef.png";
 
-type ViewKey = "overview" | "schedule" | "event" | "analysis" | "report";
+type ViewKey = "overview" | "schedule" | "event" | "windows" | "methods" | "analysis" | "report";
 type CsvActivity = Activity;
 
 const baseSchedule: Schedule = {
@@ -64,6 +36,8 @@ const baseSchedule: Schedule = {
   name: "برج النخيل — تحديث البرنامج رقم 04",
   startDate: "2026-01-05",
   dataDate: "2026-01-17",
+  calendar: { ...fiveDayCalendar, id: "palm-five-day", name: "تقويم المشروع — 5 أيام", holidays: ["2026-01-26"] },
+  source: "manual",
   activities: [
     { id: "A100", name: "التجهيزات والتعبئة", duration: 5, wbs: "1.1", owner: "المقاول", plannedStart: 0 },
     { id: "A200", name: "أعمال الأساسات", duration: 8, wbs: "1.2", owner: "المقاول" },
@@ -81,488 +55,154 @@ const baseSchedule: Schedule = {
 };
 
 const initialEvent: Fragnet = {
-  id: "EV-001",
-  title: "تأخر اعتماد الرسومات المعدلة",
+  id: "EV-001", title: "تأخر اعتماد الرسومات المعدلة", cause: "employer", occurrenceDate: "2026-01-20",
   description: "مدة مراجعة وإصدار رسومات هيكلية إضافية مطلوبة قبل بدء أعمال الواجهة.",
-  cause: "employer",
-  occurrenceDate: "2026-01-20",
   activities: [{ id: "FR-001", name: "مراجعة واعتماد الرسومات المعدلة", duration: 6, wbs: "CO-01", owner: "صاحب العمل", kind: "fragnet" }],
-  relationships: [
-    { id: "FR-R1", predecessorId: "A300", successorId: "FR-001", type: "FS" },
-    { id: "FR-R2", predecessorId: "FR-001", successorId: "A400", type: "FS" },
-  ],
+  relationships: [{ id: "FR-R1", predecessorId: "A300", successorId: "FR-001", type: "FS" }, { id: "FR-R2", predecessorId: "FR-001", successorId: "A400", type: "FS" }],
   replacedRelationshipIds: ["R3"],
 };
 
-const navItems: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
-  { key: "overview", label: "لوحة التحكم", icon: LayoutDashboard },
-  { key: "schedule", label: "البرنامج المعتمد", icon: Network },
-  { key: "event", label: "حدث التأخير", icon: Zap },
-  { key: "analysis", label: "نتيجة التحليل", icon: BarChart3 },
-  { key: "report", label: "تقرير TIA", icon: FileText },
+function defaultWindow(schedule: Schedule): AnalysisWindow {
+  /** Architectural Control Room: a new analysis window must follow the imported CPM network, never a demo-project date. */
+  const completionDate = runCPM(schedule).completionDate;
+  return { id: "WIN-001", name: "نافذة التحليل الأساسية", from: schedule.startDate, to: completionDate, scheduleId: schedule.id, status: "review", notes: "تغطي هذه النافذة البرنامج المستورد من تاريخ البدء إلى الإكمال المحسوب قبل إدراج أي Fragnet." };
+}
+
+const navItems: { key: ViewKey; label: string; icon: typeof Network }[] = [
+  { key: "overview", label: "لوحة القرار", icon: BarChart3 },
+  { key: "schedule", label: "البرنامج والتقويم", icon: Network },
+  { key: "event", label: "نمذجة Fragnet", icon: Zap },
+  { key: "windows", label: "نوافذ وتزامن", icon: CalendarClock },
+  { key: "analysis", label: "نتيجة التحليل", icon: ScanSearch },
+  { key: "report", label: "السرد والتقرير", icon: TextQuote },
+  { key: "methods", label: "المكتبة العلمية SCL", icon: LibraryBig },
 ];
 
-const causeLabel: Record<Fragnet["cause"], string> = {
-  employer: "صاحب العمل",
-  contractor: "المقاول",
-  neutral: "محايد / قوة قاهرة",
-  concurrent: "متزامن",
-};
+const causeLabel: Record<DelayCause, string> = { employer: "صاحب العمل", contractor: "المقاول", neutral: "محايد / قوة قاهرة", concurrent: "متزامن" };
+const weekdayLabels = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
 function tryRestore<T>(key: string, fallback: T): T {
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
+  try { const raw = window.localStorage.getItem(key); return raw ? (JSON.parse(raw) as T) : fallback; } catch { return fallback; }
 }
 
 function parseCsv(raw: string) {
-  const rows: string[][] = [];
-  let value = "";
-  let row: string[] = [];
-  let quoted = false;
+  const rows: string[][] = []; let value = ""; let row: string[] = []; let quoted = false;
   for (let i = 0; i < raw.length; i += 1) {
-    const char = raw[i];
-    const next = raw[i + 1];
-    if (char === '"' && quoted && next === '"') {
-      value += '"';
-      i += 1;
-    } else if (char === '"') {
-      quoted = !quoted;
-    } else if (char === "," && !quoted) {
-      row.push(value.trim());
-      value = "";
-    } else if ((char === "\n" || char === "\r") && !quoted) {
-      if (char === "\r" && next === "\n") i += 1;
-      row.push(value.trim());
-      if (row.some(Boolean)) rows.push(row);
-      row = [];
-      value = "";
-    } else {
-      value += char;
-    }
+    const char = raw[i]; const next = raw[i + 1];
+    if (char === '"' && quoted && next === '"') { value += '"'; i += 1; }
+    else if (char === '"') quoted = !quoted;
+    else if (char === "," && !quoted) { row.push(value.trim()); value = ""; }
+    else if ((char === "\n" || char === "\r") && !quoted) { if (char === "\r" && next === "\n") i += 1; row.push(value.trim()); if (row.some(Boolean)) rows.push(row); row = []; value = ""; }
+    else value += char;
   }
-  row.push(value.trim());
-  if (row.some(Boolean)) rows.push(row);
+  row.push(value.trim()); if (row.some(Boolean)) rows.push(row);
   if (rows.length < 2) throw new Error("ملف CSV يحتاج صف عناوين وصف بيانات واحد على الأقل.");
   const headers = rows[0].map((header) => header.toLowerCase().replace(/\s+/g, ""));
   return rows.slice(1).map((cells) => Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""])));
 }
 
 function downloadText(name: string, content: string, type = "application/json") {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = name;
-  anchor.click();
-  URL.revokeObjectURL(url);
+  const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const anchor = document.createElement("a");
+  anchor.href = url; anchor.download = name; anchor.click(); URL.revokeObjectURL(url);
 }
 
 function dateLabel(date: string) {
-  try {
-    return new Intl.DateTimeFormat("ar-EG", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }).format(
-      new Date(`${date}T00:00:00Z`),
-    );
-  } catch {
-    return date;
-  }
-}
-
-function activityName(schedule: Schedule, id: string) {
-  return schedule.activities.find((activity) => activity.id === id)?.name ?? id;
+  try { return new Intl.DateTimeFormat("ar-EG", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`)); } catch { return date; }
 }
 
 function MetricCard({ label, value, helper, tone = "blue", featured = false }: { label: string; value: string; helper: string; tone?: "blue" | "orange" | "green" | "graphite"; featured?: boolean }) {
-  return (
-    <div className={`metric-card metric-card--${tone} ${featured ? "metric-card--featured" : ""}`}>
-      <p>{label}</p>
-      <strong dir="ltr">{value}</strong>
-      <span>{helper}</span>
-    </div>
-  );
+  return <div className={`metric-card metric-card--${tone} ${featured ? "metric-card--featured" : ""}`}><p>{label}</p><strong dir="ltr">{value}</strong><span>{helper}</span></div>;
 }
 
-function StatusBadge({ result }: { result: TiaResult | null }) {
+function StatusBadge({ result }: { result: TiaResult | WindowTiaResult | null }) {
   if (!result) return <Badge className="badge-muted">غير محسوب</Badge>;
-  if (result.outcome === "delayed") return <Badge className="badge-delay">أثر حرج على الإكمال</Badge>;
-  if (result.outcome === "float-consumed") return <Badge className="badge-float">استهلاك عائمة فقط</Badge>;
+  const days = "totalImpactDays" in result ? result.totalImpactDays : result.impactDays;
+  if (days > 0) return <Badge className="badge-delay">أثر حرج على الإكمال</Badge>;
+  if (days === 0) return <Badge className="badge-float">عائمة / دون تمديد</Badge>;
   return <Badge className="badge-muted">تاريخ إكمال أبكر</Badge>;
 }
 
-function Timeline({ cpm, schedule }: { cpm: CpmResult; schedule: Schedule }) {
-  const max = Math.max(cpm.projectDuration, 1);
-  const weeks = Array.from({ length: Math.ceil(max / 5) + 1 }, (_, index) => index * 5);
-  return (
-    <div className="timeline-wrap" dir="ltr">
-      <div className="timeline-axis">
-        <span>Activity</span>
-        <div className="axis-days">{weeks.map((week) => <i key={week} style={{ left: `${(week / max) * 100}%` }}>D{week}</i>)}</div>
-      </div>
-      <div className="timeline-body">
-        {cpm.activities.map((activity) => (
-          <div className="timeline-row" key={activity.id}>
-            <div className="timeline-label"><b>{activity.id}</b><span>{activity.name}</span></div>
-            <div className="timeline-track">
-              {weeks.map((week) => <i className="week-grid" key={week} style={{ left: `${(week / max) * 100}%` }} />)}
-              <span
-                className={`gantt-bar ${activity.kind === "fragnet" ? "gantt-bar--fragnet" : activity.isCritical ? "gantt-bar--critical" : ""}`}
-                style={{ left: `${(activity.earlyStart / max) * 100}%`, width: `${Math.max((activity.duration / max) * 100, 1.4)}%` }}
-                title={`${activity.id} • ${activity.duration} d • Float ${activity.totalFloat} d`}
-              >
-                <em>{activity.duration}d</em>
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="timeline-legend"><span><i className="legend-critical" />مسار حرج</span><span><i className="legend-fragnet" />Fragnet / حدث التأخير</span><span><i className="legend-base" />نشاط غير حرج</span></div>
-      <p className="timeline-caption">الزمن المعروض أيام تقويمية نسبية من تاريخ بدء البرنامج. الأشرطة البرتقالية تمثل أنشطة الـ Fragnet المضافة إلى نسخة التحليل.</p>
-    </div>
-  );
+function Timeline({ cpm }: { cpm: ReturnType<typeof runCPM> }) {
+  const max = Math.max(cpm.projectDuration, 1); const weeks = Array.from({ length: Math.ceil(max / 5) + 1 }, (_, index) => index * 5);
+  return <div className="timeline-wrap" dir="ltr"><div className="timeline-axis"><span>Activity</span><div className="axis-days">{weeks.map((week) => <i key={week} style={{ left: `${(week / max) * 100}%` }}>D{week}</i>)}</div></div><div className="timeline-body">{cpm.activities.map((activity) => <div className="timeline-row" key={activity.id}><div className="timeline-label"><b>{activity.id}</b><span>{activity.name}</span></div><div className="timeline-track">{weeks.map((week) => <i className="week-grid" key={week} style={{ left: `${(week / max) * 100}%` }} />)}<span className={`gantt-bar ${activity.kind === "fragnet" ? "gantt-bar--fragnet" : activity.isCritical ? "gantt-bar--critical" : ""}`} style={{ left: `${(activity.earlyStart / max) * 100}%`, width: `${Math.max((activity.duration / max) * 100, 1.4)}%` }}><em>{activity.duration}d</em></span></div></div>)}</div><div className="timeline-legend"><span><i className="legend-critical" />مسار حرج</span><span><i className="legend-fragnet" />Fragnet</span><span><i className="legend-base" />غير حرج</span></div><p className="timeline-caption">تظهر ES/EF والعائمة بأيام عمل. يحول تاريخ الإكمال حسب التقويم المحدد.</p></div>;
 }
 
 export default function Home() {
   const [view, setView] = useState<ViewKey>("overview");
-  const [schedule, setSchedule] = useState<Schedule>(() => tryRestore("tia-studio-schedule", baseSchedule));
-  const [events, setEvents] = useState<Fragnet[]>(() => tryRestore("tia-studio-events", [initialEvent]));
-  const [selectedEventId, setSelectedEventId] = useState(() => tryRestore("tia-studio-selected-event", initialEvent.id));
+  const [schedule, setSchedule] = useState<Schedule>(() => tryRestore("tia-v2-schedule", baseSchedule));
+  const [events, setEvents] = useState<Fragnet[]>(() => tryRestore("tia-v2-events", [initialEvent]));
+  const [windows, setWindows] = useState<AnalysisWindow[]>(() => tryRestore("tia-v2-windows", [defaultWindow(baseSchedule)]));
+  const [selectedEventId, setSelectedEventId] = useState(() => tryRestore("tia-v2-event", initialEvent.id));
+  const [selectedWindowId, setSelectedWindowId] = useState(() => tryRestore("tia-v2-window", "WIN-001"));
   const [csvActivities, setCsvActivities] = useState<CsvActivity[] | null>(null);
+  const [xerSummary, setXerSummary] = useState<XerImportSummary | null>(null);
+  const [holidayInput, setHolidayInput] = useState("");
   const [eventTitle, setEventTitle] = useState("تأخر اعتماد مستند فني");
   const [eventDescription, setEventDescription] = useState("يوثق هذا الـ Fragnet مدة الحدث ومنطقه بين نشاطين من البرنامج المعتمد.");
   const [eventDate, setEventDate] = useState(schedule.dataDate ?? schedule.startDate);
   const [eventDuration, setEventDuration] = useState("5");
-  const [eventCause, setEventCause] = useState<Fragnet["cause"]>("employer");
+  const [eventCause, setEventCause] = useState<DelayCause>("employer");
   const [selectedRelationshipId, setSelectedRelationshipId] = useState(schedule.relationships[0]?.id ?? "");
-  const activityFileRef = useRef<HTMLInputElement>(null);
-  const relationshipFileRef = useRef<HTMLInputElement>(null);
-  const jsonFileRef = useRef<HTMLInputElement>(null);
+  const [newWindowName, setNewWindowName] = useState("نافذة مراجعة جديدة");
+  const [newWindowFrom, setNewWindowFrom] = useState(schedule.startDate);
+  const [newWindowTo, setNewWindowTo] = useState("2026-03-31");
+  const [narrativeContext, setNarrativeContext] = useState({ analyst: "", contractReference: "", evidenceSummary: "", claimPosition: "" });
+  const [narrative, setNarrative] = useState("");
+  const activityFileRef = useRef<HTMLInputElement>(null); const relationshipFileRef = useRef<HTMLInputElement>(null);
+  const jsonFileRef = useRef<HTMLInputElement>(null); const xerFileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem("tia-studio-schedule", JSON.stringify(schedule));
-      window.localStorage.setItem("tia-studio-events", JSON.stringify(events));
-      window.localStorage.setItem("tia-studio-selected-event", JSON.stringify(selectedEventId));
-    } catch {
-      // Local persistence is optional; analysis remains available for this session.
-    }
-  }, [schedule, events, selectedEventId]);
+    try { window.localStorage.setItem("tia-v2-schedule", JSON.stringify(schedule)); window.localStorage.setItem("tia-v2-events", JSON.stringify(events)); window.localStorage.setItem("tia-v2-windows", JSON.stringify(windows)); window.localStorage.setItem("tia-v2-event", JSON.stringify(selectedEventId)); window.localStorage.setItem("tia-v2-window", JSON.stringify(selectedWindowId)); } catch { /* استمرار الجلسة لا يتوقف على التخزين */ }
+  }, [schedule, events, windows, selectedEventId, selectedWindowId]);
 
+  const baselineState = useMemo(() => { try { return { value: runCPM(schedule), error: "" }; } catch (error) { return { value: null, error: error instanceof Error ? error.message : "تعذر حساب CPM." }; } }, [schedule]);
+  const baseline = baselineState.value;
   const selectedEvent = events.find((event) => event.id === selectedEventId) ?? null;
-  const analysisState = useMemo(() => {
-    try {
-      return { result: selectedEvent ? runTIA(schedule, selectedEvent) : null, error: "" };
-    } catch (error) {
-      return { result: null, error: error instanceof Error ? error.message : "تعذر حساب التحليل." };
-    }
-  }, [schedule, selectedEvent]);
-  const analysis = analysisState.result;
-  const analysisError = analysisState.error;
+  const selectedWindow = windows.find((item) => item.id === selectedWindowId) ?? windows[0] ?? null;
+  const singleResultState = useMemo(() => { try { return { value: selectedEvent ? runTIA(schedule, selectedEvent) : null, error: "" }; } catch (error) { return { value: null, error: error instanceof Error ? error.message : "تعذر حساب TIA للحدث." }; } }, [schedule, selectedEvent]);
+  const windowState = useMemo(() => { try { return { value: selectedWindow && selectedWindow.scheduleId === schedule.id ? runWindowTIA(schedule, selectedWindow, events) : null, error: "" }; } catch (error) { return { value: null, error: error instanceof Error ? error.message : "تعذر حساب نافذة التحليل." }; } }, [schedule, selectedWindow, events]);
+  const analysis = singleResultState.value; const windowResult = windowState.value;
+  const activeResult = windowResult ?? analysis; const activeImpact = activeResult ? ("totalImpactDays" in activeResult ? activeResult.totalImpactDays : activeResult.impactDays) : 0;
+  const displayedCpm = activeResult?.impacted ?? baseline; const selectedRelationship = schedule.relationships.find((item) => item.id === selectedRelationshipId);
 
-  const baseline = useMemo(() => {
-    try {
-      return runCPM(schedule);
-    } catch {
-      return null;
-    }
-  }, [schedule]);
+  useEffect(() => {
+    setNarrative(generateDelayAnalysisNarrative({ schedule, result: windowResult ?? analysis, event: selectedEvent, context: narrativeContext }));
+  }, [schedule, selectedEventId, selectedWindowId, analysis, windowResult]);
 
-  const displayedCpm = analysis?.impacted ?? baseline;
-  const selectedRelationship = schedule.relationships.find((relationship) => relationship.id === selectedRelationshipId);
-  const criticalCount = analysis?.impacted.criticalActivityIds.length ?? baseline?.criticalActivityIds.length ?? 0;
-  const delayDays = analysis?.impactDays ?? 0;
-  const currentFloat = analysis?.impacted.activities.find((activity) => activity.id === selectedEvent?.activities[0]?.id)?.totalFloat;
-
-  function loadDemo() {
-    setSchedule(baseSchedule);
-    setEvents([initialEvent]);
-    setSelectedEventId(initialEvent.id);
-    setEventDate(baseSchedule.dataDate ?? baseSchedule.startDate);
-    setSelectedRelationshipId("R3");
-    setCsvActivities(null);
-    toast.success("تم تحميل نموذج الاختبار: أثر 6 أيام على الإكمال.");
+  function resetForImported(imported: Schedule) {
+    setSchedule(imported); setEvents([]); const nextWindow = defaultWindow(imported); setWindows([nextWindow]); setSelectedWindowId(nextWindow.id); setSelectedEventId(""); setSelectedRelationshipId(imported.relationships[0]?.id ?? ""); setEventDate(imported.dataDate ?? imported.startDate); setNewWindowFrom(imported.startDate);
   }
+  function loadDemo() { resetForImported(baseSchedule); setEvents([initialEvent]); setSelectedEventId(initialEvent.id); setXerSummary(null); toast.success("تم تحميل النموذج الموسع: تقويم 5 أيام، حدث TIA، ونافذة مراجعة."); }
+  async function importJson(file: File) { try { const imported = JSON.parse(await file.text()) as Schedule; if (!imported.id || !imported.name || !imported.startDate || !Array.isArray(imported.activities) || !Array.isArray(imported.relationships)) throw new Error("ملف JSON لا يطابق نموذج البرنامج المطلوب."); imported.source = "json"; runCPM(imported); resetForImported(imported); setXerSummary(null); toast.success(`تم استيراد ${imported.activities.length} نشاط و${imported.relationships.length} علاقة.`); } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر قراءة ملف JSON."); } }
+  async function importXer(file: File) { try { const result = importXerSchedule(await file.text(), file.name); runCPM(result.schedule); resetForImported(result.schedule); setXerSummary(result.summary); toast.success(`تم استيراد XER: ${result.summary.activitiesRead} نشاط و${result.summary.relationshipsRead} علاقة. راجع التقويم قبل الاعتماد.`); } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر قراءة ملف XER."); } }
+  async function importActivitiesCsv(file: File) { try { const records = parseCsv(await file.text()); const imported = records.map((record, index) => ({ id: record.id || record.activityid || record.activity_id || `ACT-${index + 1}`, name: record.name || record.activityname || record.activity_name || `Activity ${index + 1}`, duration: Number(record.duration || record.durationdays || record.duration_days), wbs: record.wbs || undefined, owner: record.owner || undefined, plannedStart: record.plannedstart || record.planned_start ? Number(record.plannedstart || record.planned_start) : undefined })); if (imported.some((activity) => !Number.isFinite(activity.duration) || activity.duration < 0)) throw new Error("عمود duration مطلوب ويجب أن يحتوي أرقاماً غير سالبة."); setCsvActivities(imported); toast.success(`تمت قراءة ${imported.length} نشاط. حمّل العلاقات لإكمال الشبكة.`); } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر قراءة CSV."); } }
+  async function importRelationshipsCsv(file: File) { try { if (!csvActivities) throw new Error("حمّل ملف الأنشطة أولاً، ثم ملف العلاقات."); const records = parseCsv(await file.text()); const relationships: Relationship[] = records.map((record, index) => ({ id: record.id || record.relationshipid || record.relationship_id || `REL-${index + 1}`, predecessorId: record.predecessorid || record.predecessor_id || record.predecessor || record.pred, successorId: record.successorid || record.successor_id || record.successor || record.succ, type: ((record.type || "FS").toUpperCase() as RelationshipType), lag: record.lag ? Number(record.lag) : 0 })); const imported: Schedule = { id: `csv-${Date.now()}`, name: file.name.replace(/\.[^/.]+$/, "") || "برنامج CSV مستورد", startDate: schedule.startDate, dataDate: schedule.dataDate, activities: csvActivities, relationships, calendar: schedule.calendar, source: "csv" }; runCPM(imported); resetForImported(imported); setXerSummary(null); toast.success("تم استيراد شبكة CSV وحساب CPM بنجاح."); } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر قراءة العلاقات CSV."); } }
+  function createEvent() { if (!selectedRelationship) { toast.error("اختر علاقة منطقية ليتم فصلها بالـ Fragnet."); return; } const duration = Number(eventDuration); if (!eventTitle.trim() || !Number.isFinite(duration) || duration < 0) { toast.error("أدخل عنوان الحدث ومدة صحيحة غير سالبة."); return; } try { dateToRelativeDay(schedule.startDate, eventDate); const sequence = events.length + 1; const fragnetId = `EV-${String(sequence).padStart(3, "0")}`; const activityId = `FR-${String(sequence).padStart(3, "0")}`; const next: Fragnet = { id: fragnetId, title: eventTitle.trim(), description: eventDescription.trim(), cause: eventCause, occurrenceDate: eventDate, activities: [{ id: activityId, name: eventTitle.trim(), duration, wbs: `TIA-${sequence}`, owner: causeLabel[eventCause], kind: "fragnet" }], replacedRelationshipIds: [selectedRelationship.id], relationships: [{ id: `${activityId}-IN`, predecessorId: selectedRelationship.predecessorId, successorId: activityId, type: selectedRelationship.type, lag: selectedRelationship.lag ?? 0 }, { id: `${activityId}-OUT`, predecessorId: activityId, successorId: selectedRelationship.successorId, type: "FS" }] }; runTIA(schedule, next); setEvents((previous) => [...previous, next]); setSelectedEventId(next.id); setView("analysis"); toast.success("تم إدراج الـ Fragnet وحساب أثره على نسخة TIA المستقلة."); } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر إنشاء الحدث."); } }
+  function removeEvent(id: string) { setEvents((previous) => previous.filter((event) => event.id !== id)); setSelectedEventId(events.find((event) => event.id !== id)?.id ?? ""); toast.success("تم حذف الحدث من سجل التحليل."); }
+  function addWindow() { if (!newWindowName.trim() || newWindowFrom > newWindowTo) { toast.error("أدخل اسم نافذة وتواريخ صحيحة."); return; } const item: AnalysisWindow = { id: `WIN-${String(windows.length + 1).padStart(3, "0")}`, name: newWindowName.trim(), from: newWindowFrom, to: newWindowTo, scheduleId: schedule.id, status: "draft", notes: "نافذة أضيفت محلياً للمراجعة." }; setWindows((previous) => [...previous, item]); setSelectedWindowId(item.id); setView("windows"); toast.success("تم إنشاء نافذة التحليل. ستلتقط الأحداث الواقعة داخل تاريخيها."); }
+  function toggleWeekday(day: number) { const current = schedule.calendar ?? calendarDayCalendar; const next = current.workingWeekdays.includes(day) ? current.workingWeekdays.filter((value) => value !== day) : [...current.workingWeekdays, day].sort((a, b) => a - b); if (!next.length) { toast.error("يجب الإبقاء على يوم عمل واحد على الأقل."); return; } setSchedule((previous) => ({ ...previous, calendar: { ...(previous.calendar ?? calendarDayCalendar), workingWeekdays: next } })); }
+  function setCalendarPreset(kind: "calendar" | "five") { const source = kind === "calendar" ? calendarDayCalendar : fiveDayCalendar; setSchedule((previous) => ({ ...previous, calendar: { ...source, id: previous.calendar?.id ?? source.id, name: kind === "calendar" ? "أيام تقويمية (7/7)" : "أسبوع عمل 5 أيام (الإثنين–الجمعة)", holidays: previous.calendar?.holidays ?? [] } })); }
+  function addHoliday() { if (!/^\d{4}-\d{2}-\d{2}$/.test(holidayInput)) { toast.error("أدخل العطلة بصيغة YYYY-MM-DD."); return; } setSchedule((previous) => { const calendar = previous.calendar ?? calendarDayCalendar; return { ...previous, calendar: { ...calendar, holidays: Array.from(new Set([...calendar.holidays, holidayInput])).sort() } }; }); setHolidayInput(""); }
+  function removeHoliday(day: string) { setSchedule((previous) => { const calendar = previous.calendar ?? calendarDayCalendar; return { ...previous, calendar: { ...calendar, holidays: calendar.holidays.filter((item) => item !== day) } }; }); }
+  function exportSchedule() { downloadText("tia-studio-schedule.json", JSON.stringify(schedule, null, 2)); toast.success("تم تجهيز نسخة البرنامج للتنزيل."); }
+  function exportAnalysis() { if (!activeResult) return; downloadText("tia-studio-analysis.json", JSON.stringify({ generatedAt: new Date().toISOString(), methodology: "TIA Studio — CPM/TIA", schedule, events, selectedWindow, result: activeResult, narrative }, null, 2)); toast.success("تم تجهيز سجل التحليل والسرد للتنزيل."); }
 
-  async function importJson(file: File) {
-    try {
-      const raw = await file.text();
-      const imported = JSON.parse(raw) as Schedule;
-      if (!imported.id || !imported.name || !imported.startDate || !Array.isArray(imported.activities) || !Array.isArray(imported.relationships)) {
-        throw new Error("ملف JSON لا يطابق نموذج البرنامج المطلوب.");
-      }
-      runCPM(imported);
-      setSchedule(imported);
-      setEvents([]);
-      setSelectedEventId("");
-      setSelectedRelationshipId(imported.relationships[0]?.id ?? "");
-      setEventDate(imported.dataDate ?? imported.startDate);
-      toast.success(`تم استيراد ${imported.activities.length} نشاط و${imported.relationships.length} علاقة.`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر قراءة ملف JSON.");
-    }
-  }
+  const qualityItems = [{ ok: Boolean(baseline), text: "شبكة CPM قابلة للحساب ولا تحتوي حلقة منطقية." }, { ok: Boolean(schedule.calendar?.workingWeekdays.length), text: "التقويم وأيام العمل محددة للمشروع." }, { ok: Boolean(events.length), text: "سجل الأحداث يحتوي Fragnet أو أكثر." }, { ok: Boolean(activeResult), text: "توجد مقارنة قبل/بعد أو نافذة محسوبة." }];
 
-  async function importActivitiesCsv(file: File) {
-    try {
-      const records = parseCsv(await file.text());
-      const imported = records.map((record, index) => ({
-        id: record.id || record.activityid || record.activity_id || `ACT-${index + 1}`,
-        name: record.name || record.activityname || record.activity_name || `Activity ${index + 1}`,
-        duration: Number(record.duration || record.durationdays || record.duration_days),
-        wbs: record.wbs || undefined,
-        owner: record.owner || undefined,
-        plannedStart: record.plannedstart || record.planned_start ? Number(record.plannedstart || record.planned_start) : undefined,
-      }));
-      if (imported.some((activity) => !Number.isFinite(activity.duration) || activity.duration < 0)) {
-        throw new Error("عمود duration مطلوب ويجب أن يحتوي أرقاماً غير سالبة.");
-      }
-      setCsvActivities(imported);
-      toast.success(`تمت قراءة ${imported.length} نشاط. حمّل ملف العلاقات لإكمال الشبكة.`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر قراءة ملف الأنشطة CSV.");
-    }
-  }
+  return <div className="app-shell" dir="rtl"><aside className="sidebar"><div className="brand-block"><img className="brand-mark" src={logoUrl} alt="TIA Studio" /><div><b>TIA Studio</b><span>Delay Analysis Workspace</span></div></div><div className="project-chip"><span className="project-dot" /><div><small>برنامج العمل / {schedule.source ?? "manual"}</small><b>{schedule.name}</b></div></div><nav className="main-nav" aria-label="التنقل الرئيسي">{navItems.map((item) => { const Icon = item.icon; return <button key={item.key} onClick={() => setView(item.key)} className={view === item.key ? "nav-item active" : "nav-item"}><Icon size={18} /><span>{item.label}</span>{item.key === "analysis" && activeImpact ? <em>+{activeImpact}</em> : null}</button>; })}</nav><div className="method-card"><BookOpenCheck size={18} /><strong>دليل حساب قابل للتتبع</strong><p>برنامج + تقويم ← Fragnet ← CPM ← نافذة/تزامن ← سرد فني.</p><button onClick={() => setView("methods")}>عرض دليل SCL <ChevronLeft size={15} /></button></div><div className="local-note"><ShieldCheck size={16} /><span>الملفات والحسابات تبقى داخل متصفحك.</span></div></aside><main className="main-area"><header className="topbar"><div className="crumbs"><span>مشروعات</span><ChevronLeft size={14} /><b>{schedule.name}</b><ChevronLeft size={14} /><strong>{navItems.find((item) => item.key === view)?.label}</strong></div><div className="top-actions"><Button variant="outline" className="outline-action" onClick={exportSchedule}><Download size={16} />تصدير البرنامج</Button><Button className="run-button" onClick={() => { if (activeResult) { setView("analysis"); toast.success("تم تحديث الحساب باستخدام التقويم والبيانات الحالية."); } else toast.error("أضف حدثاً أو نافذة تحليل أولاً."); }}><Play size={16} fill="currentColor" />تشغيل التحليل</Button></div></header><section className="critical-ribbon"><div className="ribbon-label"><Route size={17} /><span>المسار الحرج</span></div><div className="path-nodes" dir="ltr">{displayedCpm?.criticalActivityIds.slice(0, 6).map((id, index, ids) => <span key={id}>{id}{index < ids.length - 1 && <i />}</span>)}</div><div className="ribbon-date"><small>الإكمال المتوقع</small><b dir="ltr">{displayedCpm?.completionDate ?? "—"}</b></div><StatusBadge result={activeResult} /></section>{baselineState.error || singleResultState.error || windowState.error ? <div className="analysis-error"><AlertTriangle size={18} /><div><b>تعذر تحليل الشبكة</b><span>{baselineState.error || singleResultState.error || windowState.error}</span></div></div> : null}
 
-  async function importRelationshipsCsv(file: File) {
-    try {
-      if (!csvActivities) throw new Error("حمّل ملف الأنشطة أولاً، ثم ملف العلاقات.");
-      const records = parseCsv(await file.text());
-      const relationships: Relationship[] = records.map((record, index) => ({
-        id: record.id || record.relationshipid || record.relationship_id || `REL-${index + 1}`,
-        predecessorId: record.predecessorid || record.predecessor_id || record.predecessor || record.pred,
-        successorId: record.successorid || record.successor_id || record.successor || record.succ,
-        type: ((record.type || "FS").toUpperCase() as RelationshipType),
-        lag: record.lag ? Number(record.lag) : 0,
-      }));
-      const imported: Schedule = {
-        id: `import-${Date.now()}`,
-        name: file.name.replace(/\.[^/.]+$/, "") || "برنامج مستورد",
-        startDate: schedule.startDate,
-        dataDate: schedule.dataDate,
-        activities: csvActivities,
-        relationships,
-      };
-      runCPM(imported);
-      setSchedule(imported);
-      setEvents([]);
-      setSelectedEventId("");
-      setSelectedRelationshipId(relationships[0]?.id ?? "");
-      toast.success("تم استيراد الشبكة وحساب CPM بنجاح.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر قراءة ملف العلاقات CSV.");
-    }
-  }
+  {view === "overview" && <div className="view-stack overview-view"><section className="hero-panel"><div className="hero-copy"><p className="eyebrow"><ActivityIcon size={15} />مركز قرار التأخير · {selectedWindow?.name ?? "لا نافذة"}</p><span className="finding-label">الأثر الفني الحالي</span><h1>{activeImpact ? <><b dir="ltr">+{activeImpact}</b> أيام عمل على الإكمال</> : "لا يوجد أثر حرج محسوب حالياً"}</h1><p>القرار مبني على <b>{schedule.name}</b> وتقويم «{baseline?.calendar.name ?? "—"}». استكشف النافذة، التزامن، وسرد النتيجة في مسار واحد قابل للطباعة.</p><div className="signature-path" dir="ltr">{displayedCpm?.criticalActivityIds.slice(0, 4).map((id, index, ids) => <span key={id}>{id}{index < ids.length - 1 && <i />}</span>)}<strong>{selectedEvent?.activities[0]?.id ?? "FR"}</strong><em>Critical route</em></div><div className="hero-actions"><Button className="run-button" onClick={() => setView("event")}><Plus size={17} />نمذجة حدث جديد</Button><Button variant="ghost" className="ghost-link" onClick={() => setView("windows")}>فحص النافذة والتزامن <ChevronLeft size={16} /></Button></div></div><div className="hero-art" style={{ backgroundImage: `linear-gradient(90deg, rgba(246,242,234,.98) 0%, rgba(246,242,234,.76) 43%, rgba(246,242,234,.08) 70%), url(${workspaceImageUrl})` }}><div className="hero-art-tag"><span>LIVE ANALYSIS CANVAS</span><b>{events.length} EVENTS · {windows.length} WINDOWS</b></div><div className="canvas-date"><small>FORECAST FINISH</small><b dir="ltr">{displayedCpm?.completionDate ?? "—"}</b></div></div></section><section className="metrics-grid"><MetricCard label="تاريخ الأساس" value={baseline?.completionDate ?? "—"} helper="حسب التقويم المعتمد" tone="graphite" /><MetricCard label="الأثر الزمني" value={`${activeImpact > 0 ? "+" : ""}${activeImpact} يوم`} helper="نتيجة النافذة الحالية" tone={activeImpact > 0 ? "orange" : "green"} featured /><MetricCard label="الإكمال بعد التحليل" value={displayedCpm?.completionDate ?? "—"} helper="بعد إدراج الـ Fragnets" tone="blue" featured /><MetricCard label="مرشحات تزامن" value={`${windowResult?.concurrentFindings.length ?? 0}`} helper="تحتاج تدقيق السببية" tone="graphite" /></section><section className="overview-columns"><div className="panel event-panel"><div className="panel-heading"><div><p className="eyebrow">DELAY REGISTER</p><h2>سجل الأحداث</h2></div><Button variant="outline" className="tiny-button" onClick={() => setView("event")}><Plus size={15} />حدث جديد</Button></div><div className="event-list">{events.length ? events.map((event) => <button key={event.id} onClick={() => { setSelectedEventId(event.id); setView("analysis"); }} className={event.id === selectedEventId ? "event-row selected" : "event-row"}><span className="event-number">{event.id}</span><div><b>{event.title}</b><small>{dateLabel(event.occurrenceDate)} · {causeLabel[event.cause]}</small></div><strong className="impact-number">{event.activities[0]?.duration} d</strong></button>) : <div className="empty-inline"><Zap size={19} /><span>لا توجد أحداث بعد. أضف Fragnet للبدء.</span></div>}</div></div><div className="panel quality-panel"><div className="panel-heading"><div><p className="eyebrow">QUALITY GATE</p><h2>جاهزية التحليل</h2></div><span className="quality-score">{qualityItems.filter((item) => item.ok).length}/4</span></div><div className="quality-list">{qualityItems.map((item) => <div key={item.text}><span className={item.ok ? "quality-icon ok" : "quality-icon"}>{item.ok ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}</span><p>{item.text}</p></div>)}</div>{schedule.importNotes?.length ? <div className="warning-strip"><AlertTriangle size={16} />{schedule.importNotes[0]}</div> : <div className="quality-footer"><ShieldCheck size={16} />أدخل دليل الحدث ثم راجع النتيجة مع المختص.</div>}</div></section></div>}
 
-  function createEvent() {
-    if (!selectedRelationship) {
-      toast.error("اختر علاقة منطقية في البرنامج ليتم فصلها بالـ Fragnet.");
-      return;
-    }
-    const duration = Number(eventDuration);
-    if (!eventTitle.trim() || !Number.isFinite(duration) || duration < 0) {
-      toast.error("أدخل عنوان الحدث ومدة صحيحة غير سالبة.");
-      return;
-    }
-    try {
-      dateToRelativeDay(schedule.startDate, eventDate);
-      const sequence = events.length + 1;
-      const fragnetId = `EV-${String(sequence).padStart(3, "0")}`;
-      const activityId = `FR-${String(sequence).padStart(3, "0")}`;
-      const next: Fragnet = {
-        id: fragnetId,
-        title: eventTitle.trim(),
-        description: eventDescription.trim(),
-        cause: eventCause,
-        occurrenceDate: eventDate,
-        activities: [{ id: activityId, name: eventTitle.trim(), duration, wbs: `TIA-${sequence}`, owner: causeLabel[eventCause], kind: "fragnet" }],
-        replacedRelationshipIds: [selectedRelationship.id],
-        relationships: [
-          { id: `${activityId}-IN`, predecessorId: selectedRelationship.predecessorId, successorId: activityId, type: selectedRelationship.type, lag: selectedRelationship.lag ?? 0 },
-          { id: `${activityId}-OUT`, predecessorId: activityId, successorId: selectedRelationship.successorId, type: "FS", lag: 0 },
-        ],
-      };
-      runTIA(schedule, next);
-      setEvents((previous) => [...previous, next]);
-      setSelectedEventId(next.id);
-      setView("analysis");
-      toast.success("تم إدراج الـ Fragnet وحساب أثره على تاريخ الإكمال.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر إنشاء حدث التأخير.");
-    }
-  }
+  {view === "schedule" && <div className="view-stack schedule-view"><section className="page-heading"><div><p className="eyebrow">SCHEDULE + CALENDAR</p><h1>البرنامج المرجعي والتقويم</h1><p>استورد جدولاً من JSON أو CSV أو XER. قبل الحساب، اجعل التقويم والعطل المطبقة على التاريخ واضحة وقابلة للمراجعة.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={loadDemo}><Sparkles size={16} />تحميل نموذج الاختبار</Button><Button className="run-button" onClick={exportSchedule}><Download size={16} />تنزيل JSON</Button></div></section><section className="import-deck import-deck--four"><div className="import-card primary-import"><FileCode2 size={21} /><div><b>استيراد Primavera P6 XER</b><p>PROJECT, TASK, TASKPRED وCALENDAR حيث تتوافر.</p></div><Button variant="outline" className="tiny-button" onClick={() => xerFileRef.current?.click()}><Upload size={15} />اختيار XER</Button><input ref={xerFileRef} type="file" accept=".xer,text/plain" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) importXer(file); event.currentTarget.value = ""; }} /></div><div className="import-card"><FileText size={21} /><div><b>استيراد JSON كامل</b><p>name, startDate, activities, relationships.</p></div><Button variant="outline" className="tiny-button" onClick={() => jsonFileRef.current?.click()}><Upload size={15} />اختيار</Button><input ref={jsonFileRef} type="file" accept=".json,application/json" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) importJson(file); event.currentTarget.value = ""; }} /></div><div className="import-card"><FileSpreadsheet size={21} /><div><b>1. CSV الأنشطة</b><p>id, name, duration, wbs, owner</p></div><Button variant="outline" className="tiny-button" onClick={() => activityFileRef.current?.click()}><Upload size={15} />تحميل</Button><input ref={activityFileRef} type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) importActivitiesCsv(file); event.currentTarget.value = ""; }} /></div><div className="import-card"><GitBranch size={21} /><div><b>2. CSV العلاقات</b><p>predecessorId, successorId, type, lag</p></div><Button variant="outline" className="tiny-button" onClick={() => relationshipFileRef.current?.click()}><Upload size={15} />تحميل</Button><input ref={relationshipFileRef} type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) importRelationshipsCsv(file); event.currentTarget.value = ""; }} /></div></section>{xerSummary && <section className="import-result"><FileCode2 size={18} /><div><b>ملخص استيراد XER: {xerSummary.projectName}</b><span>{xerSummary.activitiesRead} نشاط · {xerSummary.relationshipsRead} علاقة · {xerSummary.calendarName ?? "بدون سجل تقويم"}</span></div><small>راجع جدول العمل والعطل، لأن نمط تقويم P6 المشفر لا يُفك تلقائياً.</small></section>}<section className="calendar-workspace"><div className="panel calendar-panel"><div className="panel-heading"><div><p className="eyebrow">WORKING CALENDAR</p><h2>{schedule.calendar?.name ?? "أيام تقويمية"}</h2><span>المحرك يعرض ES/EF بأيام العمل ويحّول تاريخ الإكمال بهذا التقويم.</span></div><CalendarDays size={21} /></div><div className="calendar-presets"><button onClick={() => setCalendarPreset("five")} className={(schedule.calendar?.workingWeekdays.length ?? 7) === 5 ? "calendar-preset selected" : "calendar-preset"}>5 أيام<br /><small>الإثنين–الجمعة</small></button><button onClick={() => setCalendarPreset("calendar")} className={(schedule.calendar?.workingWeekdays.length ?? 7) === 7 ? "calendar-preset selected" : "calendar-preset"}>7 أيام<br /><small>أيام تقويمية</small></button></div><div className="weekday-grid">{weekdayLabels.map((label, day) => <button key={label} onClick={() => toggleWeekday(day)} className={(schedule.calendar ?? calendarDayCalendar).workingWeekdays.includes(day) ? "weekday active" : "weekday"}>{label.slice(0, 1)}</button>)}</div><div className="holiday-entry"><div><Label htmlFor="holiday">عطلة استثنائية</Label><Input id="holiday" type="date" value={holidayInput} onChange={(event) => setHolidayInput(event.target.value)} dir="ltr" /></div><Button variant="outline" className="tiny-button" onClick={addHoliday}><Plus size={15} />إضافة</Button></div><div className="holiday-list">{(schedule.calendar?.holidays ?? []).length ? schedule.calendar?.holidays.map((day) => <button key={day} onClick={() => removeHoliday(day)}><span dir="ltr">{day}</span><X size={13} /></button>) : <span>لا توجد عطل استثنائية مدخلة.</span>}</div></div><div className="panel schedule-panel"><div className="panel-heading"><div><p className="eyebrow">CPM NETWORK</p><h2>{schedule.name}</h2><span>تاريخ البدء <b dir="ltr">{schedule.startDate}</b> · تاريخ البيانات <b dir="ltr">{schedule.dataDate ?? "غير محدد"}</b></span></div><div className="table-summary"><span>{schedule.activities.length} نشاط</span><span>{schedule.relationships.length} علاقة</span><span>{baseline?.projectDuration ?? "—"} يوم عمل</span></div></div>{baseline && <Timeline cpm={baseline} />}</div></section></div>}
 
-  function removeEvent(id: string) {
-    setEvents((previous) => previous.filter((event) => event.id !== id));
-    setSelectedEventId(events.find((event) => event.id !== id)?.id ?? "");
-    toast.success("تم حذف الحدث من نسخة التحليل.");
-  }
+  {view === "event" && <div className="view-stack event-view"><section className="page-heading"><div><p className="eyebrow">MODEL THE IMPACT</p><h1>أضف حدث تأخير كـ Fragnet</h1><p>اختر علاقة قائمة ليُفصل منطقها بالـ Fragnet. يظل مسار الحدث قابلاً للمراجعة داخل نسخة CPM.</p></div></section><section className="event-workspace"><form className="panel event-form" onSubmit={(event) => { event.preventDefault(); createEvent(); }}><div className="panel-heading"><div><p className="eyebrow">FRAGNET BUILDER</p><h2>بيانات الحدث</h2></div><span className="form-step">01 / 02</span></div><div className="form-grid"><div className="form-wide"><Label htmlFor="event-title">عنوان الحدث</Label><Input id="event-title" value={eventTitle} onChange={(event) => setEventTitle(event.target.value)} /></div><div><Label htmlFor="event-date">تاريخ الحدوث</Label><Input id="event-date" type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} dir="ltr" /></div><div><Label htmlFor="event-duration">مدة الحدث (أيام عمل)</Label><Input id="event-duration" type="number" min="0" step="1" value={eventDuration} onChange={(event) => setEventDuration(event.target.value)} dir="ltr" /></div><div className="form-wide"><Label htmlFor="event-desc">وصف الدليل/الافتراض</Label><Textarea id="event-desc" value={eventDescription} onChange={(event) => setEventDescription(event.target.value)} rows={3} /></div><div><Label>تصنيف السبب</Label><Select value={eventCause} onValueChange={(value) => setEventCause(value as DelayCause)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(causeLabel).map(([value, label]) => <SelectItem value={value} key={value}>{label}</SelectItem>)}</SelectContent></Select></div><div><Label>العلاقة التي سيحل محلها الـ Fragnet</Label><Select value={selectedRelationshipId} onValueChange={setSelectedRelationshipId}><SelectTrigger><SelectValue placeholder="اختر علاقة" /></SelectTrigger><SelectContent>{schedule.relationships.map((relationship) => <SelectItem value={relationship.id} key={relationship.id}><span dir="ltr">{relationship.predecessorId} → {relationship.successorId}</span> · {relationship.type}</SelectItem>)}</SelectContent></Select></div></div><div className="logic-preview"><GitBranch size={18} /><div><small>المسار المنطقي بعد الإدراج</small>{selectedRelationship ? <b dir="ltr">{selectedRelationship.predecessorId} → FR-{String(events.length + 1).padStart(3, "0")} → {selectedRelationship.successorId}</b> : <b>اختر علاقة منطقية</b>}</div><span>الحدث سيستخدم تقويم «{schedule.calendar?.name ?? "أيام تقويمية"}» عند تحويل تاريخ الإكمال.</span></div><div className="form-actions"><p><Clock3 size={16} />الأداة تقيس الأثر الزمني؛ لا تحكم وحدها على التعويض أو الاستحقاق التعاقدي.</p><Button type="submit" className="run-button"><Play size={16} fill="currentColor" />إنشاء الـ Fragnet وتشغيل TIA</Button></div></form><aside className="event-guide"><div><span className="guide-number">1</span><h3>النسخة المختارة</h3><p>استخدم تحديثاً مناسباً قبل الحدث، مع حالة التقدم المعروفة.</p></div><div><span className="guide-number">2</span><h3>المنطق لا الاسم</h3><p>شبكة صغيرة وروابط واقعية أفضل من نشاط واحد معزول.</p></div><div><span className="guide-number">3</span><h3>التقويم واضح</h3><p>راجع العطل وأيام العمل قبل قراءة تاريخ الإكمال.</p></div><div className="guide-foot"><CalendarDays size={18} /><span>تقويم: <b>{schedule.calendar?.name ?? "أيام تقويمية"}</b></span></div></aside></section></div>}
 
-  function exportSchedule() {
-    downloadText("tia-studio-schedule.json", JSON.stringify(schedule, null, 2));
-    toast.success("تم تجهيز نسخة البرنامج JSON للتنزيل.");
-  }
+  {view === "windows" && <div className="view-stack windows-view"><section className="page-heading"><div><p className="eyebrow">WINDOW + CONCURRENCY REVIEW</p><h1>نوافذ التحليل وفحص التزامن</h1><p>تجمع النافذة الأحداث التي تقع داخل فترة محددة، وتعيد حساب الشبكة بالتتابع. علامة التزامن هنا فحص فني أولي وليست تخصيصاً تعاقدياً للزمن.</p></div></section><section className="window-builder panel"><div className="panel-heading"><div><p className="eyebrow">NEW ANALYSIS WINDOW</p><h2>إنشاء نافذة مراجعة</h2></div><CalendarClock size={21} /></div><div className="window-form"><div><Label>اسم النافذة</Label><Input value={newWindowName} onChange={(event) => setNewWindowName(event.target.value)} /></div><div><Label>من</Label><Input type="date" value={newWindowFrom} onChange={(event) => setNewWindowFrom(event.target.value)} dir="ltr" /></div><div><Label>إلى</Label><Input type="date" value={newWindowTo} onChange={(event) => setNewWindowTo(event.target.value)} dir="ltr" /></div><Button className="run-button" onClick={addWindow}><Plus size={16} />إنشاء</Button></div></section><section className="window-columns"><div className="panel windows-list"><div className="panel-heading"><div><p className="eyebrow">WINDOW REGISTER</p><h2>النوافذ المسجلة</h2></div><span className="quality-score">{windows.length}</span></div>{windows.map((item) => { const current = item.id === selectedWindowId; const computed = current ? windowResult : null; return <button key={item.id} className={current ? "window-row selected" : "window-row"} onClick={() => setSelectedWindowId(item.id)}><div><b>{item.name}</b><small dir="ltr">{item.from} → {item.to}</small></div><div><span>{item.status === "final" ? "نهائي" : item.status === "review" ? "مراجعة" : "مسودة"}</span><strong>{computed ? `+${computed.totalImpactDays} d` : "احسب"}</strong></div></button>; })}</div><div className="panel window-result"><div className="panel-heading"><div><p className="eyebrow">CURRENT WINDOW RESULT</p><h2>{selectedWindow?.name ?? "اختر نافذة"}</h2></div><StatusBadge result={windowResult} /></div>{windowResult ? <><div className="window-kpis"><div><small>الأحداث المدرجة</small><b>{windowResult.events.length}</b></div><div><small>الأثر الإجمالي</small><b dir="ltr">+{windowResult.totalImpactDays} d</b></div><div><small>مرشحات تزامن</small><b>{windowResult.concurrentFindings.length}</b></div></div><div className="window-event-table">{windowResult.eventResults.length ? windowResult.eventResults.map((item) => <div key={item.eventId}><span dir="ltr">{item.eventId}</span><b>{item.eventTitle}</b><em dir="ltr">+{item.incrementalImpactDays}d</em></div>) : <p>لا توجد أحداث داخل الفترة المختارة.</p>}</div>{windowResult.concurrentFindings.length ? <div className="concurrency-list">{windowResult.concurrentFindings.map((item) => <div key={item.eventIds.join("-")}><AlertTriangle size={16} /><p><b>مرشح تزامن: <span dir="ltr">{item.eventIds.join(" / ")}</span></b><span dir="ltr">{item.overlapStart} → {item.overlapEnd}</span><small>{item.explanation}</small></p></div>)}</div> : <div className="quality-footer"><ShieldCheck size={16} />لم يرصد المحرك تداخلاً زمنياً بين أحداث النافذة الحالية.</div>}</> : <div className="empty-inline"><CalendarClock size={19} /><span>اختر نافذة مرتبطة بالبرنامج الحالي.</span></div>}</div></section></div>}
 
-  function exportAnalysis() {
-    if (!analysis || !selectedEvent) return;
-    downloadText(
-      `${selectedEvent.id}-tia-result.json`,
-      JSON.stringify({ generatedAt: new Date().toISOString(), methodology: "Time Impact Analysis — modeled/additive CPM", schedule, fragnet: selectedEvent, result: analysis }, null, 2),
-    );
-    toast.success("تم تجهيز ملف نتيجة TIA للتنزيل.");
-  }
+  {view === "analysis" && <div className="view-stack analysis-view"><section className="page-heading"><div><p className="eyebrow">BEFORE / AFTER COMPARISON</p><h1>نتيجة التحليل القابلة للتتبع</h1><p>يمكن قراءة أثر حدث منفرد أو أثر نافذة مجمعة. الإحداثيات والحسابات أدناه تعود إلى نسخة البرنامج والتقويم المحددين.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={() => selectedEvent && removeEvent(selectedEvent.id)} disabled={!selectedEvent}><X size={16} />حذف الحدث</Button><Button className="run-button" onClick={exportAnalysis} disabled={!activeResult}><Download size={16} />تنزيل السجل</Button></div></section>{activeResult && displayedCpm ? <><section className="impact-banner" style={{ backgroundImage: `linear-gradient(100deg, rgba(11,79,108,.97), rgba(11,79,108,.88) 47%, rgba(11,79,108,.46)), url(${reportTextureUrl})` }}><div><p>الأثر المحسوب على الإكمال</p><strong dir="ltr">{activeImpact > 0 ? "+" : ""}{activeImpact}<small> يوم عمل</small></strong><span>تاريخ الإكمال يحسب وفق «{activeResult.impacted.calendar.name}»، وتبقى العائمة بوحدة أيام العمل.</span></div><div className="impact-dates"><div><small>قبل الإدراج</small><b dir="ltr">{activeResult.baseline.completionDate}</b></div><i><ChevronLeft size={20} /></i><div className="after-date"><small>بعد الإدراج</small><b dir="ltr">{activeResult.impacted.completionDate}</b></div></div></section><section className="metrics-grid analysis-metrics"><MetricCard label="النافذة / الحدث" value={windowResult ? selectedWindow?.id ?? "—" : selectedEvent?.id ?? "—"} helper={windowResult ? selectedWindow?.name ?? "" : selectedEvent?.title ?? ""} tone="graphite" /><MetricCard label="الأثر" value={`${activeImpact > 0 ? "+" : ""}${activeImpact} يوم`} helper="فرق الإكمال بوحدة أيام عمل" tone="orange" /><MetricCard label="الإكمال بعد التحليل" value={activeResult.impacted.completionDate} helper={activeResult.impacted.calendar.name} tone="blue" /><MetricCard label="المسار الحرج" value={`${displayedCpm.criticalActivityIds.length} نشاط`} helper="بعد الإدراج" tone="graphite" /></section><section className="analysis-grid"><div className="panel timeline-panel"><div className="panel-heading"><div><p className="eyebrow">IMPACTED CPM</p><h2>الشبكة بعد الإدراج</h2></div><StatusBadge result={activeResult} /></div><Timeline cpm={displayedCpm} /></div><div className="panel evidence-panel"><div className="panel-heading"><div><p className="eyebrow">EVIDENCE TRACE</p><h2>سجل الحساب</h2></div></div><ol>{("notes" in activeResult ? activeResult.notes : []).map((note) => <li key={note}><span><CheckCircle2 size={16} /></span>{note}</li>)}</ol><div className="mini-divider" /><div className="evidence-meta"><div><small>الطريقة</small><b>{windowResult ? "Windowed TIA" : "TIA"}</b></div><div><small>قاعدة المقارنة</small><b>{schedule.name}</b></div><div><small>التقويم</small><b>{activeResult.impacted.calendar.name}</b></div></div></div></section><section className="panel result-table-panel"><div className="panel-heading"><div><p className="eyebrow">ACTIVITY IMPACT TABLE</p><h2>تفصيل العائمة والمسار</h2></div><span className="legend-note"><i className="legend-fragnet" />Fragnet</span></div><div className="activity-table-wrap"><table className="activity-table"><thead><tr><th>المعرف</th><th>النشاط</th><th>النوع</th><th>المدة</th><th>ES / EF</th><th>TF</th><th>المسار</th></tr></thead><tbody>{displayedCpm.activities.map((activity) => <tr key={activity.id} className={activity.kind === "fragnet" ? "fragnet-row" : activity.isCritical ? "critical-row" : ""}><td dir="ltr"><b>{activity.id}</b></td><td>{activity.name}</td><td>{activity.kind === "fragnet" ? <Badge className="badge-fragnet">Fragnet</Badge> : <Badge className="badge-muted">أساس</Badge>}</td><td dir="ltr">{activity.duration} d</td><td dir="ltr">{activity.earlyStart} / {activity.earlyFinish}</td><td dir="ltr">{activity.totalFloat}</td><td>{activity.isCritical ? <Badge className="badge-delay">حرج</Badge> : <Badge className="badge-muted">غير حرج</Badge>}</td></tr>)}</tbody></table></div></section></> : <section className="empty-state"><Zap size={28} /><h2>لا توجد نتيجة محسوبة بعد</h2><p>أضف حدث تأخير أو أنشئ نافذة مرتبطة بالبرنامج لتشغيل التحليل.</p><Button className="run-button" onClick={() => setView("event")}>إنشاء حدث تأخير</Button></section>}</div>}
 
-  const qualityItems = [
-    { ok: Boolean(baseline), text: "شبكة CPM قابلة للحساب ولا تحتوي حلقة منطقية." },
-    { ok: Boolean(selectedEvent && selectedEvent.relationships.length >= 2), text: "الـ Fragnet مرتبط بمنطق دخول وخروج واضح." },
-    { ok: Boolean(selectedEvent?.occurrenceDate && schedule.dataDate), text: "تاريخ الحدث ونسخة التحديث موثقان." },
-    { ok: Boolean(analysis?.impactDays !== undefined), text: "تمت مقارنة تاريخ الإكمال قبل وبعد الإدراج." },
-  ];
+  {view === "report" && <div className="view-stack report-view"><section className="page-heading no-print"><div><p className="eyebrow">NARRATIVE + EXPORTABLE RECORD</p><h1>Delay Analysis Narrative وتقرير فني</h1><p>السرد يتولد من نتائج الحساب والبيانات المدخلة، ثم يبقى قابلاً للتحرير قبل الطباعة أو التنزيل.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={exportAnalysis} disabled={!activeResult}><Download size={16} />تنزيل السجل</Button><Button className="run-button" onClick={() => window.print()}><Printer size={16} />طباعة التقرير</Button></div></section><section className="narrative-context no-print"><div><div><Label>اسم المحلل</Label><Input value={narrativeContext.analyst} onChange={(event) => setNarrativeContext((previous) => ({ ...previous, analyst: event.target.value }))} /></div><div><Label>مرجع العقد/البند</Label><Input value={narrativeContext.contractReference} onChange={(event) => setNarrativeContext((previous) => ({ ...previous, contractReference: event.target.value }))} /></div><div><Label>ملخص الأدلة</Label><Input value={narrativeContext.evidenceSummary} onChange={(event) => setNarrativeContext((previous) => ({ ...previous, evidenceSummary: event.target.value }))} /></div><div><Label>الموقف المدخل</Label><Input value={narrativeContext.claimPosition} onChange={(event) => setNarrativeContext((previous) => ({ ...previous, claimPosition: event.target.value }))} /></div></div><Button variant="outline" className="outline-action" onClick={() => setNarrative(generateDelayAnalysisNarrative({ schedule, result: windowResult ?? analysis, event: selectedEvent, context: narrativeContext }))}><Sparkles size={16} />تحديث السرد من الحساب</Button></section><article className="print-report"><div className="report-topline"><div className="report-brand"><img src={logoUrl} alt="" /><div><b>TIA Studio</b><span>Delay Analysis Technical Record</span></div></div><div><small>تاريخ الإصدار</small><b dir="ltr">{new Date().toISOString().slice(0, 10)}</b></div></div><div className="report-title"><div><p>تحليل أثر زمني / Delay Analysis</p><h2>{selectedWindow?.name ?? selectedEvent?.title ?? "لا توجد نافذة محددة"}</h2><span>البرنامج: {schedule.name} · التقويم: {schedule.calendar?.name ?? "أيام تقويمية"}</span></div><StatusBadge result={activeResult} /></div><div className="report-facts"><div><small>تاريخ بيانات البرنامج</small><b dir="ltr">{schedule.dataDate ?? "غير محدد"}</b></div><div><small>تاريخ الإكمال قبل</small><b dir="ltr">{activeResult?.baseline.completionDate ?? baseline?.completionDate ?? "—"}</b></div><div><small>فرق الإكمال</small><b dir="ltr">{activeResult ? `${activeImpact > 0 ? "+" : ""}${activeImpact} يوم عمل` : "—"}</b></div><div><small>تاريخ الإكمال بعد</small><b dir="ltr">{activeResult?.impacted.completionDate ?? "—"}</b></div></div><section className="report-section narrative-print"><h3>السرد التحليلي — مسودة قابلة للتحرير</h3><Textarea value={narrative} onChange={(event) => setNarrative(event.target.value)} rows={20} /></section><section className="report-section"><h3>منهجية وحدود الاستخدام</h3><p>يقيس هذا التقرير الأثر الزمني الناتج عن برنامج وعلاقات وتقويم وFragnet مدخلة. يثبت الحساب فرق تاريخ الإكمال في النموذج؛ لكنه لا يحسم الاستحقاق التعاقدي أو التعويض أو التزامن القانوني. ينبغي مراجعة العقد والمراسلات وسجلات التقدم والمستندات المعاصرة بواسطة مختص قبل استخدامه في مطالبة أو نزاع.</p></section><section className="report-disclaimer"><AlertTriangle size={17} /><p><b>تنبيه مهني:</b> علامة التزامن في TIA Studio مرشح فني أولي يتطلب فحص السبب الفعال والمسار الحرج في الفترة المعنية؛ لا تمثل توزيعاً نهائياً للتأخير بين الأطراف.</p></section></article></div>}
 
-  return (
-    <div className="app-shell" dir="rtl">
-      <aside className="sidebar">
-        <div className="brand-block">
-          <img className="brand-mark" src={logoUrl} alt="TIA Studio" />
-          <div><b>TIA Studio</b><span>Time Impact Analysis</span></div>
-        </div>
-        <div className="project-chip"><span className="project-dot" /><div><small>برنامج العمل</small><b>{schedule.name}</b></div></div>
-        <nav className="main-nav" aria-label="التنقل الرئيسي">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return <button key={item.key} onClick={() => setView(item.key)} className={view === item.key ? "nav-item active" : "nav-item"}><Icon size={18} /><span>{item.label}</span>{item.key === "analysis" && analysis?.impactDays ? <em>+{analysis.impactDays}</em> : null}</button>;
-          })}
-        </nav>
-        <div className="method-card">
-          <BookOpenCheck size={18} />
-          <strong>منهج واضح وقابل للتتبع</strong>
-          <p>نسخة البرنامج ← Fragnet ← CPM ← فرق تاريخ الإكمال.</p>
-          <button onClick={() => setView("report")}>عرض أسس التحليل <ChevronLeft size={15} /></button>
-        </div>
-        <div className="local-note"><ShieldCheck size={16} /><span>البيانات محفوظة محلياً في متصفحك.</span></div>
-      </aside>
-
-      <main className="main-area">
-        <header className="topbar">
-          <div className="crumbs"><span>مشروعات</span><ChevronLeft size={14} /><b>{schedule.name}</b><ChevronLeft size={14} /><strong>{navItems.find((item) => item.key === view)?.label}</strong></div>
-          <div className="top-actions"><Button variant="outline" className="outline-action" onClick={exportSchedule}><Download size={16} />تصدير البرنامج</Button><Button className="run-button" onClick={() => { if (analysis) { setView("analysis"); toast.success("تم تحديث حساب TIA باستخدام البيانات الحالية."); } else toast.error("أضف حدث تأخير أولاً."); }}><Play size={16} fill="currentColor" />تشغيل التحليل</Button></div>
-        </header>
-
-        <section className="critical-ribbon" aria-label="ملخص المسار الحرج">
-          <div className="ribbon-label"><Route size={17} /><span>المسار الحرج</span></div>
-          <div className="path-nodes" dir="ltr">{(analysis?.impacted ?? baseline)?.criticalActivityIds.slice(0, 6).map((id, index, ids) => <span key={id}>{id}{index < ids.length - 1 && <i />}</span>)}</div>
-          <div className="ribbon-date"><small>الإكمال المتوقع</small><b dir="ltr">{analysis?.impactedCompletionDate ?? baseline?.completionDate ?? "—"}</b></div>
-          <StatusBadge result={analysis} />
-        </section>
-
-        {analysisError ? <div className="analysis-error"><AlertTriangle size={18} /><div><b>تعذر تحليل الشبكة</b><span>{analysisError}</span></div></div> : null}
-
-        {view === "overview" && (
-          <div className="view-stack overview-view">
-            <section className="hero-panel">
-              <div className="hero-copy">
-                <p className="eyebrow"><ActivityIcon size={15} />نافذة التحليل 04 · بيانات {schedule.dataDate ?? schedule.startDate}</p>
-                <span className="finding-label">النتيجة الحالية</span>
-                <h1 dir="rtl">{analysis?.impactDays ? <><b dir="ltr">+{analysis.impactDays}</b> أيام على الإكمال المتوقع</> : "لا يوجد أثر حرج محسوب على الإكمال"}</h1>
-                <p>نسخة البرنامج: <b>{schedule.name}</b> — يعرض القماش المجاور منطق الإدراج، والمسار الحرج، وتاريخ الإكمال بعد إعادة حساب CPM.</p>
-                <div className="signature-path" dir="ltr"><span>A100</span><i /><span>A200</span><i /><span>A300</span><i className="fragnet-link" /><strong>{selectedEvent?.activities[0]?.id ?? "FR"}</strong><i className="fragnet-link" /><span>A400</span><em>Critical route</em></div>
-                <div className="hero-actions"><Button className="run-button" onClick={() => setView("event")}><Plus size={17} />نمذجة حدث جديد</Button><Button variant="ghost" className="ghost-link" onClick={() => setView("analysis")}>عرض دليل النتيجة <ArrowUpRight size={16} /></Button></div>
-              </div>
-              <div className="hero-art" style={{ backgroundImage: `linear-gradient(90deg, rgba(246,242,234,.98) 0%, rgba(246,242,234,.76) 43%, rgba(246,242,234,.08) 70%), url(${workspaceImageUrl})` }}><div className="hero-art-tag"><span>LIVE CPM CANVAS</span><b>{selectedEvent ? "FRAGNET INSERTED" : "READY FOR ANALYSIS"}</b></div><div className="canvas-date"><small>FORECAST FINISH</small><b dir="ltr">{analysis?.impactedCompletionDate ?? baseline?.completionDate ?? "—"}</b></div></div>
-            </section>
-
-            <section className="metrics-grid">
-              <MetricCard label="تاريخ الأساس" value={baseline?.completionDate ?? "—"} helper="قبل إدراج الحدث" tone="graphite" />
-              <MetricCard label="الأثر الزمني" value={`${delayDays > 0 ? "+" : ""}${delayDays} يوم`} helper={delayDays > 0 ? "فرق الإكمال بعد TIA" : "لا يوجد تمديد للإكمال"} tone={delayDays > 0 ? "orange" : "green"} featured />
-              <MetricCard label="الإكمال بعد TIA" value={analysis?.impactedCompletionDate ?? "—"} helper="نسخة التحليل الحالية" tone="blue" featured />
-              <MetricCard label="أنشطة حرجة" value={`${criticalCount}`} helper="TF = 0 ضمن النسخة الحالية" tone="graphite" />
-            </section>
-
-            <section className="overview-columns">
-              <div className="panel event-panel">
-                <div className="panel-heading"><div><p className="eyebrow">DELAY REGISTER</p><h2>سجل الأحداث</h2></div><Button variant="outline" className="tiny-button" onClick={() => setView("event")}><Plus size={15} />حدث جديد</Button></div>
-                <div className="event-list">
-                  {events.length ? events.map((event) => {
-                    const preview = event.id === selectedEventId ? analysis : null;
-                    return <button key={event.id} onClick={() => { setSelectedEventId(event.id); setView("analysis"); }} className={event.id === selectedEventId ? "event-row selected" : "event-row"}>
-                      <span className="event-number">{event.id}</span><div><b>{event.title}</b><small>{dateLabel(event.occurrenceDate)} · {causeLabel[event.cause]}</small></div><strong className={preview?.impactDays ? "impact-number has-impact" : "impact-number"}>{preview ? `${preview.impactDays > 0 ? "+" : ""}${preview.impactDays} d` : "—"}</strong>
-                    </button>;
-                  }) : <div className="empty-inline"><Zap size={19} /><span>لا توجد أحداث بعد. أضف Fragnet للبدء.</span></div>}
-                </div>
-              </div>
-              <div className="panel quality-panel">
-                <div className="panel-heading"><div><p className="eyebrow">QUALITY GATE</p><h2>جاهزية التحليل</h2></div><span className="quality-score">{qualityItems.filter((item) => item.ok).length}/4</span></div>
-                <div className="quality-list">{qualityItems.map((item) => <div key={item.text}><span className={item.ok ? "quality-icon ok" : "quality-icon"}>{item.ok ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}</span><p>{item.text}</p></div>)}</div>
-                {(analysis?.impacted.warnings ?? baseline?.warnings ?? []).length ? <div className="warning-strip"><AlertTriangle size={16} />{(analysis?.impacted.warnings ?? baseline?.warnings ?? []).join(" ")}</div> : <div className="quality-footer"><ShieldCheck size={16} />اجتاز النموذج اختبارات البنية الأساسية.</div>}
-              </div>
-            </section>
-          </div>
-        )}
-
-        {view === "schedule" && (
-          <div className="view-stack schedule-view">
-            <section className="page-heading"><div><p className="eyebrow">SCHEDULE BASE</p><h1>البرنامج المعتمد</h1><p>اختر تحديثاً سابقاً للحدث. يدعم التطبيق JSON أو ملفي CSV منفصلين للأنشطة والعلاقات.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={loadDemo}><Sparkles size={16} />تحميل نموذج الاختبار</Button><Button className="run-button" onClick={exportSchedule}><Download size={16} />تنزيل JSON</Button></div></section>
-            <section className="import-deck">
-              <div className="import-card primary-import"><FileText size={21} /><div><b>استيراد ملف JSON كامل</b><p>الهيكل: name، startDate، activities، relationships.</p></div><Button variant="outline" className="tiny-button" onClick={() => jsonFileRef.current?.click()}><Upload size={15} />اختيار ملف</Button><input ref={jsonFileRef} type="file" accept=".json,application/json" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) importJson(file); event.currentTarget.value = ""; }} /></div>
-              <div className="import-card"><FileSpreadsheet size={21} /><div><b>1. CSV الأنشطة</b><p>id, name, duration, wbs, owner, plannedStart</p></div><Button variant="outline" className="tiny-button" onClick={() => activityFileRef.current?.click()}><Upload size={15} />تحميل</Button><input ref={activityFileRef} type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) importActivitiesCsv(file); event.currentTarget.value = ""; }} /></div>
-              <div className="import-card"><GitBranch size={21} /><div><b>2. CSV العلاقات</b><p>id, predecessorId, successorId, type, lag</p></div><Button variant="outline" className="tiny-button" onClick={() => relationshipFileRef.current?.click()}><Upload size={15} />تحميل</Button><input ref={relationshipFileRef} type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) importRelationshipsCsv(file); event.currentTarget.value = ""; }} /></div>
-            </section>
-            <section className="panel schedule-panel">
-              <div className="panel-heading"><div><p className="eyebrow">CPM NETWORK</p><h2>{schedule.name}</h2><span>تاريخ البدء <b dir="ltr">{schedule.startDate}</b> · تاريخ البيانات <b dir="ltr">{schedule.dataDate ?? "غير محدد"}</b></span></div><div className="table-summary"><span>{schedule.activities.length} نشاط</span><span>{schedule.relationships.length} علاقة</span><span>{baseline?.projectDuration ?? "—"} يوم</span></div></div>
-              {displayedCpm ? <Timeline cpm={baseline ?? displayedCpm} schedule={schedule} /> : null}
-              <div className="activity-table-wrap"><table className="activity-table"><thead><tr><th>المعرف</th><th>النشاط</th><th>WBS</th><th>المدة</th><th>ES</th><th>EF</th><th>TF</th><th>الحالة</th></tr></thead><tbody>{(baseline?.activities ?? []).map((activity) => <tr key={activity.id} className={activity.isCritical ? "critical-row" : ""}><td dir="ltr"><b>{activity.id}</b></td><td>{activity.name}</td><td dir="ltr">{activity.wbs ?? "—"}</td><td dir="ltr">{activity.duration} d</td><td dir="ltr">{activity.earlyStart}</td><td dir="ltr">{activity.earlyFinish}</td><td dir="ltr">{activity.totalFloat}</td><td>{activity.isCritical ? <Badge className="badge-delay">حرج</Badge> : <Badge className="badge-muted">عائمة متاحة</Badge>}</td></tr>)}</tbody></table></div>
-            </section>
-          </div>
-        )}
-
-        {view === "event" && (
-          <div className="view-stack event-view">
-            <section className="page-heading"><div><p className="eyebrow">MODEL THE IMPACT</p><h1>أضف حدث تأخير كـ Fragnet</h1><p>اختر علاقة قائمة ليُفصل منطقها بالـ Fragnet. بهذه الطريقة يظل مسار الحدث قابلاً للمراجعة داخل نسخة CPM.</p></div></section>
-            <section className="event-workspace">
-              <form className="panel event-form" onSubmit={(event) => { event.preventDefault(); createEvent(); }}>
-                <div className="panel-heading"><div><p className="eyebrow">FRAGNET BUILDER</p><h2>بيانات الحدث</h2></div><span className="form-step">01 / 02</span></div>
-                <div className="form-grid"><div className="form-wide"><Label htmlFor="event-title">عنوان الحدث</Label><Input id="event-title" value={eventTitle} onChange={(event) => setEventTitle(event.target.value)} placeholder="مثال: تأخر اعتماد مخطط" /></div><div><Label htmlFor="event-date">تاريخ الحدوث</Label><Input id="event-date" type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} dir="ltr" /></div><div><Label htmlFor="event-duration">مدة الحدث (أيام)</Label><Input id="event-duration" type="number" min="0" step="1" value={eventDuration} onChange={(event) => setEventDuration(event.target.value)} dir="ltr" /></div><div className="form-wide"><Label htmlFor="event-desc">وصف الدليل/الافتراض</Label><Textarea id="event-desc" value={eventDescription} onChange={(event) => setEventDescription(event.target.value)} rows={3} /></div><div><Label>تصنيف السبب</Label><Select value={eventCause} onValueChange={(value) => setEventCause(value as Fragnet["cause"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(causeLabel).map(([value, label]) => <SelectItem value={value} key={value}>{label}</SelectItem>)}</SelectContent></Select></div><div><Label>العلاقة التي سيحل محلها الـ Fragnet</Label><Select value={selectedRelationshipId} onValueChange={setSelectedRelationshipId}><SelectTrigger><SelectValue placeholder="اختر علاقة" /></SelectTrigger><SelectContent>{schedule.relationships.map((relationship) => <SelectItem value={relationship.id} key={relationship.id}><span dir="ltr">{relationship.predecessorId} → {relationship.successorId}</span> · {relationship.type}</SelectItem>)}</SelectContent></Select></div></div>
-                <div className="logic-preview"><GitBranch size={18} /><div><small>المسار المنطقي بعد الإدراج</small>{selectedRelationship ? <b dir="ltr">{selectedRelationship.predecessorId} → FR-{String(events.length + 1).padStart(3, "0")} → {selectedRelationship.successorId}</b> : <b>اختر علاقة منطقية</b>}</div><span>{selectedRelationship ? `${activityName(schedule, selectedRelationship.predecessorId)} ← أثر الحدث ← ${activityName(schedule, selectedRelationship.successorId)}` : ""}</span></div>
-                <div className="form-actions"><p><Info size={16} />الأداة تقارن نسخة قبل الإدراج بنسخة بعده، ولا تحكم وحدها على التعويض أو الاستحقاق التعاقدي.</p><Button type="submit" className="run-button"><Play size={16} fill="currentColor" />إنشاء الـ Fragnet وتشغيل TIA</Button></div>
-              </form>
-              <aside className="event-guide">
-                <div><span className="guide-number">1</span><h3>النسخة المختارة</h3><p>استخدم آخر تحديث مقبول قبل تاريخ الحدث، مع حالة التقدم المعروفة.</p></div><div><span className="guide-number">2</span><h3>المنطق لا الاسم</h3><p>شبكة صغيرة وروابط واقعية أفضل من نشاط واحد معزول.</p></div><div><span className="guide-number">3</span><h3>الأثر لا العائمة فقط</h3><p>تمديد الوقت يظهر فقط إذا تغير تاريخ الإكمال أو milestone محل القياس.</p></div><div className="guide-foot"><CalendarDays size={18} /><span>تاريخ بيانات النسخة الحالية: <b dir="ltr">{schedule.dataDate ?? "غير محدد"}</b></span></div>
-              </aside>
-            </section>
-          </div>
-        )}
-
-        {view === "analysis" && (
-          <div className="view-stack analysis-view">
-            <section className="page-heading"><div><p className="eyebrow">BEFORE / AFTER COMPARISON</p><h1>نتيجة Time Impact Analysis</h1><p>{selectedEvent ? `حدث: ${selectedEvent.title} — ${causeLabel[selectedEvent.cause]}` : "اختر حدث تأخير أو أنشئ حدثاً جديداً."}</p></div><div className="heading-actions">{selectedEvent ? <Button variant="outline" className="outline-action" onClick={() => removeEvent(selectedEvent.id)}><X size={16} />حذف من التحليل</Button> : null}<Button className="run-button" onClick={exportAnalysis} disabled={!analysis}><Download size={16} />تنزيل النتيجة</Button></div></section>
-            {analysis && displayedCpm ? <>
-              <section className="impact-banner" style={{ backgroundImage: `linear-gradient(100deg, rgba(11,79,108,.97), rgba(11,79,108,.88) 47%, rgba(11,79,108,.46)), url(${reportTextureUrl})` }}>
-                <div><p>الأثر المحسوب على الإكمال</p><strong dir="ltr">{analysis.impactDays > 0 ? "+" : ""}{analysis.impactDays}<small> يوم تقويمي</small></strong><span>{analysis.outcome === "delayed" ? "أضاف الـ Fragnet مساراً حرجاً إلى الإكمال المتوقع." : analysis.outcome === "float-consumed" ? "لم يتغير الإكمال المتوقع؛ الأثر استهلك عائمة متاحة أو بقي غير حرج." : "تحقق من العلاقات أو الـ leads لأن الإكمال أصبح أبكر."}</span></div><div className="impact-dates"><div><small>قبل الإدراج</small><b dir="ltr">{analysis.baselineCompletionDate}</b></div><i><ArrowUpRight size={20} /></i><div className="after-date"><small>بعد الإدراج</small><b dir="ltr">{analysis.impactedCompletionDate}</b></div></div>
-              </section>
-              <section className="metrics-grid analysis-metrics"><MetricCard label="حدث التحليل" value={selectedEvent?.id ?? "—"} helper={selectedEvent?.occurrenceDate ? `وقع في ${dateLabel(selectedEvent.occurrenceDate)}` : ""} tone="graphite" /><MetricCard label="مدة الـ Fragnet" value={`${selectedEvent?.activities[0]?.duration ?? 0} يوم`} helper="نشاط مضاف إلى الشبكة" tone="orange" /><MetricCard label="عائمة الـ Fragnet" value={`${currentFloat ?? "—"} يوم`} helper="TF بعد إعادة حساب CPM" tone="blue" /><MetricCard label="المسار الحرج" value={`${analysis.impacted.criticalActivityIds.length} نشاط`} helper="بعد إدراج الحدث" tone="graphite" /></section>
-              <section className="analysis-grid"><div className="panel timeline-panel"><div className="panel-heading"><div><p className="eyebrow">IMPACTED CPM</p><h2>الشبكة بعد إدراج الـ Fragnet</h2></div><StatusBadge result={analysis} /></div><Timeline cpm={displayedCpm} schedule={schedule} /></div><div className="panel evidence-panel"><div className="panel-heading"><div><p className="eyebrow">EVIDENCE TRACE</p><h2>سجل الحساب</h2></div></div><ol>{analysis.notes.map((note) => <li key={note}><span><CheckCircle2 size={16} /></span>{note}</li>)}</ol><div className="mini-divider" /><div className="evidence-meta"><div><small>نوع التحليل</small><b>Modeled / Additive</b></div><div><small>قاعدة المقارنة</small><b>{schedule.name}</b></div><div><small>التقويم</small><b>أيام تقويمية</b></div></div></div></section>
-              <section className="panel result-table-panel"><div className="panel-heading"><div><p className="eyebrow">ACTIVITY IMPACT TABLE</p><h2>تفصيل العائمة والمسار</h2></div><span className="legend-note"><i className="legend-fragnet" />نشاط Fragnet</span></div><div className="activity-table-wrap"><table className="activity-table"><thead><tr><th>المعرف</th><th>النشاط</th><th>النوع</th><th>المدة</th><th>ES / EF</th><th>LS / LF</th><th>TF</th><th>المسار</th></tr></thead><tbody>{displayedCpm.activities.map((activity) => <tr key={activity.id} className={activity.kind === "fragnet" ? "fragnet-row" : activity.isCritical ? "critical-row" : ""}><td dir="ltr"><b>{activity.id}</b></td><td>{activity.name}</td><td>{activity.kind === "fragnet" ? <Badge className="badge-fragnet">Fragnet</Badge> : <Badge className="badge-muted">أساس</Badge>}</td><td dir="ltr">{activity.duration} d</td><td dir="ltr">{activity.earlyStart} / {activity.earlyFinish}</td><td dir="ltr">{activity.lateStart} / {activity.lateFinish}</td><td dir="ltr">{activity.totalFloat}</td><td>{activity.isCritical ? <Badge className="badge-delay">حرج</Badge> : <Badge className="badge-muted">غير حرج</Badge>}</td></tr>)}</tbody></table></div></section>
-            </> : <section className="empty-state"><Zap size={28} /><h2>لا توجد نتيجة محسوبة بعد</h2><p>أضف حدث تأخير واربطه بعلاقة منطقية من البرنامج، ثم شغّل التحليل.</p><Button className="run-button" onClick={() => setView("event")}>إنشاء حدث تأخير</Button></section>}
-          </div>
-        )}
-
-        {view === "report" && (
-          <div className="view-stack report-view">
-            <section className="page-heading no-print"><div><p className="eyebrow">EXPORTABLE RECORD</p><h1>تقرير TIA</h1><p>ملخص فني قابل للطباعة والمراجعة. يبقى الحكم التعاقدي والقانوني بيد المختص.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={exportAnalysis} disabled={!analysis}><Download size={16} />تنزيل JSON</Button><Button className="run-button" onClick={() => window.print()}><Printer size={16} />طباعة التقرير</Button></div></section>
-            <article className="print-report">
-              <div className="report-topline"><div className="report-brand"><img src={logoUrl} alt="" /><div><b>TIA Studio</b><span>Time Impact Analysis Record</span></div></div><div><small>تاريخ الإصدار</small><b dir="ltr">{new Date().toISOString().slice(0, 10)}</b></div></div>
-              <div className="report-title"><div><p>تحليل أثر زمني</p><h2>{selectedEvent?.title ?? "لم يتم اختيار حدث"}</h2><span>{selectedEvent?.description ?? "أنشئ حدث تأخير لإصدار تقرير تحليل."}</span></div><StatusBadge result={analysis} /></div>
-              <div className="report-facts"><div><small>المشروع / النسخة</small><b>{schedule.name}</b></div><div><small>تاريخ بيانات البرنامج</small><b dir="ltr">{schedule.dataDate ?? "غير محدد"}</b></div><div><small>تاريخ الحدث</small><b dir="ltr">{selectedEvent?.occurrenceDate ?? "—"}</b></div><div><small>تصنيف السبب</small><b>{selectedEvent ? causeLabel[selectedEvent.cause] : "—"}</b></div></div>
-              <section className="report-result"><div><small>تاريخ الإكمال قبل TIA</small><b dir="ltr">{analysis?.baselineCompletionDate ?? baseline?.completionDate ?? "—"}</b></div><div className="report-impact"><small>فرق الإكمال المحسوب</small><strong dir="ltr">{analysis ? `${analysis.impactDays > 0 ? "+" : ""}${analysis.impactDays} يوم` : "—"}</strong></div><div><small>تاريخ الإكمال بعد TIA</small><b dir="ltr">{analysis?.impactedCompletionDate ?? "—"}</b></div></section>
-              <section className="report-section"><h3>أساس الطريقة</h3><p>تم الحساب بطريقة <b>Time Impact Analysis</b> القائمة على نمذجة حدث التأخير بإضافة Fragnet إلى نسخة من البرنامج الزمني المختار، ثم إعادة حساب شبكة CPM ومقارنة تاريخ الإكمال قبل الإدراج وبعده. يستخدم هذا التقرير الأيام التقويمية، ويعتمد على صحة برنامج الأساس ومنطق العلاقات وحالة التقدم عند تاريخ الحدث.</p></section>
-              <section className="report-section"><h3>منطق الحدث</h3>{selectedEvent ? <div className="report-logic"><b dir="ltr">{selectedEvent.relationships[0]?.predecessorId}</b><span>←</span><strong dir="ltr">{selectedEvent.activities[0]?.id} · {selectedEvent.activities[0]?.duration}d</strong><span>←</span><b dir="ltr">{selectedEvent.relationships[1]?.successorId}</b></div> : <p>لا توجد شبكة حدث مسجلة.</p>}</section>
-              <section className="report-section"><h3>نتيجة فنية وتنبيهات</h3><ul>{analysis?.notes.map((note) => <li key={note}>{note}</li>) ?? <li>أضف حدث تأخير لتوليد النتيجة.</li>}</ul></section>
-              <section className="report-disclaimer"><Info size={17} /><p><b>تنبيه مهني:</b> يقيس هذا التقرير الأثر الزمني الناتج عن البيانات المدخلة، ولا يقرر بمفرده الاستحقاق الزمني أو التعويض أو التزامن أو تفسير العقد. راجع المستندات المعاصرة وبنود العقد بواسطة مختص قبل استخدامه في مطالبة أو نزاع.</p></section>
-            </article>
-          </div>
-        )}
-      </main>
-    </div>
-  );
+  {view === "methods" && <div className="view-stack methods-view"><section className="page-heading"><div><p className="eyebrow">SCIENTIFIC METHOD LIBRARY</p><h1>دليل طرق تحليل التأخير وفق SCL</h1><p>مرجع تطبيقي للتخطيط الأولي للطريقة. اختيار المنهج النهائي يتبع العقد والوقائع وتوفر وموثوقية بيانات المشروع.</p></div></section><section className="methods-intro"><BookOpenCheck size={22} /><p>تعرض المكتبة ست طرق شائعة التصنيف في سياق Section 11 من بروتوكول SCL. طريقة <b>TIA</b> فقط تعمل كمحرك حسابي داخل هذا الإصدار؛ أما البقية فقوالب منهجية منظمة تتطلب بيانات تاريخية ومراجعة مختصة.</p></section><section className="method-grid">{sclMethods.map((method, index) => <article key={method.id} className={`method-card-large ${method.support === "محرك حسابي" ? "is-engine" : ""}`}><div className="method-card-top"><span>{String(index + 1).padStart(2, "0")}</span><Badge className={method.support === "محرك حسابي" ? "badge-delay" : "badge-muted"}>{method.support}</Badge></div><h2>{method.shortName}</h2><p className="method-english">{method.englishName}</p><div className="method-meta"><span>{method.perspective}</span><span>{method.bestUse}</span></div><p>{method.purpose}</p><div className="method-columns"><div><b>المدخلات</b><ul>{method.inputs.map((item) => <li key={item}>{item}</li>)}</ul></div><div><b>الخطوات</b><ol>{method.process.map((item) => <li key={item}>{item}</li>)}</ol></div></div><div className="method-caution"><AlertTriangle size={15} /><p><b>حدود ومخاطر:</b> {method.cautions}</p></div>{method.id === "tia" && <Button className="run-button" onClick={() => setView("event")}><Zap size={15} />افتح محرك TIA</Button>}</article>)}</section><section className="sources-panel"><h2>مصادر مرجعية</h2>{sclSources.map((source) => <a key={source.href} href={source.href} target="_blank" rel="noreferrer">{source.label}<ChevronLeft size={15} /></a>)}<p>هذه الشاشة تعليمية ولا تغني عن الرجوع للنص الرسمي للبروتوكول والعقد الخاص بالمشروع.</p></section></div>}
+  </main></div>;
 }
