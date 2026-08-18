@@ -1,13 +1,14 @@
 import React, { useMemo, useRef, useState, type RefObject } from "react";
 import "./schedule-comparison.css";
-import { AlertTriangle, ArrowLeftRight, CheckCircle2, FileDiff, FileUp, LoaderCircle, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, CheckCircle2, Download, FileDiff, FileUp, LoaderCircle, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { GanttComparisonChart } from "@/components/GanttComparisonChart";
 import { importP6XmlSchedule } from "@/lib/p6-xml";
 import { comparisonToCsv, compareScheduleUpdates } from "@/lib/schedule-comparison";
 import { importXerSchedule } from "@/lib/xer";
-import type { Schedule } from "@/lib/cpm";
+import { exportExperimentalXer } from "@/lib/xer-export";
+import { insertFragnet, type Fragnet, type Schedule } from "@/lib/cpm";
 
 type SourceSlot = "baseline" | "update";
 
@@ -25,7 +26,7 @@ function parseSchedule(raw: string, name: string): Schedule {
   return parsed;
 }
 
-export function ScheduleComparisonPanel({ currentSchedule }: { currentSchedule: Schedule }) {
+export function ScheduleComparisonPanel({ currentSchedule, selectedEvent }: { currentSchedule: Schedule; selectedEvent?: Fragnet | null }) {
   const [baseline, setBaseline] = useState<Schedule | null>(null);
   const [update, setUpdate] = useState<Schedule | null>(null);
   const [isReading, setIsReading] = useState<SourceSlot | null>(null);
@@ -44,6 +45,15 @@ export function ScheduleComparisonPanel({ currentSchedule }: { currentSchedule: 
     finally { setIsReading(null); }
   }
 
+  function downloadXer(snapshot: "pre-tia" | "post-tia") {
+    try {
+      const source = snapshot === "post-tia" && selectedEvent ? insertFragnet(currentSchedule, selectedEvent) : currentSchedule;
+      const output = exportExperimentalXer(source, snapshot);
+      downloadText(output.fileName, output.content, "text/plain;charset=utf-8");
+      toast.success(`تم تنزيل ${snapshot === "post-tia" ? "Post-TIA" : "Pre-TIA"} التجريبي: ${output.activityCount} نشاط و${output.relationshipCount} علاقة.`);
+    } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر إنشاء ملف XER التجريبي."); }
+  }
+
   const slot = (kind: SourceSlot, title: string, value: Schedule | null, inputRef: RefObject<HTMLInputElement | null>) => <section className={`comparison-source ${value ? "is-ready" : ""}`}>
     <div className="comparison-source-head"><span className="comparison-step">{kind === "baseline" ? "01" : "02"}</span><div><p>{title}</p><b>{value?.name ?? "لم يُحمّل بعد"}</b></div>{value ? <CheckCircle2 size={19} /> : <FileDiff size={19} />}</div>
     <small>{value ? `${value.activities.length} نشاط · يبدأ ${value.startDate}` : "يدعم XER وP6 XML وJSON. لا تغادر الملفات المتصفح أثناء المقارنة."}</small>
@@ -51,7 +61,7 @@ export function ScheduleComparisonPanel({ currentSchedule }: { currentSchedule: 
     <input ref={inputRef} type="file" accept=".xer,.xml,.json,text/plain,application/json,text/xml" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) readFile(kind, file); event.currentTarget.value = ""; }} />
   </section>;
 
-  return <div className="view-stack comparison-view" dir="rtl"><section className="page-heading"><div><p className="eyebrow">UPDATE VARIANCE WORKSPACE</p><h1>مقارنة تحديثات البرنامج</h1><p>قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={() => { setBaseline(currentSchedule); toast.success("حُمّل البرنامج المفتوح كبرنامج مرجعي."); }}><Plus size={16} />استخدم البرنامج المفتوح كأساس</Button></div></section>
+  return <div className="view-stack comparison-view" dir="rtl"><section className="page-heading"><div><p className="eyebrow">UPDATE VARIANCE WORKSPACE</p><h1>مقارنة تحديثات البرنامج</h1><p>قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.</p><p className="context-tip">تنزيل XER أدناه تبادلي وتجريبي: يُراجع في Primavera منفصل ولا يستبدل ملف المصدر.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={() => { setBaseline(currentSchedule); toast.success("حُمّل البرنامج المفتوح كبرنامج مرجعي."); }}><Plus size={16} />استخدم البرنامج المفتوح كأساس</Button><Button variant="outline" className="outline-action" onClick={() => downloadXer("pre-tia")}><Download size={16} />تنزيل Pre-TIA XER</Button>{selectedEvent ? <Button variant="outline" className="outline-action" onClick={() => downloadXer("post-tia")}><Download size={16} />تنزيل Post-TIA XER</Button> : null}</div></section>
     <section className="comparison-workspace">{slot("baseline", "البرنامج المرجعي / السابق", baseline, baselineRef)}<div className="comparison-transfer"><ArrowLeftRight size={22} /><span>قارن نفس نطاق المشروع قدر الإمكان</span></div>{slot("update", "تحديث البرنامج / اللاحق", update, updateRef)}</section>
     {comparison ? <><section className="comparison-kpis"><div><small>فرق مدة المشروع</small><b className={comparison.completionDeltaDays > 0 ? "is-delay" : comparison.completionDeltaDays < 0 ? "is-gain" : ""}>{comparison.completionDeltaDays > 0 ? "+" : ""}{comparison.completionDeltaDays} يوم</b><span>{comparison.baseline.completionDate} ← {comparison.update.completionDate}</span></div><div><small>أنشطة مُعدّلة</small><b>{comparison.summary.changed}</b><span>من أصل {comparison.update.activityCount} نشاط في التحديث</span></div><div><small>تغييرات نطاق</small><b>{comparison.summary.added + comparison.summary.removed}</b><span>مضاف {comparison.summary.added} · محذوف {comparison.summary.removed}</span></div></section>
       {comparison.summary.warnings.length ? <section className="comparison-warnings">{comparison.summary.warnings.map((warning) => <div key={warning}><AlertTriangle size={17} /><span>{warning}</span></div>)}</section> : null}
