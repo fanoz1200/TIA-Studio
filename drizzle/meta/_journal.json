@@ -22,6 +22,13 @@
       "when": 1787039793995,
       "tag": "0002_kind_gladiator",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787041405798,
+      "tag": "0003_good_silk_fever",
+      "breakpoints": true
     }
   ]
 }

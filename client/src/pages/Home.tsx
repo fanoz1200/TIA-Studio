@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity as ActivityIcon, AlertTriangle, BarChart3, BookOpenCheck, CalendarClock, CalendarDays,
   CheckCircle2, ChevronLeft, Clock3, Download, FileCode2, FileSpreadsheet, FileText, GitBranch,
-  LibraryBig, Network, Play, Plus, Printer, Route, ScanSearch, ShieldCheck, Sparkles, TextQuote, WalletCards, BellRing, ClipboardCheck,
+  LibraryBig, Network, Play, Plus, Printer, Route, ScanSearch, ShieldCheck, Sparkles, TextQuote, WalletCards, BellRing, ClipboardCheck, UsersRound,
   Upload, X, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,12 +26,13 @@ import { importXerSchedule, type XerImportSummary } from "@/lib/xer";
 import { sclMethods, sclSources } from "@/lib/scl-methods";
 import { P6EvidenceReportPanel } from "@/components/P6EvidenceReportPanel";
 import { FinancialNoticeReviewPanel } from "@/components/FinancialNoticeReviewPanel";
+import { ProjectMembersPanel } from "@/components/ProjectMembersPanel";
 
 const logoUrl = "/manus-storage/tia-studio-symbol_a5a70021.png";
 const workspaceImageUrl = "/manus-storage/tia-studio-workspace-hero_f79d49ba.png";
 const reportTextureUrl = "/manus-storage/tia-studio-report-texture_0415e3ef.png";
 
-type ViewKey = "overview" | "schedule" | "event" | "windows" | "methods" | "analysis" | "report" | "financial" | "notices" | "review";
+type ViewKey = "overview" | "schedule" | "event" | "windows" | "methods" | "analysis" | "report" | "financial" | "notices" | "review" | "members";
 type CsvActivity = Activity;
 
 const baseSchedule: Schedule = {
@@ -80,6 +81,7 @@ const navItems: { key: ViewKey; label: string; icon: typeof Network }[] = [
   { key: "financial", label: "الأثر المالي", icon: WalletCards },
   { key: "notices", label: "سجل Notices", icon: BellRing },
   { key: "review", label: "الاعتماد الإلكتروني", icon: ClipboardCheck },
+  { key: "members", label: "أعضاء المشروع", icon: UsersRound },
   { key: "report", label: "السرد والتقرير", icon: TextQuote },
   { key: "methods", label: "المكتبة العلمية SCL", icon: LibraryBig },
 ];

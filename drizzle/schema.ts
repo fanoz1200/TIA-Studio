@@ -25,6 +25,21 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+/** أعضاء مشروع محدد؛ يحتفظ مالك المشروع بالتحكم في الإضافة والأدوار وتعيينات المراجعة. */
+export const projectMembers = mysqlTable("project_members", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  memberUserId: int("memberUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectRole: mysqlEnum("projectRole", ["planner", "contracts", "claims_manager", "viewer"]).notNull().default("viewer"),
+  addedBy: int("addedBy").notNull().references(() => users.id),
+  addedAt: timestamp("addedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("project_members_owner_project_member_uq").on(table.ownerUserId, table.projectKey, table.memberUserId),
+  index("project_members_member_project_idx").on(table.memberUserId, table.projectKey),
+]);
+
 /** Metadata only: evidence bytes remain in private object storage. */
 export const evidenceDocuments = mysqlTable("evidence_documents", {
   id: int("id").autoincrement().primaryKey(),
@@ -171,3 +186,5 @@ export type ClaimReviewStage = typeof claimReviewStages.$inferSelect;
 export type InsertClaimReviewStage = typeof claimReviewStages.$inferInsert;
 export type ClaimReviewParticipant = typeof claimReviewParticipants.$inferSelect;
 export type InsertClaimReviewParticipant = typeof claimReviewParticipants.$inferInsert;
+export type ProjectMember = typeof projectMembers.$inferSelect;
+export type InsertProjectMember = typeof projectMembers.$inferInsert;

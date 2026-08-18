@@ -1,0 +1,30 @@
+{
+  "id": "demo-update-001",
+  "name": "مثال تدريبي — تحديث بعد الأساسات",
+  "startDate": "2026-03-01",
+  "dataDate": "2026-03-15",
+  "source": "json",
+  "calendar": {
+    "id": "demo-5d",
+    "name": "تقويم تدريبي خمسة أيام",
+    "workingWeekdays": [1, 2, 3, 4, 5],
+    "holidays": [],
+    "hoursPerDay": 8
+  },
+  "activities": [
+    { "id": "A100", "name": "تجهيز الموقع والحفر", "duration": 5, "remainingDuration": 0, "wbsId": "W-01", "owner": "المقاول", "percentComplete": 100, "percentCompleteType": "duration", "actualStart": "2026-03-02", "actualFinish": "2026-03-06" },
+    { "id": "A200", "name": "صب الأساسات", "duration": 9, "remainingDuration": 7, "wbsId": "W-01", "owner": "المقاول", "percentComplete": 22, "percentCompleteType": "duration", "actualStart": "2026-03-09" },
+    { "id": "A300", "name": "الهيكل الخرساني", "duration": 10, "wbsId": "W-02", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "A400", "name": "استلام الأعمال الإنشائية", "duration": 2, "wbsId": "W-02", "owner": "الاستشاري", "percentComplete": 0, "percentCompleteType": "duration" }
+  ],
+  "relationships": [
+    { "id": "R-100", "predecessorId": "A100", "successorId": "A200", "type": "FS", "lag": 0 },
+    { "id": "R-200", "predecessorId": "A200", "successorId": "A300", "type": "FS", "lag": 0 },
+    { "id": "R-300", "predecessorId": "A300", "successorId": "A400", "type": "FS", "lag": 0 }
+  ],
+  "resourceAssignments": [
+    { "id": "RA-100", "activityId": "A100", "resourceId": "R-EXC", "resourceName": "حفار", "resourceType": "nonlabor", "costPerUnit": 100, "remainingQuantityPerHour": 0, "activityRemainingDuration": 0, "source": "manual" },
+    { "id": "RA-200", "activityId": "A200", "resourceId": "R-CREW", "resourceName": "طاقم الأساسات", "resourceType": "labor", "costPerUnit": 60, "remainingQuantityPerHour": 2, "activityRemainingDuration": 7, "source": "manual" },
+    { "id": "RA-300", "activityId": "A300", "resourceId": "R-CONC", "resourceName": "خرسانة", "resourceType": "material", "costPerUnit": 150, "remainingQuantityPerHour": 1.25, "activityRemainingDuration": 10, "source": "manual" }
+  ]
+}

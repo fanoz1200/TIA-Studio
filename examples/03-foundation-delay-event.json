@@ -1,0 +1,14 @@
+{
+  "id": "F-FOUND-001",
+  "title": "تأخر اعتماد الحفرية",
+  "description": "حدث تدريبي يضاف بين نشاط الحفر وصب الأساسات لاختبار أثر اعتماد متأخر لمدة ثلاثة أيام عمل.",
+  "cause": "employer",
+  "occurrenceDate": "2026-03-06",
+  "activities": [
+    { "id": "F-100", "name": "انتظار اعتماد الحفرية", "duration": 3, "kind": "fragnet", "owner": "صاحب العمل" }
+  ],
+  "relationships": [
+    { "id": "F-R-01", "predecessorId": "A100", "successorId": "F-100", "type": "FS", "lag": 0 },
+    { "id": "F-R-02", "predecessorId": "F-100", "successorId": "A200", "type": "FS", "lag": 0 }
+  ]
+}

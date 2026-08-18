@@ -12,7 +12,7 @@ import { importP6XmlSchedule, type P6XmlImportSummary } from "@/lib/p6-xml";
 import { calculateFinancialImpact, resourceAssignmentsForEvent, type Fragnet, type Schedule, type TiaResult, type WindowTiaResult } from "@/lib/cpm";
 import { exportClaimDocx, exportClaimPdf, type ClaimReportPayload, type ClaimTemplateDraft } from "@/lib/claim-export";
 
-type View = "schedule" | "event" | "analysis" | "report" | "overview" | "windows" | "methods" | "financial" | "notices" | "review";
+type View = "schedule" | "event" | "analysis" | "report" | "overview" | "windows" | "methods" | "financial" | "notices" | "review" | "members";
 type EvidenceType = "correspondence" | "instruction" | "drawing" | "programme" | "photo" | "report" | "other";
 
 const initialTemplate: ClaimTemplateDraft = {

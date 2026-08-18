@@ -1,10 +1,17 @@
 import { and, asc, desc, eq } from "drizzle-orm";
-import { claimReviewParticipants, claimReviews, claimReviewStages, noticeRegister, resourceAssignments, users } from "../drizzle/schema";
+import { claimReviewParticipants, claimReviews, claimReviewStages, noticeRegister, projectMembers, resourceAssignments, users } from "../drizzle/schema";
 import { getDb } from "./db";
 
 export type ReviewStage = "draft" | "planning_review" | "contract_review" | "claims_manager_approval" | "ready_to_export" | "rejected";
 export type ReviewStatus = "draft" | "in_review" | "approved" | "rejected" | "ready_to_export";
 export type ReviewDecision = "created" | "submitted" | "approved" | "rejected" | "commented" | "reopened";
+
+type ClaimReviewAuditResponse = {
+  review: typeof claimReviews.$inferSelect;
+  audit: Array<typeof claimReviewStages.$inferSelect & { reviewerName?: string | null; reviewerEmail?: string | null }>;
+  participants: Array<typeof claimReviewParticipants.$inferSelect>;
+  isOwner: boolean;
+};
 
 async function requireDb() {
   const db = await getDb();
@@ -53,6 +60,40 @@ export function canRecordReviewDecision(input: { isOwner: boolean; currentStage:
 /** تعيين المراجعين قرار إداري حصري لمنشئ مسار المطالبة، ويُفرض داخل الخادم. */
 export function canAssignReviewParticipant(ownerUserId: number, actingUserId: number) {
   return ownerUserId === actingUserId;
+}
+
+export type ProjectMemberRole = "planner" | "contracts" | "claims_manager" | "viewer";
+
+export async function listProjectMembers(ownerUserId: number, projectKey: string) {
+  const db = await requireDb();
+  const [owner] = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.id, ownerUserId)).limit(1);
+  const members = await db.select({ id: projectMembers.id, memberUserId: projectMembers.memberUserId, projectRole: projectMembers.projectRole, addedAt: projectMembers.addedAt, name: users.name, email: users.email }).from(projectMembers).innerJoin(users, eq(projectMembers.memberUserId, users.id)).where(and(eq(projectMembers.ownerUserId, ownerUserId), eq(projectMembers.projectKey, projectKey))).orderBy(asc(users.name));
+  return [
+    ...(owner ? [{ id: 0, memberUserId: owner.id, projectRole: "owner" as const, name: owner.name || "مالك المشروع", email: owner.email, addedAt: null, isOwner: true }] : []),
+    ...members.map(member => ({ ...member, name: member.name || member.email || `عضو ${member.memberUserId}`, isOwner: false })),
+  ];
+}
+
+export async function addProjectMember(ownerUserId: number, input: { projectKey: string; email: string; projectRole: ProjectMemberRole }) {
+  const db = await requireDb();
+  const normalizedEmail = input.email.trim().toLowerCase();
+  const [member] = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.email, normalizedEmail)).limit(1);
+  if (!member) throw new Error("لا يوجد مستخدم مسجل بهذا البريد. اطلب من العضو تسجيل الدخول إلى التطبيق مرة واحدة أولاً.");
+  if (member.id === ownerUserId) throw new Error("مالك المشروع موجود بالفعل في قائمة الأعضاء.");
+  await db.insert(projectMembers).values({ ownerUserId, projectKey: input.projectKey, memberUserId: member.id, projectRole: input.projectRole, addedBy: ownerUserId }).onDuplicateKeyUpdate({ set: { projectRole: input.projectRole, addedBy: ownerUserId, updatedAt: new Date() } });
+  return { memberUserId: member.id, name: member.name || member.email || "عضو المشروع", email: member.email, projectRole: input.projectRole };
+}
+
+export async function updateProjectMemberRole(ownerUserId: number, input: { projectKey: string; memberUserId: number; projectRole: ProjectMemberRole }) {
+  const db = await requireDb();
+  const result = await db.update(projectMembers).set({ projectRole: input.projectRole, addedBy: ownerUserId, updatedAt: new Date() }).where(and(eq(projectMembers.ownerUserId, ownerUserId), eq(projectMembers.projectKey, input.projectKey), eq(projectMembers.memberUserId, input.memberUserId)));
+  if (!result[0]?.affectedRows) throw new Error("عضو المشروع غير موجود أو لا تملك صلاحية تعديل دوره.");
+}
+
+export async function removeProjectMember(ownerUserId: number, input: { projectKey: string; memberUserId: number }) {
+  const db = await requireDb();
+  const result = await db.delete(projectMembers).where(and(eq(projectMembers.ownerUserId, ownerUserId), eq(projectMembers.projectKey, input.projectKey), eq(projectMembers.memberUserId, input.memberUserId)));
+  if (!result[0]?.affectedRows) throw new Error("عضو المشروع غير موجود أو لا تملك صلاحية حذفه.");
 }
 
 export async function replaceResourceAssignments(userId: number, input: {
@@ -192,7 +233,7 @@ export async function getOrCreateClaimReview(userId: number, input: { projectKey
   return created;
 }
 
-export async function getClaimReviewWithAudit(userId: number, projectKey: string, claimKey: string) {
+export async function getClaimReviewWithAudit(userId: number, projectKey: string, claimKey: string): Promise<ClaimReviewAuditResponse | null> {
   const db = await requireDb();
   const [ownedReview] = await db.select().from(claimReviews).where(and(eq(claimReviews.userId, userId), eq(claimReviews.projectKey, projectKey), eq(claimReviews.claimKey, claimKey))).limit(1);
   const [assignedReview] = ownedReview ? [] : await db.select({ review: claimReviews }).from(claimReviewParticipants).innerJoin(claimReviews, eq(claimReviewParticipants.claimReviewId, claimReviews.id)).where(and(eq(claimReviewParticipants.reviewerId, userId), eq(claimReviews.projectKey, projectKey), eq(claimReviews.claimKey, claimKey))).limit(1);
@@ -208,10 +249,14 @@ export async function assignReviewParticipant(userId: number, input: { reviewId:
   await db.transaction(async tx => {
     const [review] = await tx.select().from(claimReviews).where(and(eq(claimReviews.id, input.reviewId), eq(claimReviews.userId, userId))).limit(1);
     if (!review || !canAssignReviewParticipant(review.userId, userId)) throw new Error("لا يملك سوى منشئ المطالبة تعيين مراجعي مراحلها.");
-    const [reviewer] = await tx.select({ id: users.id }).from(users).where(eq(users.id, input.reviewerId)).limit(1);
+    const [reviewer] = await tx.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.id, input.reviewerId)).limit(1);
     if (!reviewer) throw new Error("معرّف المراجع غير صحيح.");
+    if (reviewer.id !== review.userId) {
+      const [membership] = await tx.select({ id: projectMembers.id }).from(projectMembers).where(and(eq(projectMembers.ownerUserId, review.userId), eq(projectMembers.projectKey, review.projectKey), eq(projectMembers.memberUserId, reviewer.id))).limit(1);
+      if (!membership) throw new Error("لا يمكن تعيين مراجع خارج قائمة أعضاء هذا المشروع.");
+    }
     await tx.insert(claimReviewParticipants).values({ claimReviewId: review.id, stage: input.stage, reviewerId: input.reviewerId, assignedBy: userId }).onDuplicateKeyUpdate({ set: { reviewerId: input.reviewerId, assignedBy: userId, assignedAt: new Date() } });
-    await tx.insert(claimReviewStages).values({ claimReviewId: review.id, stage: input.stage, reviewerId: userId, decision: "commented", comment: `تم تعيين المراجع رقم ${input.reviewerId} لهذه المرحلة.` });
+    await tx.insert(claimReviewStages).values({ claimReviewId: review.id, stage: input.stage, reviewerId: userId, decision: "commented", comment: `تم تعيين المراجع «${reviewer.name || reviewer.email || "عضو المشروع"}» لهذه المرحلة.` });
   });
   return getClaimReviewById(userId, input.reviewId);
 }
@@ -232,7 +277,7 @@ export async function recordReviewDecision(userId: number, input: { reviewId: nu
   return getClaimReviewById(userId, input.reviewId);
 }
 
-async function getClaimReviewById(userId: number, reviewId: number) {
+async function getClaimReviewById(userId: number, reviewId: number): Promise<ClaimReviewAuditResponse> {
   const db = await requireDb();
   const [ownedReview] = await db.select().from(claimReviews).where(and(eq(claimReviews.id, reviewId), eq(claimReviews.userId, userId))).limit(1);
   const [assignedReview] = ownedReview ? [] : await db.select({ review: claimReviews }).from(claimReviewParticipants).innerJoin(claimReviews, eq(claimReviewParticipants.claimReviewId, claimReviews.id)).where(and(eq(claimReviewParticipants.claimReviewId, reviewId), eq(claimReviewParticipants.reviewerId, userId))).limit(1);

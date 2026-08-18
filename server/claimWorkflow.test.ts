@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getDb } from "./db";
-import { addNoticePeriod, canAssignReviewParticipant, canRecordReviewDecision, createAutomaticNoticeDraft, nextReviewState } from "./claimWorkflow";
+import { addNoticePeriod, canAssignReviewParticipant, canRecordReviewDecision, createAutomaticNoticeDraft, listProjectMembers, nextReviewState } from "./claimWorkflow";
 
 vi.mock("./db", () => ({ getDb: vi.fn() }));
 
@@ -34,6 +34,16 @@ describe("claim review workflow", () => {
   it("restricts stage-reviewer assignment to the claim owner inside the server workflow", () => {
     expect(canAssignReviewParticipant(17, 17)).toBe(true);
     expect(canAssignReviewParticipant(17, 18)).toBe(false);
+  });
+
+  it("returns project reviewers as named members with their operational roles", async () => {
+    const ownerQuery = { from: () => ({ where: () => ({ limit: async () => [{ id: 17, name: "م. هدى", email: "owner@example.com" }] }) }) };
+    const membersQuery = { from: () => ({ innerJoin: () => ({ where: () => ({ orderBy: async () => [{ id: 9, memberUserId: 21, projectRole: "planner", name: "م. كريم", email: "planner@example.com", addedAt: new Date("2026-08-01") }] }) }) }) };
+    vi.mocked(getDb).mockResolvedValue({ select: vi.fn().mockReturnValueOnce(ownerQuery).mockReturnValueOnce(membersQuery) } as never);
+    await expect(listProjectMembers(17, "P-TIA")).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({ memberUserId: 17, name: "م. هدى", projectRole: "owner", isOwner: true }),
+      expect.objectContaining({ memberUserId: 21, name: "م. كريم", projectRole: "planner", isOwner: false }),
+    ]));
   });
 
   it("creates one automatic notice per event, retains evidence references, and returns the existing draft on retry", async () => {

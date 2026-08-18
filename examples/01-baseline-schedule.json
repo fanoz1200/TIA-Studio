@@ -1,0 +1,34 @@
+{
+  "id": "demo-baseline-001",
+  "name": "مثال تدريبي — برنامج أساس مبنى صغير",
+  "startDate": "2026-03-01",
+  "dataDate": "2026-03-01",
+  "source": "json",
+  "calendar": {
+    "id": "demo-5d",
+    "name": "تقويم تدريبي خمسة أيام",
+    "workingWeekdays": [1, 2, 3, 4, 5],
+    "holidays": [],
+    "hoursPerDay": 8
+  },
+  "wbsNodes": [
+    { "id": "W-01", "code": "1.0", "name": "أعمال الموقع والأساسات", "path": "أعمال الموقع والأساسات" },
+    { "id": "W-02", "code": "2.0", "name": "الأعمال الإنشائية", "path": "الأعمال الإنشائية" }
+  ],
+  "activities": [
+    { "id": "A100", "name": "تجهيز الموقع والحفر", "duration": 5, "wbsId": "W-01", "wbs": "أعمال الموقع والأساسات", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "A200", "name": "صب الأساسات", "duration": 6, "wbsId": "W-01", "wbs": "أعمال الموقع والأساسات", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "A300", "name": "الهيكل الخرساني", "duration": 10, "wbsId": "W-02", "wbs": "الأعمال الإنشائية", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "A400", "name": "استلام الأعمال الإنشائية", "duration": 2, "wbsId": "W-02", "wbs": "الأعمال الإنشائية", "owner": "الاستشاري", "percentComplete": 0, "percentCompleteType": "duration" }
+  ],
+  "relationships": [
+    { "id": "R-100", "predecessorId": "A100", "successorId": "A200", "type": "FS", "lag": 0 },
+    { "id": "R-200", "predecessorId": "A200", "successorId": "A300", "type": "FS", "lag": 0 },
+    { "id": "R-300", "predecessorId": "A300", "successorId": "A400", "type": "FS", "lag": 0 }
+  ],
+  "resourceAssignments": [
+    { "id": "RA-100", "activityId": "A100", "resourceId": "R-EXC", "resourceName": "حفار", "resourceType": "nonlabor", "costAccountId": "AC-01", "wbsId": "W-01", "targetQuantity": 40, "remainingQuantity": 40, "targetCost": 4000, "remainingCost": 4000, "costPerUnit": 100, "targetQuantityPerHour": 1, "remainingQuantityPerHour": 1, "activityRemainingDuration": 5, "source": "manual" },
+    { "id": "RA-200", "activityId": "A200", "resourceId": "R-CREW", "resourceName": "طاقم الأساسات", "resourceType": "labor", "costAccountId": "AC-02", "wbsId": "W-01", "targetQuantity": 96, "remainingQuantity": 96, "targetCost": 5760, "remainingCost": 5760, "costPerUnit": 60, "targetQuantityPerHour": 2, "remainingQuantityPerHour": 2, "activityRemainingDuration": 6, "source": "manual" },
+    { "id": "RA-300", "activityId": "A300", "resourceId": "R-CONC", "resourceName": "خرسانة", "resourceType": "material", "costAccountId": "AC-03", "wbsId": "W-02", "targetQuantity": 100, "remainingQuantity": 100, "targetCost": 15000, "remainingCost": 15000, "costPerUnit": 150, "targetQuantityPerHour": 1.25, "remainingQuantityPerHour": 1.25, "activityRemainingDuration": 10, "source": "manual" }
+  ]
+}

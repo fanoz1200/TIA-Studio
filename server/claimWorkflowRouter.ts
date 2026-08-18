@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { assignReviewParticipant, createAutomaticNoticeDraft, createNotice, getClaimReviewWithAudit, getOrCreateClaimReview, listNotices, listResourceAssignments, recordReviewDecision, replaceResourceAssignments, updateNotice } from "./claimWorkflow";
+import { addProjectMember, assignReviewParticipant, createAutomaticNoticeDraft, createNotice, getClaimReviewWithAudit, getOrCreateClaimReview, listNotices, listProjectMembers, listResourceAssignments, recordReviewDecision, removeProjectMember, replaceResourceAssignments, updateNotice, updateProjectMemberRole } from "./claimWorkflow";
 import { protectedProcedure, router } from "./_core/trpc";
 
 const key = z.string().trim().min(1).max(128);
@@ -8,6 +8,7 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional();
 const nonNegative = z.number().finite().min(0).optional();
 const resourceType = z.enum(["labor", "nonlabor", "material", "unknown"]);
 const noticeStatus = z.enum(["draft", "under_review", "sent", "overdue", "cancelled"]);
+const projectRole = z.enum(["planner", "contracts", "claims_manager", "viewer"]);
 
 const resourceAssignment = z.object({
   id: key, activityId: key, resourceId: z.string().trim().max(128).optional(), resourceName: z.string().trim().max(255).optional(), resourceType,
@@ -43,4 +44,11 @@ export const claimReviewRouter = router({
   get: protectedProcedure.input(z.object({ projectKey: key, claimKey: key })).query(({ ctx, input }) => getClaimReviewWithAudit(ctx.user.id, input.projectKey, input.claimKey)),
   assignParticipant: protectedProcedure.input(z.object({ reviewId: z.number().int().positive(), stage: z.enum(["planning_review", "contract_review", "claims_manager_approval"]), reviewerId: z.number().int().positive() })).mutation(({ ctx, input }) => assignReviewParticipant(ctx.user.id, input)),
   decide: protectedProcedure.input(z.object({ reviewId: z.number().int().positive(), decision: z.enum(["submitted", "approved", "rejected", "commented", "reopened"]), comment: optionalText })).mutation(({ ctx, input }) => recordReviewDecision(ctx.user.id, input)),
+});
+
+export const projectMemberRouter = router({
+  list: protectedProcedure.input(z.object({ projectKey: key })).query(({ ctx, input }) => listProjectMembers(ctx.user.id, input.projectKey)),
+  addByEmail: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole })).mutation(({ ctx, input }) => addProjectMember(ctx.user.id, input)),
+  updateRole: protectedProcedure.input(z.object({ projectKey: key, memberUserId: z.number().int().positive(), projectRole })).mutation(({ ctx, input }) => updateProjectMemberRole(ctx.user.id, input)),
+  remove: protectedProcedure.input(z.object({ projectKey: key, memberUserId: z.number().int().positive() })).mutation(({ ctx, input }) => removeProjectMember(ctx.user.id, input)),
 });
