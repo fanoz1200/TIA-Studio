@@ -10,7 +10,7 @@ const payload: ClaimReportPayload = {
   impactedFinish: "2026-07-09",
   impactDays: 9,
   methodology: "Time Impact Analysis (TIA)",
-  narrative: "أظهر إدراج الـ Fragnet أثراً مباشراً قدره تسعة أيام عمل على مسار الإكمال الحرج.",
+  narrative: "أظهر إدراج الـ Fragnet أثراً مباشراً قدره تسعة أيام عمل على مسار الإكمال الحرج.\n\nسجل التزامن: EV-001 × EV-002 — نافذة WIN-004، من 2026-05-09 إلى 2026-05-12؛ المسؤولية الظاهرة: mixed؛ المعالجة: apportioned.",
   template: { title: "إشعار مطالبة بتمديد مدة", recipient: "المهندس", contractReference: "CON-2026-14", introduction: "تم إخطار صاحب العمل بالحدث.", entitlementPosition: "يطلب المقاول مراجعة الاستحقاق.", reliefRequested: "تمديد تسعة أيام عمل.", closing: "يرجى إصدار القرار." },
   events: [{ id: "D-01", title: "تأخر اعتماد رسومات", occurrenceDate: "2026-03-10", duration: 9, cause: "تعليمات صاحب العمل" }],
   evidence: [{ title: "خطاب متابعة", fileName: "LTR-01.pdf", evidenceType: "correspondence", description: "إشعار أثر زمني", receivedAt: "2026-03-12" }],
@@ -27,17 +27,21 @@ describe("claim report exporters", () => {
     expect(sections.map((section) => section.heading)).toContain("السرد التحليلي");
     expect(sections.find((section) => section.heading === "ملخص المطالبة")?.body).toContain("+9 يوم عمل");
     expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("تسعة أيام");
+    expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("WIN-004");
+    expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("mixed");
+    expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("apportioned");
   });
 
   it("includes financial exposure, notices, and review status when the claim has them", () => {
     const sections = claimReportSections({
       ...payload,
       financialImpact: { dailyCost: 340, extensionCost: 3060, byResourceType: [{ label: "عمالة", dailyCost: 240, extensionCost: 2160 }, { label: "معدات / غير عمالة", dailyCost: 100, extensionCost: 900 }], warnings: ["بيان تكلفة واحد يحتاج مراجعة."] },
-      notices: [{ noticeNo: "N-001", eventKey: "D-01", status: "under_review", narrative: "إشعار أولي مع حفظ الحقوق.", timeImpactDays: 9, costImpact: 3060, noticeDueDate: "2026-03-17" }],
+      notices: [{ noticeNo: "N-001", eventKey: "D-01", status: "under_review", narrative: "إشعار أولي مع حفظ الحقوق. EV-001 × EV-002 — نافذة WIN-004، من 2026-05-09 إلى 2026-05-12؛ المسؤولية: mixed؛ المعالجة: apportioned.", timeImpactDays: 9, costImpact: 3060, noticeDueDate: "2026-03-17" }],
       review: { currentStage: "contract_review", status: "in_review", auditCount: 3 },
     });
     expect(sections.find((section) => section.heading === "ملخص الأثر المالي التشغيلي")?.body).toContain("٣٬٠٦٠");
     expect(sections.find((section) => section.heading === "سجل الإشعارات المرتبطة")?.body).toContain("N-001");
+    expect(sections.find((section) => section.heading === "سجل الإشعارات المرتبطة")?.body).toContain("WIN-004");
     expect(sections.find((section) => section.heading === "حالة المراجعة الإلكترونية")?.body).toContain("contract_review");
   });
 

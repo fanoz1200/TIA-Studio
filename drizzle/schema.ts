@@ -40,6 +40,130 @@ export const projectMembers = mysqlTable("project_members", {
   index("project_members_member_project_idx").on(table.memberUserId, table.projectKey),
 ]);
 
+/** دعوة مختصرة العمر؛ لا يُخزن الرمز الخام، بل بصمة SHA-256 منه فقط. */
+export const projectInvitations = mysqlTable("project_invitations", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  projectRole: mysqlEnum("projectRole", ["planner", "contracts", "claims_manager", "viewer"]).notNull().default("viewer"),
+  tokenHash: varchar("tokenHash", { length: 64 }).notNull(),
+  status: mysqlEnum("status", ["pending", "accepted", "cancelled", "expired"]).notNull().default("pending"),
+  expiresAt: timestamp("expiresAt").notNull(),
+  acceptedByUserId: int("acceptedByUserId").references(() => users.id, { onDelete: "set null" }),
+  acceptedAt: timestamp("acceptedAt"),
+  sentBy: int("sentBy").notNull().references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("project_invitations_owner_project_email_uq").on(table.ownerUserId, table.projectKey, table.email),
+  uniqueIndex("project_invitations_token_hash_uq").on(table.tokenHash),
+  index("project_invitations_owner_project_status_idx").on(table.ownerUserId, table.projectKey, table.status),
+]);
+
+/** روابط تدريبية يضيفها مالك المشروع؛ يحتفظ التطبيق بالبيانات الوصفية فقط ولا يعيد نشر الفيديو. */
+export const tutorialVideos = mysqlTable("tutorial_videos", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  track: mysqlEnum("track", ["tia", "concurrent", "primavera"]).notNull(),
+  description: text("description"),
+  videoUrl: varchar("videoUrl", { length: 2048 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("tutorial_videos_user_project_track_idx").on(table.userId, table.projectKey, table.track),
+]);
+
+/** Metadata only: the sanitised methodology document stays as inert plain text in object storage. */
+export const methodologyLibraryDocuments = mysqlTable("methodology_library_documents", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  versionLabel: varchar("versionLabel", { length: 120 }),
+  fileName: varchar("fileName", { length: 512 }).notNull(),
+  storageKey: varchar("storageKey", { length: 768 }).notNull(),
+  storageUrl: varchar("storageUrl", { length: 1024 }).notNull(),
+  sizeBytes: int("sizeBytes").notNull(),
+  contentSha256: varchar("contentSha256", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("methodology_library_docs_user_project_created_idx").on(table.userId, table.projectKey, table.createdAt),
+]);
+
+/** سلسلة مطالبات مستمرة لكل برنامج؛ يتحقق الخادم من الأبوة وملكية السلسلة قبل أي كتابة. */
+export const claimChains = mysqlTable("claim_chains", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  claimKey: varchar("claimKey", { length: 128 }).notNull(),
+  parentClaimId: int("parentClaimId"),
+  title: varchar("title", { length: 255 }).notNull(),
+  periodStart: timestamp("periodStart"),
+  periodEnd: timestamp("periodEnd"),
+  methodology: varchar("methodology", { length: 160 }).notNull().default("TIA / AACE RP 29R-03 / SCL Protocol"),
+  status: mysqlEnum("status", ["draft", "under_review", "ready_to_export", "closed"]).notNull().default("draft"),
+  unifiedNarrative: text("unifiedNarrative").notNull(),
+  createdBy: int("createdBy").notNull().references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("claim_chains_owner_project_key_uq").on(table.ownerUserId, table.projectKey, table.claimKey),
+  index("claim_chains_owner_project_created_idx").on(table.ownerUserId, table.projectKey, table.createdAt),
+  index("claim_chains_parent_idx").on(table.parentClaimId),
+]);
+
+/** نتيجة موثقة لتداخل حدثين؛ هي سجل فني للمراجعة وليست حكماً بالاستحقاق. */
+export const concurrentDelayRecords = mysqlTable("concurrent_delay_records", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  claimChainId: int("claimChainId").notNull().references(() => claimChains.id, { onDelete: "cascade" }),
+  analysisWindowKey: varchar("analysisWindowKey", { length: 128 }).notNull().default("LEGACY_WINDOW_UNMAPPED"),
+  primaryEventKey: varchar("primaryEventKey", { length: 128 }).notNull(),
+  concurrentEventKey: varchar("concurrentEventKey", { length: 128 }).notNull(),
+  overlapStart: timestamp("overlapStart").notNull(),
+  overlapEnd: timestamp("overlapEnd").notNull(),
+  responsibility: mysqlEnum("responsibility", ["employer", "contractor", "neutral", "mixed", "undetermined"]).notNull().default("undetermined"),
+  treatment: mysqlEnum("treatment", ["unresolved", "separate", "absorbed", "apportioned"]).notNull().default("unresolved"),
+  notes: text("notes").notNull(),
+  createdBy: int("createdBy").notNull().references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  index("concurrent_delay_records_owner_project_claim_window_idx").on(table.ownerUserId, table.projectKey, table.claimChainId, table.analysisWindowKey),
+]);
+
+/** سجل منظم لإدخالات البلانر؛ لا يغير شبكة البرنامج تلقائياً وإنما يحفظ مقترح Fragnet وخطوات مراجعته. */
+export const plannerIssueLogs = mysqlTable("planner_issue_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  issueNo: varchar("issueNo", { length: 128 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  occurrenceDate: timestamp("occurrenceDate").notNull(),
+  reportedBy: varchar("reportedBy", { length: 255 }),
+  responsibleParty: mysqlEnum("responsibleParty", ["employer", "contractor", "engineer", "third_party", "undetermined"]).notNull().default("undetermined"),
+  delayCause: mysqlEnum("delayCause", ["employer", "contractor", "neutral"]).notNull().default("neutral"),
+  affectedActivityIds: text("affectedActivityIds").notNull(),
+  replacedRelationshipId: varchar("replacedRelationshipId", { length: 128 }).notNull(),
+  proposedDurationDays: decimal("proposedDurationDays", { precision: 12, scale: 2 }).notNull(),
+  criticality: mysqlEnum("criticality", ["unknown", "potentially_critical", "critical", "noncritical"]).notNull().default("unknown"),
+  status: mysqlEnum("status", ["open", "ready_for_fragnet", "applied", "rejected", "closed"]).notNull().default("open"),
+  fragnetProposalJson: text("fragnetProposalJson").notNull(),
+  reviewedBy: int("reviewedBy").references(() => users.id),
+  reviewedAt: timestamp("reviewedAt"),
+  appliedAt: timestamp("appliedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("planner_issue_logs_owner_project_issue_uq").on(table.ownerUserId, table.projectKey, table.issueNo),
+  index("planner_issue_logs_owner_project_status_idx").on(table.ownerUserId, table.projectKey, table.status),
+  index("planner_issue_logs_owner_project_date_idx").on(table.ownerUserId, table.projectKey, table.occurrenceDate),
+]);
+
 /** Metadata only: evidence bytes remain in private object storage. */
 export const evidenceDocuments = mysqlTable("evidence_documents", {
   id: int("id").autoincrement().primaryKey(),
@@ -188,3 +312,15 @@ export type ClaimReviewParticipant = typeof claimReviewParticipants.$inferSelect
 export type InsertClaimReviewParticipant = typeof claimReviewParticipants.$inferInsert;
 export type ProjectMember = typeof projectMembers.$inferSelect;
 export type InsertProjectMember = typeof projectMembers.$inferInsert;
+export type ProjectInvitation = typeof projectInvitations.$inferSelect;
+export type InsertProjectInvitation = typeof projectInvitations.$inferInsert;
+export type TutorialVideo = typeof tutorialVideos.$inferSelect;
+export type InsertTutorialVideo = typeof tutorialVideos.$inferInsert;
+export type MethodologyLibraryDocument = typeof methodologyLibraryDocuments.$inferSelect;
+export type InsertMethodologyLibraryDocument = typeof methodologyLibraryDocuments.$inferInsert;
+export type ClaimChain = typeof claimChains.$inferSelect;
+export type InsertClaimChain = typeof claimChains.$inferInsert;
+export type ConcurrentDelayRecord = typeof concurrentDelayRecords.$inferSelect;
+export type InsertConcurrentDelayRecord = typeof concurrentDelayRecords.$inferInsert;
+export type PlannerIssueLog = typeof plannerIssueLogs.$inferSelect;
+export type InsertPlannerIssueLog = typeof plannerIssueLogs.$inferInsert;

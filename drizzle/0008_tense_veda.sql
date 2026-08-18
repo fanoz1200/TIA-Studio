@@ -1,0 +1,1 @@
+ALTER TABLE `concurrent_delay_records` MODIFY COLUMN `analysisWindowKey` varchar(128) NOT NULL DEFAULT 'LEGACY_WINDOW_UNMAPPED';

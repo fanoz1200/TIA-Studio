@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { addProjectMember, assignReviewParticipant, createAutomaticNoticeDraft, createNotice, getClaimReviewWithAudit, getOrCreateClaimReview, listNotices, listProjectMembers, listResourceAssignments, recordReviewDecision, removeProjectMember, replaceResourceAssignments, updateNotice, updateProjectMemberRole } from "./claimWorkflow";
+import { acceptProjectInvitation, addProjectMember, assignReviewParticipant, cancelProjectInvitation, createAutomaticNoticeDraft, createNotice, createProjectInvitation, getClaimReviewWithAudit, getOrCreateClaimReview, listNotices, listProjectInvitations, listProjectMembers, listResourceAssignments, recordReviewDecision, removeProjectMember, replaceResourceAssignments, updateNotice, updateProjectMemberRole } from "./claimWorkflow";
 import { protectedProcedure, router } from "./_core/trpc";
 
 const key = z.string().trim().min(1).max(128);
@@ -34,7 +34,7 @@ export const noticeRouter = router({
   createAutomaticDraft: protectedProcedure.input(z.object({
     projectKey: key, claimKey: key, eventKey: key, eventTitle: z.string().trim().min(1).max(255),
     awarenessDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), noticePeriodDays: z.number().int().min(0).max(365).default(7),
-    timeImpactDays: nonNegative, costImpact: nonNegative, evidenceReferenceIds: z.array(z.string().trim().min(1).max(128)).max(100).optional(),
+    timeImpactDays: nonNegative, costImpact: nonNegative, evidenceReferenceIds: z.array(z.string().trim().min(1).max(128)).max(100).optional(), concurrencySummary: optionalText,
   })).mutation(({ ctx, input }) => createAutomaticNoticeDraft(ctx.user.id, input)),
   update: protectedProcedure.input(z.object({ id: z.number().int().positive() }).merge(noticeFields)).mutation(({ ctx, input }) => updateNotice(ctx.user.id, input.id, input)),
 });
@@ -51,4 +51,11 @@ export const projectMemberRouter = router({
   addByEmail: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole })).mutation(({ ctx, input }) => addProjectMember(ctx.user.id, input)),
   updateRole: protectedProcedure.input(z.object({ projectKey: key, memberUserId: z.number().int().positive(), projectRole })).mutation(({ ctx, input }) => updateProjectMemberRole(ctx.user.id, input)),
   remove: protectedProcedure.input(z.object({ projectKey: key, memberUserId: z.number().int().positive() })).mutation(({ ctx, input }) => removeProjectMember(ctx.user.id, input)),
+});
+
+export const projectInvitationRouter = router({
+  list: protectedProcedure.input(z.object({ projectKey: key })).query(({ ctx, input }) => listProjectInvitations(ctx.user.id, input.projectKey)),
+  create: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole, origin: z.string().url().max(512) })).mutation(({ ctx, input }) => createProjectInvitation(ctx.user.id, input)),
+  cancel: protectedProcedure.input(z.object({ projectKey: key, invitationId: z.number().int().positive() })).mutation(({ ctx, input }) => cancelProjectInvitation(ctx.user.id, input)),
+  accept: protectedProcedure.input(z.object({ token: z.string().trim().min(40).max(256) })).mutation(({ ctx, input }) => acceptProjectInvitation(ctx.user.id, input.token)),
 });

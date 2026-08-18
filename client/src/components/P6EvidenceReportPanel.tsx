@@ -14,7 +14,7 @@ import { exportClaimDocx, exportClaimPdf, type ClaimReportPayload, type ClaimTem
 import { ScheduleComparisonPanel } from "@/components/ScheduleComparisonPanel";
 import { evaluateWorkflowReadiness, workflowReadinessSummary, type WorkflowCheckState } from "@/lib/workflow-validation";
 
-type View = "schedule" | "event" | "analysis" | "report" | "overview" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources";
+type View = "schedule" | "event" | "analysis" | "report" | "overview" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
 type EvidenceType = "correspondence" | "instruction" | "drawing" | "programme" | "photo" | "report" | "other";
 
 const initialTemplate: ClaimTemplateDraft = {
@@ -47,6 +47,7 @@ export function P6EvidenceReportPanel({
   selectedEvent,
   activeResult,
   narrative,
+  claimKey: activeClaimKey,
   isAuthenticated,
   onScheduleImported,
 }: {
@@ -56,6 +57,7 @@ export function P6EvidenceReportPanel({
   selectedEvent: Fragnet | null;
   activeResult: TiaResult | WindowTiaResult | null;
   narrative: string;
+  claimKey?: string;
   isAuthenticated: boolean;
   onScheduleImported: (schedule: Schedule, summary: P6XmlImportSummary) => void;
 }) {
@@ -71,7 +73,7 @@ export function P6EvidenceReportPanel({
   const [exportingFormat, setExportingFormat] = useState<"docx" | "pdf" | null>(null);
   const evidence = trpc.evidence.list.useQuery({ projectKey: schedule.id, eventKey: selectedEvent?.id ?? "none" }, { enabled: Boolean(selectedEvent) && isAuthenticated && (view === "event" || view === "analysis" || view === "report") });
   const templates = trpc.claimTemplate.list.useQuery(undefined, { enabled: isAuthenticated && view === "report" });
-  const claimKey = useMemo(() => `${schedule.id}:delay-claim`, [schedule.id]);
+  const claimKey = useMemo(() => activeClaimKey || `${schedule.id}:delay-claim`, [activeClaimKey, schedule.id]);
   const notices = trpc.notice.list.useQuery({ projectKey: schedule.id, claimKey }, { enabled: isAuthenticated && view === "report" });
   const review = trpc.claimReview.get.useQuery({ projectKey: schedule.id, claimKey }, { enabled: isAuthenticated && view === "report" });
   const upload = trpc.evidence.upload.useMutation({ onSuccess: () => { evidence.refetch(); toast.success("تم حفظ الدليل وربطه بالحدث المحدد."); setEvidenceTitle(""); setEvidenceDescription(""); setEvidenceDate(""); } });

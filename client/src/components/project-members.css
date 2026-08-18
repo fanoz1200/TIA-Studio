@@ -1,0 +1,30 @@
+.member-invite-actions,
+.invite-delivery-card,
+.invite-delivery-card > div,
+.invite-status-actions,
+.invite-accept-banner,
+.invite-accept-banner > div,
+.member-list-heading { display: flex; align-items: center; gap: .55rem; }
+
+.member-invite-actions { align-self: end; justify-content: flex-end; }
+.invitation-list { margin-block: 1rem; }
+.member-list-heading { justify-content: space-between; padding: 0 .1rem .4rem; color: #173e63; }
+.member-list-heading span { color: #65747d; font-size: .78rem; }
+.invite-delivery-card { justify-content: space-between; flex-wrap: wrap; background: #f1f8fb; border: 1px solid #b7d8e7; border-radius: .7rem; padding: .75rem .85rem; margin: .85rem 0; color: #173e63; }
+.invite-delivery-card > div { flex-wrap: wrap; }
+.invite-status { display: inline-flex; align-items: center; gap: .28rem; white-space: nowrap; font-style: normal; font-size: .76rem; border-radius: 99px; padding: .25rem .45rem; }
+.invite-status--pending { color: #085b76; background: #dff4fb; }
+.invite-status--accepted { color: #12613d; background: #d9f5e6; }
+.invite-status--expired,
+.invite-status--cancelled { color: #72552c; background: #f6eddd; }
+.invite-accept-banner { justify-content: space-between; margin: .85rem 1.25rem 0; padding: .8rem 1rem; border: 1px solid #e4a76c; background: #fff7eb; border-radius: .75rem; flex-wrap: wrap; }
+.invite-accept-banner > div { min-width: 0; }
+.invite-accept-banner span { display: block; color: #65747d; margin-top: .15rem; font-size: .82rem; }
+
+@media (max-width: 720px) {
+  .member-invite-actions { justify-content: stretch; align-self: stretch; }
+  .member-invite-actions button { flex: 1; }
+  .invite-accept-banner { margin-inline: .75rem; align-items: stretch; }
+  .invite-accept-banner > div { align-items: flex-start; }
+  .invite-accept-banner > button { width: 100%; }
+}

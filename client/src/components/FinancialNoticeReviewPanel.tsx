@@ -11,7 +11,7 @@ import { calculateFinancialImpact, resourceAssignmentsForEvent, type Fragnet, ty
 import { trpc } from "@/lib/trpc";
 import { ProjectMembersPanel } from "@/components/ProjectMembersPanel";
 
-type View = "overview" | "schedule" | "event" | "analysis" | "report" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources";
+type View = "overview" | "schedule" | "event" | "analysis" | "report" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
 type NoticeStatus = "draft" | "under_review" | "sent" | "overdue" | "cancelled";
 
 const resourceLabels = { labor: "عمالة", nonlabor: "معدات / غير عمالة", material: "مواد", unknown: "غير مصنف" };
@@ -19,7 +19,7 @@ const reviewLabels: Record<string, string> = { draft: "مسودة", planning_rev
 const dateText = (value?: Date | string | null) => value ? new Date(value).toLocaleDateString("ar-EG", { timeZone: "UTC" }) : "—";
 const money = (value: number) => new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(value);
 
-export function FinancialNoticeReviewPanel({ view, schedule, events, selectedEvent, activeImpactDays, isAuthenticated }: { view: View; schedule: Schedule; events: Fragnet[]; selectedEvent: Fragnet | null; activeImpactDays: number; isAuthenticated: boolean }) {
+export function FinancialNoticeReviewPanel({ view, schedule, events, selectedEvent, activeImpactDays, isAuthenticated, claimKey: activeClaimKey, unifiedNarrative = "" }: { view: View; schedule: Schedule; events: Fragnet[]; selectedEvent: Fragnet | null; activeImpactDays: number; isAuthenticated: boolean; claimKey?: string; unifiedNarrative?: string }) {
   const [noticeNo, setNoticeNo] = useState("N-001");
   const [noticeEventKey, setNoticeEventKey] = useState("");
   const [sender, setSender] = useState(""); const [recipient, setRecipient] = useState(""); const [contractClause, setContractClause] = useState("");
@@ -27,7 +27,7 @@ export function FinancialNoticeReviewPanel({ view, schedule, events, selectedEve
   const [noticeStatus, setNoticeStatus] = useState<NoticeStatus>("draft"); const [noticeNarrative, setNoticeNarrative] = useState(""); const [noticePeriodDays, setNoticePeriodDays] = useState(7);
   const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<string[]>([]); const [reviewComment, setReviewComment] = useState(""); const [reviewerIds, setReviewerIds] = useState<Record<string, string>>({});
   const projectInput = useMemo(() => ({ projectKey: schedule.id }), [schedule.id]);
-  const claimKey = useMemo(() => `${schedule.id}:delay-claim`, [schedule.id]);
+  const claimKey = useMemo(() => activeClaimKey || `${schedule.id}:delay-claim`, [activeClaimKey, schedule.id]);
   const noticesInput = useMemo(() => ({ projectKey: schedule.id, claimKey }), [schedule.id, claimKey]);
   const reviewInput = useMemo(() => ({ projectKey: schedule.id, claimKey }), [schedule.id, claimKey]);
   const selectedNoticeEvent = events.find(event => event.id === noticeEventKey) ?? selectedEvent;
@@ -56,11 +56,17 @@ export function FinancialNoticeReviewPanel({ view, schedule, events, selectedEve
     if (Object.keys(assigned).length) setReviewerIds(assigned);
   }, [review.data?.review?.id, review.data?.participants]);
 
+  const concurrencyExcerpt = useMemo(() => {
+    const start = unifiedNarrative.indexOf("#### سجل التزامن المدمج");
+    const end = unifiedNarrative.indexOf("### 4. الموقف والطلب");
+    return start >= 0 ? unifiedNarrative.slice(start, end >= 0 ? end : undefined).replace(/^#### سجل التزامن المدمج\s*/, "").trim() : "";
+  }, [unifiedNarrative]);
+
   const resetNoticeFromEvent = () => {
     const next = selectedEvent ?? events[0];
     if (!next) return;
     setNoticeEventKey(next.id); setAwarenessDate(next.occurrenceDate);
-    setNoticeNarrative(`إشعار أولي بواقعة «${next.title}» المؤرخة في ${next.occurrenceDate}، مع حفظ الحقوق التعاقدية لحين اكتمال المراجعة الفنية.`);
+    setNoticeNarrative(`إشعار أولي بواقعة «${next.title}» المؤرخة في ${next.occurrenceDate}، مع حفظ الحقوق التعاقدية لحين اكتمال المراجعة الفنية.${concurrencyExcerpt ? `\n\nملخص التزامن الفني المرتبط بالمطالبة:\n${concurrencyExcerpt}` : ""}`);
     setNoticeNo(`N-${String((notices.data?.length ?? 0) + 1).padStart(3, "0")}`);
   };
   const toggleEvidence = (id: string) => setSelectedEvidenceIds(current => current.includes(id) ? current.filter(item => item !== id) : [...current, id]);
