@@ -48,4 +48,13 @@ describe("أدوات Excel في سجل القضايا", () => {
     expect(screen.getByText("1 مختارة")).toBeTruthy();
     expect(screen.getByText("نقطة ربط واحدة على الأقل").className).toContain("complete");
   });
+
+  it("يحافظ على ترتيب Hooks عند انتقال المستخدم من غير مسجل إلى مسجل", () => {
+    const props = { view: "issues" as const, schedule, existingEvents: [], onApplyFragnet: vi.fn() };
+    const { rerender } = render(<IssueLogPanel {...props} isAuthenticated={false} />);
+    expect(screen.getByRole("button", { name: "تسجيل الدخول" })).toBeTruthy();
+
+    expect(() => rerender(<IssueLogPanel {...props} isAuthenticated />)).not.toThrow();
+    expect(screen.getByText("قبل الحفظ: ما الذي ينقصني؟")).toBeTruthy();
+  });
 });

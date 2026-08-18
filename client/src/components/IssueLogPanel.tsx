@@ -64,17 +64,18 @@ export function IssueLogPanel({ view, schedule, existingEvents, isAuthenticated,
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const importInputRef = useRef<HTMLInputElement>(null);
 
-  if (view !== "issues") return null;
-  if (!isAuthenticated) return <section className="issue-log-panel"><div className="issue-log-heading"><div><p className="eyebrow">PLANNER ISSUE LOG</p><h2>سجل القضايا المؤثر في البرنامج</h2><p>سجّل الواقعة أولاً ثم راجع Fragnet المقترح قبل إضافته إلى نسخة TIA مستقلة.</p></div><ClipboardList size={24} /></div><div className="issue-log-login"><LogIn size={19} /><span>سجّل الدخول لحفظ قضايا المشروع وسجل مراجعة Fragnet بشكل آمن.</span><Button className="run-button" onClick={startLogin}>تسجيل الدخول</Button></div></section>;
-
-  const toggleActivity = (id: string) => setAffectedActivityIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
-  const toggleRelationship = (id: string) => setRelationshipIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
   const relationshipOptions = useMemo(() => schedule.relationships.map(relationship => {
     const predecessor = schedule.activities.find(activity => activity.id === relationship.predecessorId);
     const successor = schedule.activities.find(activity => activity.id === relationship.successorId);
     const searchText = `${relationship.id} ${relationship.predecessorId} ${predecessor?.name ?? ""} ${relationship.successorId} ${successor?.name ?? ""} ${relationship.type}`.toLowerCase();
     return { relationship, predecessor, successor, searchText };
   }).filter(option => !relationshipSearch.trim() || option.searchText.includes(relationshipSearch.trim().toLowerCase())), [relationshipSearch, schedule.activities, schedule.relationships]);
+
+  if (view !== "issues") return null;
+  if (!isAuthenticated) return <section className="issue-log-panel"><div className="issue-log-heading"><div><p className="eyebrow">PLANNER ISSUE LOG</p><h2>سجل القضايا المؤثر في البرنامج</h2><p>سجّل الواقعة أولاً ثم راجع Fragnet المقترح قبل إضافته إلى نسخة TIA مستقلة.</p></div><ClipboardList size={24} /></div><div className="issue-log-login"><LogIn size={19} /><span>سجّل الدخول لحفظ قضايا المشروع وسجل مراجعة Fragnet بشكل آمن.</span><Button className="run-button" onClick={startLogin}>تسجيل الدخول</Button></div></section>;
+
+  const toggleActivity = (id: string) => setAffectedActivityIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
+  const toggleRelationship = (id: string) => setRelationshipIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
   const saveRequirements = [
     { label: "رقم واقعة", done: Boolean(issueNo.trim()) },
     { label: "عنوان واضح", done: Boolean(title.trim()) },
