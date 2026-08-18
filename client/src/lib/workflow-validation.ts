@@ -1,4 +1,5 @@
 import type { Fragnet, Schedule, TiaResult, WindowTiaResult } from "./cpm";
+import { evaluateTiaResultQuality } from "./tia-result-validation";
 
 export type WorkflowCheckState = "pass" | "attention" | "blocked" | "info";
 
@@ -24,6 +25,7 @@ type WorkflowValidationInput = {
 export function evaluateWorkflowReadiness(input: WorkflowValidationInput): WorkflowCheck[] {
   const isP6Source = input.schedule.source === "xer" || input.schedule.source === "p6-xml";
   const impactDays = input.analysis ? ("totalImpactDays" in input.analysis ? input.analysis.totalImpactDays : input.analysis.impactDays) : null;
+  const engineQuality = evaluateTiaResultQuality({ schedule: input.schedule, selectedEvent: input.selectedEvent, analysis: input.analysis });
 
   return [
     {
@@ -49,6 +51,12 @@ export function evaluateWorkflowReadiness(input: WorkflowValidationInput): Workf
       title: "نتيجة TIA",
       state: input.analysis ? "pass" : "blocked",
       detail: input.analysis ? `تم حساب أثر زمني مقداره ${impactDays ?? 0} يوم.` : "شغّل تحليل TIA قبل إعداد Notice أو التقرير.",
+    },
+    {
+      id: "engine-quality",
+      title: "قرار جودة نتيجة TIA",
+      state: engineQuality.state === "accepted" ? "pass" : engineQuality.state === "rejected" ? "blocked" : "attention",
+      detail: engineQuality.summary,
     },
     {
       id: "financial",

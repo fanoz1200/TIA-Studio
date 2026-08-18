@@ -2,7 +2,7 @@
 import React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Schedule } from "@/lib/cpm";
+import type { Fragnet, Schedule } from "@/lib/cpm";
 
 const mocks = vi.hoisted(() => ({
   importXml: vi.fn(),
@@ -33,18 +33,24 @@ vi.mock("@/lib/trpc", () => ({
 import { P6EvidenceReportPanel } from "./P6EvidenceReportPanel";
 
 const schedule: Schedule = {
-  id: "p6-test", name: "برنامج اختبار P6", startDate: "2026-01-01", source: "p6-xml",
-  activities: [{ id: "A100", name: "أعمال الأساس", duration: 5 }], relationships: [], wbsNodes: [], resourceAssignments: [],
+  id: "p6-test", name: "برنامج اختبار P6", startDate: "2026-01-01", dataDate: "2026-01-02", source: "p6-xml",
+  activities: [{ id: "A100", name: "أعمال الأساس", duration: 5 }, { id: "B100", name: "أعمال لاحقة", duration: 4 }], relationships: [{ id: "R1", predecessorId: "A100", successorId: "B100", type: "FS", lag: 0 }], wbsNodes: [], resourceAssignments: [],
+};
+
+const event: Fragnet = {
+  id: "EV-01", title: "تأخر اعتماد", description: "حدث اختبار موصول بالشبكة.", cause: "employer", occurrenceDate: "2026-01-03",
+  activities: [{ id: "F100", name: "حدث Fragnet", duration: 3, kind: "fragnet" }],
+  relationships: [{ id: "FR-1", predecessorId: "A100", successorId: "F100", type: "FS", lag: 0 }, { id: "FR-2", predecessorId: "F100", successorId: "B100", type: "FS", lag: 0 }],
 };
 
 const activeResult = {
-  baseline: { completionDate: "2026-01-06" },
-  impacted: { completionDate: "2026-01-09" },
+  baseline: { completionDate: "2026-01-06", activities: [{ id: "A100", totalFloat: 0 }] },
+  impacted: { completionDate: "2026-01-09", activities: [{ id: "F100", totalFloat: 0 }], criticalActivityIds: ["F100"] },
   totalImpactDays: 3,
 } as never;
 
 function renderPanel(view: "schedule" | "report", onScheduleImported = vi.fn()) {
-  return render(<P6EvidenceReportPanel view={view} schedule={schedule} events={[]} selectedEvent={null} activeResult={view === "report" ? activeResult : null} narrative="سرد اختبار" isAuthenticated={false} onScheduleImported={onScheduleImported} />);
+  return render(<P6EvidenceReportPanel view={view} schedule={schedule} events={view === "report" ? [event] : []} selectedEvent={view === "report" ? event : null} activeResult={view === "report" ? activeResult : null} narrative="سرد اختبار" isAuthenticated={false} onScheduleImported={onScheduleImported} />);
 }
 
 describe("واجهة استيراد P6 وتصدير التقرير", () => {

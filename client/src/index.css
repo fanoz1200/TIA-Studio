@@ -61,6 +61,15 @@
 .workflow-check-pass>b { color: #0d4030; background: #8ddac1; }.workflow-check-attention>b { color: #5e3700; background: #ffd38a; }.workflow-check-blocked>b { color: #551b17; background: #f5a49b; }.workflow-check-info>b { color: #123e5c; background: #a8d5ee; }
 @media (max-width:760px) { .workflow-quality-gate header { display:block; }.workflow-quality-summary { display:block; max-width:none; margin-top:.55rem; text-align:right; }.workflow-check-grid { grid-template-columns:1fr; } }
 
+.result-validation-gate { background: linear-gradient(135deg, #eff6f6, #fffaf1); }
+.result-validation-decision { display: inline-flex; align-items: center; gap: .35rem; padding: .42rem .6rem; border-radius: 999px; font-size: .76rem; font-weight: 700; white-space: nowrap; }
+.result-validation-decision.pass { color: #0d4030; background: #bde8d8; }.result-validation-decision.attention { color: #5e3700; background: #ffe4ae; }.result-validation-decision.blocked { color: #551b17; background: #ffc1ba; }
+.result-validation-summary { margin: 0 0 .8rem; color: #526d78; font-size: .78rem; line-height: 1.65; }
+.result-validation-input { display: grid; grid-template-columns: minmax(0, 240px) 130px minmax(180px, 1fr); align-items: center; gap: .6rem; margin: 0 0 .8rem; padding: .7rem; border: 1px dashed rgba(11,79,108,.23); border-radius: .55rem; background: rgba(255,255,255,.66); }
+.result-validation-input label { color: #244f70; font-size: .78rem; font-weight: 700; }.result-validation-input small { color: #657a86; font-size: .7rem; line-height: 1.45; }
+.result-validation-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; margin: 0 0 .8rem; }.result-validation-metrics span { padding: .55rem; border-radius: .45rem; color: #526d78; background: rgba(255,255,255,.75); font-size: .7rem; }.result-validation-metrics b { display: block; margin-top: .16rem; color: #173e63; font-size: .9rem; }
+@media (max-width:760px) { .result-validation-decision { margin-top: .55rem; }.result-validation-input { grid-template-columns: 1fr; }.result-validation-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
 @layer base {
   * { @apply border-border outline-ring/50; }
   html { background: #f5f2eb; }

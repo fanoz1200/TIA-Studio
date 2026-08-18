@@ -1,0 +1,188 @@
+PLANNING-P6
+
+PREPARING CLAIM
+FOR EXTENSION
+OF TIME (EOT)
+
+Please Visit Our channel for More information and Learning
+By using the Below Link.
+
+https://www.youtube.com/c/PLANNINGP6
+
+If you need freelancer help for the preparation of your Extension of Time claims.
+Please don't hesitate to contact the Planning-P6 team. we will prepare for you or your organization.
+
+PREPARING CLAIM FOR EXTENSION
+OF TIME (EOT)
+TABLE OF CONTENTS
+1.
+
+SETTING UP THE PRE-REQUISITES.................................................................. 4
+
+1.1. PREPARE BASELINE PROJECT SCHEDULE .................................................. 4
+1.1.1 Dependencies .................................................................................................. 4
+1.1.2 Data Date ......................................................................................................... 5
+1.2. SEEK APPROVAL OF BASELINE PROJECT SCHEDULE............................... 5
+1.3. PREPARE AND DISSEMINATE PROJECT PROGRESS REPORT .................. 5
+1.4. SERVE NOTICES ................................................................................................ 6
+1.5. PREPARE CLAIM FOR EXTENSION OF TIME (EOT) CLAIM ......................... 6
+1.5.1. Introduction And Background....................................................................... 6
+1.5.2. Basis of Entitlement of Extension of Time ................................................... 6
+1.5.3. Details of Delay in Events .............................................................................. 7
+1.5.4. Calculation of Delays...................................................................................... 7
+
+EOT CLAIM
+
+COPY RIGHT – PLANNING-P6
+
+2 of 8
+
+PREPARING CLAIM FOR EXTENSION
+OF TIME (EOT)
+The article provides a guideline to prepare claim of Extension of Time
+(EOT) for Project. The article also emphasizes on the factors which act as
+pre-requisite for the preparation of Extension of Time (EOT) claim.
+A project is a temporary endeavor undertaken to create a unique product,
+service or result. The word “temporary” depicts the time bound nature of
+the project requiring a start time and end time of the project to cover the
+project scope.
+Project managers carry out rigorous exercise along with the project team to
+define project schedule as part of the plan. This schedule is used to
+measure and control the schedule variance during the rest of the phases of
+project. However, many projects do not complete within the agreed upon
+timelines. There are various reasons of the delays in the project
+The articles focus on the identification of delays and impact caused by the
+dependencies in the agreed upon project timelines. If these dependencies
+are not resolved in timely manner, this will impact the successor activities
+henceforth rest of the work. Therefore, the delay in the resolution of
+dependencies results in the delay in the overall project. The impact of the
+delays is severe when the critical path activities are subject to effect.
+Project manager keep monitoring the risks registers and project
+dependencies to evaluate the impacts. Any deviation of time brings impact
+on projects. Even the stakeholders may have to compromise on the scope
+to meet the deadlines, or incur cost due to crashing and fast tracking.
+Even to extend the timelines.
+There are certain reasons of extension of time. If the extension of time is
+due to the new scope induction through change management, it is simply
+a forecasting of the effort required based on the scope of change. This
+article focusses on preparation of claim for the EOT critical to avoid the
+penalties and sometimes helpful to impose the penalties to the contractor.
+The Impact analysis of the delays due to the dependencies is explained in
+this paper. And how the impact analysis can be referred in the claim to
+make it rationale and convincing with the evidence of the facts causing
+delays. An example of project schedule is provided to illustrate the steps
+required in primavera to perform impact analysis for the interim claim of
+EOT.
+
+CONDUCT PROJECT DELAY ANALYSIS AND
+PREPARE EXTENSION OF TIME (EOT) CLAIM
+Many projects get delayed due to various reasons. Specially, the high value
+and high-risk projects for large enterprise have the greater tendency to run
+of time due to complexity of integrated environments resulting in internal
+and external dependencies. Usually, these projects are fixed cost projects
+with waterfall methodology achieved though bidding process.
+EOT CLAIM
+
+COPY RIGHT – PLANNING-P6
+
+3 of 8
+
+PREPARING CLAIM FOR EXTENSION
+OF TIME (EOT)
+In the fixed cost projects, any delays may cause severe financial impacts if
+not properly handled. Even the delays incurred in the project can trigger
+the late delivery charges due to the delay in project completion. Project
+manager therefore has to play a significant role in the identification of the
+delays but also the reason of the delays to calculate time of extension and
+rationale of the delay.
+The below mentioned items serve as the pre-requisite to submission of
+Extension of Time (EOT) claims.
+
+1.
+
+SETTING UP THE PRE-REQUISITES
+
+1.1.
+
+PREPARE BASELINE PROJECT SCHEDULE
+
+This article does not cover the process to prepare the project schedule in
+this article. The PMI standards are very well defined to understand the
+mechanism to create project schedule. It is urged that project schedule
+preparation is one of the keystones for successful project management.
+The project managers should define detailed work break down structure
+will all the tasks, milestones and dependencies. Project managers should
+focus on the identification of dependencies and risks both internal and
+external Project schedule with clearly defined dependencies enables project
+managers to monitor and control the schedule.
+
+1.1.1
+
+Dependencies
+
+While defining dependencies project team should think of all the possible
+dependencies of Engineer, or third parties that are employed by the
+Engineer to carry out Employer’s portfolio as well as Programme. The
+project manager must ensure that the dependencies including
+discretionary and mandatory are properly identified. These third-party
+dependencies may impact to the project schedule at the later stage thus
+drag the project completion dates from initially planned project completion
+date. The importance of defining dependencies within the project at the
+earliest stages provides multifaceted benefits to the project team; they help
+EOT CLAIM
+
+COPY RIGHT – PLANNING-P6
+
+4 of 8
+
+PREPARING CLAIM FOR EXTENSION
+OF TIME (EOT)
+all the stakeholders to understand the limitations and constraints that
+may impede the project timelines, also each stakeholder agrees to what is
+expected of them, in addition to this the project progress monitoring brings
+transparency to the timeline’s variation along with the root cause. Couple
+of examples include:
+Provision of Approval of design by the Engineer to initiate the installation
+and configurations.
+
+1.1.2
+
+Data Date
+
+For the initial version of project schedule cutoff date is set to Project
+Commencement date.
+Very simple example of schedule is provided to understand the theme of
+the delay calculation due to delay factor that have impeded other activities
+due to the dependency as set out in the baseline schedule.
+
+1.2.
+
+SEEK APPROVAL OF BASELINE PROJECT
+SCHEDULE
+
+Once a project schedule baseline version is prepared. Project manager
+must seek the formal approval of the baseline project schedule. This
+project schedule will serve baseline to measure any variance of time with
+respect to the actual dates. The approval of the baseline project schedule
+will be used for future reference.
+
+1.3.
+
+PREPARE AND DISSEMINATE PROJECT
+PROGRESS REPORT
+
+Project manager prepared and disseminates reports after agreed upon time
+period. In each report project schedule percentage completion is marked
+along with the updated Cut Off date. The project schedule may be referred
+as a Programme.
+The Program serves the key to identify any time variances, and possible
+impacts the delayed activities. Project manager should keep list of risks,
+dependencies in the status report.
+
+EOT CLAIM
+
+COPY RIGHT – PLANNING-P6
+
+5 of 8
+
+

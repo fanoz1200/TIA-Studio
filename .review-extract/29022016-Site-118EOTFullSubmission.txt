@@ -1,0 +1,256 @@
+Ministry of Interior
+INTERIM EOT ENTITLEMENT
+(EOT CLAIM)
+King Abdullah Projects-KAP4
+Proger Engineering& Management
+
+Prepared by
+Al Arrab Contracting Company
+
+Site-118
+Issue Date: 29-02-2016
+
+King Abdullah Projects-4/ KAP4
+
+Doc/Version:
+
+Claims.S-118.V.01
+
+Date :
+
+29 02 2016
+
+EOT for Project of GENERAL DIRECTORATE-118
+
+TABLE OF CONTENTS
+1
+
+PROJECT AND DOCUMENT REFERENCE ........................................................................................................... 3
+
+1.1 ISSUE HISTORY ....................................................................................................................................................... 3
+1.2 APPROVALS ............................................................................................................................................................. 3
+1.3 DISTRIBUTION ....................................................................................................................................................... 3
+2
+
+SYNOPSIS.................................................................................................................................................................. 4
+
+2.1 EXECUTIVE SUMMARY ......................................................................................................................................... 4
+3
+
+DELAY EVENT DETAILS ........................................................................................................................................ 7
+
+3.1 Excutive Summary................................................................................................................................................. 7
+3.2 Delay Chronology .................................................................................................................................................. 7
+3.3 Main Allegations .................................................................................................................................................... 8
+4
+
+EFFECT OF THE CAUSATIVE EVENTS:EXTENSION OF TIME ..................................................................... 44
+
+4.1 Description of the methodology ...................................................................................................................... 44
+4.2 Validation of the Baseline ................................................................................................................................. 45
+4.3 Adjustment of baseline ...................................................................................................................................... 46
+4.4 Cause of Delay vs. Effect of Delay .................................................................................................................... 46
+4.5 Delay Causes ......................................................................................................................................................... 46
+4.6 Delay Analysis and EOT Entitlement.............................................................................................................. 47
+5
+
+CONCLUSION: ........................................................................................................................................................ 53
+
+‫ اﻟﻧﺗﺎﺋﺞ‬-................................................................................................................................................................................. 54
+
+2|Pa ge
+
+29/02/2016
+
+King Abdullah Projects-4/ KAP4
+
+Doc/Version:
+
+Claims.S-118.V.01
+
+Date :
+
+29 02 2016
+
+EOT for Project of GENERAL DIRECTORATE-118
+
+1
+1.1
+
+PROJECT AND DOCUMENT REFERENCE
+ISSUE HISTORY
+
+Document ID / Version
+Claims.S-118.V.01
+
+1.2
+
+Change Details
+
+29 02 2016
+
+Author
+ACC
+
+APPROVALS
+
+Prepared By
+Planning & Project Control - KAP4
+- ACC
+
+1.3
+
+Date
+
+Approved By
+Majid Hamd Allah
+
+Position
+KAP 4 -Acting Project
+director
+
+Approval
+date
+29-02-2016
+
+DISTRIBUTION
+
+Name
+1
+2
+3
+4
+5
+
+Proger
+
+3|Pa ge
+
+29/02/2016
+
+King Abdullah Projects-4/ KAP4
+
+Doc/Version:
+
+Claims.S-118.V.01
+
+Date :
+
+29 02 2016
+
+EOT for Project of GENERAL DIRECTORATE-118
+
+2
+
+Synopsis
+
+2.1
+
+EXECUTIVE SUMMARY
+
+2.1.1. Al Arrab Contracting (the “Contractor”) has entered into an Agreement with Ministry of
+Interior Kingdom of Saudi Arabia (the “Employer”) on 23rd June 2013 (the “Contract”) for the
+engineering, procurement, construction, start-up and commissioning of some elements of KAP4
+project (the “Works”) the sum of Where CONTRACTOR shall achieve COMPLETION by the
+SCHEDULED COMPLETION DATE, Which is 720 Calendar Days for each site starting from taking
+over the site. The Engineer of the Contract means “PROGER”, appointed by the Employer to act
+as Engineer for the purposes of the Contract.
+
+2.1.2. The Contract entered into by the Contractor was a “bid and build” Contract based upon
+“Concept” status design included within the Contract. The Contractor’s design obligations extend
+to development the design, the production of shop drawings and co-ordination drawings, which
+are to be prepared in accordance with the Contractual design intent and other requirements as
+set out within the Specification and other Contract Documents. The Contractor has no right to
+vary the adaption of the site, without the express instruction of the Engineer.
+
+2.1.3. The works comprise the Engineering and Detail Design (where ever applicable),
+Procurement, Construction, Installation, and Testing, Pre-Commissioning & Commissioning (the
+“Works’) for the Completion of Work at the following eight (8) CONSTRUCTION SITEs, (the
+“Sites”) locations identified within kingdom of Saudi Arabia; Two Dormitories, Special Security
+Forces, Three Sports Training Center, Security Command Facilities and General Security at Riyadh,
+Khobar, Arar,Tabuk and Jeddh in KSA.
+
+2.1.4. The purpose of this analysis is to perform a Longest path delay analysis of the
+“Dormitories Site in AL Riyadh - Site 118” in Riyadh -Saudi Arabia “the project” performed by Al
+Arrab Contracting Co for the “Ministry of Interior-MOI”, the original contract required that the
+project to be completed in 720 calendar days (CDs).
+
+2.1.5.
+
+As a result of this, “02 November, 2014” has been scheduled for handing over of
+
+“Site 118- GENERAL DIRECTORATE FOR PUBLIC SECURITY FORCES site”, “ACC” committed
+to the instructions of “Ministry of interior” and “Proger” and on the aforementioned date
+the site was handed over to “ACC”. The narrative within this submission sets out the
+4|Pa ge
+
+29/02/2016
+
+King Abdullah Projects-4/ KAP4
+
+Doc/Version:
+
+Claims.S-118.V.01
+
+Date :
+
+29 02 2016
+
+EOT for Project of GENERAL DIRECTORATE-118
+
+Contractor’s contractual entitlements incurred due to the actions, and/or inactions of
+the Employer, which are beyond
+
+the
+
+Contractor’s
+
+reasonable
+
+control
+
+and
+
+for
+
+which the Contractor seeks reimbursement.
+
+2.1.6. Contractor introduces 2 major head of claims within this interim submission, containing 2
+delay events. The report has been prepared to substantiate Al Arrab Contracting Company’ (ACC)
+interim entitlement for extension of time:
+
+
+FR01: Excessive Increase in quantities.
+
+
+
+FR02: Forced Stoppage due to Bad Weather.
+
+2.1.7. This document also details how the Works were delayed and how the regular progress of
+the Works have been materially and adversely affected by suspension of work.
+
+2.1.8. The Contractor also sets out to demonstrate within this submission, by observation of
+facts and effect analysis, that the delays triggered by the causative event were clearly both
+unforeseeable and beyond the reasonable control of the Contractor.
+
+2.1.9. The contractor performed the technique of “Impacted As Planned” for delay analysis,
+that technique is establishes the hypothetical impact of the delay events on the baseline
+schedule which means that it refers to the future and seeks to determine the likely impact of a
+particular event(s) on project completion date. Adjusted baseline developed to overcome the
+defects in original baseline and to be compatible with the chosen analysis method as
+recommended in AACE protocol.
+
+2.1.10. The process of selecting the impacted as planned critical path delay analysis technique is
+based on the facts of a specific case and on the quality of the existing schedule, as the delay
+events which are stated aforementioned, so the events will be addressed in the as planned
+schedule directly after project hand over and before the related activities to the aforementioned
+packages
+
+2.1.11. This submission addresses the Contractor's extension of time entitlement for the matters
+set out within part 4.
+
+5|Pa ge
+
+29/02/2016
+
+
