@@ -150,6 +150,8 @@ export const plannerIssueLogs = mysqlTable("planner_issue_logs", {
   affectedActivityIds: text("affectedActivityIds").notNull(),
   replacedRelationshipId: varchar("replacedRelationshipId", { length: 128 }).notNull(),
   proposedDurationDays: decimal("proposedDurationDays", { precision: 12, scale: 2 }).notNull(),
+  impactSummary: text("impactSummary").notNull(),
+  referenceNotes: text("referenceNotes").notNull(),
   criticality: mysqlEnum("criticality", ["unknown", "potentially_critical", "critical", "noncritical"]).notNull().default("unknown"),
   status: mysqlEnum("status", ["open", "ready_for_fragnet", "applied", "rejected", "closed"]).notNull().default("open"),
   fragnetProposalJson: text("fragnetProposalJson").notNull(),

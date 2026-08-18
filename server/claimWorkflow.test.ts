@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getDb } from "./db";
-import { addNoticePeriod, buildAutomaticNoticeNarrative, canAssignReviewParticipant, canRecordReviewDecision, canServeReviewStage, createAutomaticNoticeDraft, hashInvitationToken, invitationExpiry, listProjectMembers, nextReviewState } from "./claimWorkflow";
+import { addNoticePeriod, buildAutomaticNoticeNarrative, canAssignReviewParticipant, canRecordReviewDecision, canServeReviewStage, createAutomaticNoticeDraft, createProjectInvitation, hashInvitationToken, invitationExpiry, listProjectMembers, nextReviewState, updateProjectMemberRole } from "./claimWorkflow";
 
 vi.mock("./db", () => ({ getDb: vi.fn() }));
 
@@ -49,6 +49,31 @@ describe("claim review workflow", () => {
     expect(canServeReviewStage("viewer", "planning_review")).toBe(false);
     expect(canServeReviewStage("contracts", "planning_review")).toBe(false);
     expect(canServeReviewStage("owner", "contract_review")).toBe(true);
+  });
+
+  it("creates an expiring invitation link while persisting only its hash and the requested project role", async () => {
+    let storedInvitation: Record<string, unknown> | undefined;
+    const ownerQuery = { from: () => ({ where: () => ({ limit: async () => [{ email: "owner@example.com" }] }) }) };
+    const fakeDb = {
+      select: vi.fn().mockReturnValue(ownerQuery),
+      insert: () => ({ values: (values: Record<string, unknown>) => { storedInvitation = values; return { onDuplicateKeyUpdate: async () => [] }; } }),
+    };
+    vi.mocked(getDb).mockResolvedValue(fakeDb as never);
+
+    const invitation = await createProjectInvitation(17, { projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", origin: "https://tia.example/" });
+
+    expect(invitation.email).toBe("planner@example.com");
+    expect(invitation.projectRole).toBe("planner");
+    expect(invitation.inviteLink).toMatch(/^https:\/\/tia\.example\/\?invite=[A-Za-z0-9_-]+$/);
+    expect(storedInvitation).toMatchObject({ ownerUserId: 17, projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", status: "pending" });
+    expect(String(storedInvitation?.tokenHash)).toMatch(/^[a-f0-9]{64}$/);
+    expect(JSON.stringify(storedInvitation)).not.toContain(invitation.inviteLink.split("=")[1]);
+  });
+
+  it("rejects a role change when the member is outside the owner's project scope", async () => {
+    const fakeDb = { update: () => ({ set: () => ({ where: async () => [{ affectedRows: 0 }] }) }) };
+    vi.mocked(getDb).mockResolvedValue(fakeDb as never);
+    await expect(updateProjectMemberRole(17, { projectKey: "P-TIA", memberUserId: 21, projectRole: "contracts" })).rejects.toThrow("لا تملك صلاحية تعديل دوره");
   });
 
   it("returns project reviewers as named members with their operational roles", async () => {

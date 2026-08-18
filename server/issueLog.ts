@@ -62,11 +62,30 @@ export async function listPlannerIssues(ownerUserId: number, projectKey: string)
   return db.select().from(plannerIssueLogs).where(and(eq(plannerIssueLogs.ownerUserId, ownerUserId), eq(plannerIssueLogs.projectKey, projectKey))).orderBy(desc(plannerIssueLogs.occurrenceDate), desc(plannerIssueLogs.id));
 }
 
-export async function createPlannerIssue(ownerUserId: number, input: { projectKey: string; issueNo: string; title: string; description: string; occurrenceDate: string; reportedBy?: string; responsibleParty: IssueResponsibility; delayCause: IssueCause; affectedActivityIds: string[]; replacedRelationshipId: string; proposedDurationDays: number; criticality: IssueCriticality }) {
+export async function createPlannerIssue(ownerUserId: number, input: { projectKey: string; issueNo: string; title: string; description: string; impactSummary: string; referenceNotes: string; occurrenceDate: string; reportedBy?: string; responsibleParty: IssueResponsibility; delayCause: IssueCause; affectedActivityIds: string[]; replacedRelationshipId: string; proposedDurationDays: number; criticality: IssueCriticality }) {
   const db = await requireDb();
   const proposal = buildFragnetProposal({ issueNo: input.issueNo, title: input.title, description: input.description, occurrenceDate: input.occurrenceDate, proposedDurationDays: Number(input.proposedDurationDays), replacedRelationshipId: input.replacedRelationshipId, affectedActivityIds: input.affectedActivityIds, delayCause: input.delayCause as IssueCause, responsibleParty: input.responsibleParty as IssueResponsibility });
-  const result = await db.insert(plannerIssueLogs).values({ ...input, ownerUserId, occurrenceDate: dateAtUtc(input.occurrenceDate), affectedActivityIds: JSON.stringify(proposal.affectedActivityIds), proposedDurationDays: String(proposal.durationDays), fragnetProposalJson: JSON.stringify(proposal), status: "open" });
+  const result = await db.insert(plannerIssueLogs).values({ ...input, ownerUserId, impactSummary: input.impactSummary.trim(), referenceNotes: input.referenceNotes.trim(), occurrenceDate: dateAtUtc(input.occurrenceDate), affectedActivityIds: JSON.stringify(proposal.affectedActivityIds), proposedDurationDays: String(proposal.durationDays), fragnetProposalJson: JSON.stringify(proposal), status: "open" });
   return Number(result[0].insertId);
+}
+
+export async function createPlannerIssueBatch(ownerUserId: number, projectKey: string, inputs: Array<{ issueNo: string; title: string; description: string; impactSummary: string; referenceNotes: string; occurrenceDate: string; reportedBy?: string; responsibleParty: IssueResponsibility; delayCause: IssueCause; affectedActivityIds: string[]; replacedRelationshipId: string; proposedDurationDays: number; criticality: IssueCriticality }>) {
+  if (!inputs.length || inputs.length > 500) throw new Error("يجب أن تحتوي دفعة الاستيراد على 1 إلى 500 قضية.");
+  const normalized = inputs.map(input => ({ ...input, issueNo: input.issueNo.trim(), proposal: buildFragnetProposal(input) }));
+  const seen = new Set<string>();
+  normalized.forEach(item => {
+    const key = item.issueNo.toUpperCase();
+    if (seen.has(key)) throw new Error(`رقم القضية مكرر داخل ملف الاستيراد: ${item.issueNo}.`);
+    seen.add(key);
+  });
+  const db = await requireDb();
+  return db.transaction(async tx => {
+    const existing = await tx.select({ issueNo: plannerIssueLogs.issueNo }).from(plannerIssueLogs).where(and(eq(plannerIssueLogs.ownerUserId, ownerUserId), eq(plannerIssueLogs.projectKey, projectKey)));
+    const duplicate = existing.find(item => seen.has(item.issueNo.toUpperCase()));
+    if (duplicate) throw new Error(`رقم القضية موجود مسبقاً في سجل المشروع: ${duplicate.issueNo}. لم يُحفظ أي صف من الدفعة.`);
+    await tx.insert(plannerIssueLogs).values(normalized.map(item => ({ projectKey, issueNo: item.issueNo, title: item.title.trim(), description: item.description.trim(), impactSummary: item.impactSummary.trim(), referenceNotes: item.referenceNotes.trim(), occurrenceDate: dateAtUtc(item.occurrenceDate), reportedBy: item.reportedBy?.trim() || null, responsibleParty: item.responsibleParty, delayCause: item.delayCause, affectedActivityIds: JSON.stringify(item.proposal.affectedActivityIds), replacedRelationshipId: item.replacedRelationshipId.trim(), proposedDurationDays: String(item.proposal.durationDays), criticality: item.criticality, fragnetProposalJson: JSON.stringify(item.proposal), status: "open" as const, ownerUserId })));
+    return normalized.length;
+  });
 }
 
 async function getOwnedIssue(ownerUserId: number, id: number) {
