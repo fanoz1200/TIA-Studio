@@ -37,10 +37,16 @@ describe("واجهة مقارنة التحديثات", () => {
     const inputs = container.querySelectorAll('input[type="file"]');
     fireEvent.change(inputs[1], { target: { files: [updateFile] } });
 
-    await waitFor(() => expect(screen.getByText("سجل الفروقات")).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId("gantt-comparison-chart")).toBeTruthy());
+    expect(screen.getByText("المخطط الزمني المقارن")).toBeTruthy();
     expect(screen.getByText("A200")).toBeTruthy();
-    expect(screen.getByText("+3 d")).toBeTruthy();
+    expect(screen.getAllByText("+3 يوم").length).toBeGreaterThan(0);
     expect(screen.getByText(/فرق مدة المشروع/)).toBeTruthy();
+    expect(screen.getByTestId("gantt-bar-baseline-A200")).toBeTruthy();
+    expect(screen.getByTestId("gantt-bar-update-A200")).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: "مُعدّل" }));
+    expect(screen.getByTestId("gantt-row-A200")).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: /تصدير CSV/ }));
     expect(createObjectUrlSpy).toHaveBeenCalledTimes(1);

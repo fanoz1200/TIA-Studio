@@ -1,19 +1,15 @@
 import React, { useMemo, useRef, useState, type RefObject } from "react";
 import "./schedule-comparison.css";
-import { AlertTriangle, ArrowLeftRight, CheckCircle2, Download, FileDiff, FileUp, LoaderCircle, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, CheckCircle2, FileDiff, FileUp, LoaderCircle, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { GanttComparisonChart } from "@/components/GanttComparisonChart";
 import { importP6XmlSchedule } from "@/lib/p6-xml";
-import { comparisonToCsv, compareScheduleUpdates, type ActivityVarianceStatus } from "@/lib/schedule-comparison";
+import { comparisonToCsv, compareScheduleUpdates } from "@/lib/schedule-comparison";
 import { importXerSchedule } from "@/lib/xer";
 import type { Schedule } from "@/lib/cpm";
 
 type SourceSlot = "baseline" | "update";
-
-const statusLabel: Record<ActivityVarianceStatus, string> = { unchanged: "دون تغيير", changed: "مُعدّل", added: "مضاف", removed: "محذوف" };
 
 function downloadText(name: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -33,11 +29,9 @@ export function ScheduleComparisonPanel({ currentSchedule }: { currentSchedule: 
   const [baseline, setBaseline] = useState<Schedule | null>(null);
   const [update, setUpdate] = useState<Schedule | null>(null);
   const [isReading, setIsReading] = useState<SourceSlot | null>(null);
-  const [filter, setFilter] = useState<"all" | ActivityVarianceStatus>("all");
   const baselineRef = useRef<HTMLInputElement>(null);
   const updateRef = useRef<HTMLInputElement>(null);
   const comparison = useMemo(() => baseline && update ? compareScheduleUpdates(baseline, update) : null, [baseline, update]);
-  const visibleRows = comparison?.activityVariances.filter((item) => filter === "all" || item.status === filter) ?? [];
 
   async function readFile(slot: SourceSlot, file: File) {
     setIsReading(slot);
@@ -57,9 +51,9 @@ export function ScheduleComparisonPanel({ currentSchedule }: { currentSchedule: 
     <input ref={inputRef} type="file" accept=".xer,.xml,.json,text/plain,application/json,text/xml" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) readFile(kind, file); event.currentTarget.value = ""; }} />
   </section>;
 
-  return <div className="view-stack comparison-view" dir="rtl"><section className="page-heading"><div><p className="eyebrow">UPDATE VARIANCE WORKSPACE</p><h1>مقارنة تحديثات البرنامج</h1><p>قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={() => { setBaseline(currentSchedule); toast.success("حُمّل البرنامج المفتوح كبرنامج مرجعي."); }}><Plus size={16} />استخدم البرنامج المفتوح كأساس</Button>{comparison ? <Button className="run-button" onClick={() => downloadText("tia-update-comparison.csv", comparisonToCsv(comparison), "text/csv;charset=utf-8")}><Download size={16} />تصدير CSV</Button> : null}</div></section>
+  return <div className="view-stack comparison-view" dir="rtl"><section className="page-heading"><div><p className="eyebrow">UPDATE VARIANCE WORKSPACE</p><h1>مقارنة تحديثات البرنامج</h1><p>قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={() => { setBaseline(currentSchedule); toast.success("حُمّل البرنامج المفتوح كبرنامج مرجعي."); }}><Plus size={16} />استخدم البرنامج المفتوح كأساس</Button></div></section>
     <section className="comparison-workspace">{slot("baseline", "البرنامج المرجعي / السابق", baseline, baselineRef)}<div className="comparison-transfer"><ArrowLeftRight size={22} /><span>قارن نفس نطاق المشروع قدر الإمكان</span></div>{slot("update", "تحديث البرنامج / اللاحق", update, updateRef)}</section>
     {comparison ? <><section className="comparison-kpis"><div><small>فرق مدة المشروع</small><b className={comparison.completionDeltaDays > 0 ? "is-delay" : comparison.completionDeltaDays < 0 ? "is-gain" : ""}>{comparison.completionDeltaDays > 0 ? "+" : ""}{comparison.completionDeltaDays} يوم</b><span>{comparison.baseline.completionDate} ← {comparison.update.completionDate}</span></div><div><small>أنشطة مُعدّلة</small><b>{comparison.summary.changed}</b><span>من أصل {comparison.update.activityCount} نشاط في التحديث</span></div><div><small>تغييرات نطاق</small><b>{comparison.summary.added + comparison.summary.removed}</b><span>مضاف {comparison.summary.added} · محذوف {comparison.summary.removed}</span></div></section>
       {comparison.summary.warnings.length ? <section className="comparison-warnings">{comparison.summary.warnings.map((warning) => <div key={warning}><AlertTriangle size={17} /><span>{warning}</span></div>)}</section> : null}
-      <section className="panel comparison-table-panel"><div className="panel-heading"><div><p className="eyebrow">ACTIVITY VARIANCE REGISTER</p><h2>سجل الفروقات</h2><span>يعتمد التطابق على معرف النشاط. راجع العلاقات والمنطق والتقويم إلى جانب هذه الفروقات.</span></div><Badge className="badge-delay">{visibleRows.length} نتيجة</Badge></div><div className="comparison-filters"><button className={filter === "all" ? "selected" : ""} onClick={() => setFilter("all")}>الكل</button>{(["changed", "added", "removed", "unchanged"] as ActivityVarianceStatus[]).map((status) => <button key={status} className={filter === status ? "selected" : ""} onClick={() => setFilter(status)}>{statusLabel[status]}</button>)}</div><div className="comparison-table-wrap"><table><thead><tr><th>النشاط</th><th>الحالة</th><th>الأساس</th><th>التحديث</th><th>فرق المدة</th><th>تفاصيل</th></tr></thead><tbody>{visibleRows.map((item) => <tr key={item.id}><td><b dir="ltr">{item.id}</b><span>{item.name}</span></td><td><span className={`variance-status variance-status--${item.status}`}>{statusLabel[item.status]}</span></td><td>{item.baselineDuration ?? "—"}</td><td>{item.updateDuration ?? "—"}</td><td className={item.durationDelta && item.durationDelta > 0 ? "delta-positive" : ""}>{item.durationDelta === null ? "—" : `${item.durationDelta > 0 ? "+" : ""}${item.durationDelta} d`}</td><td>{item.notes.length ? item.notes.join("؛ ") : "لا تغيير في الحقول المقروءة"}</td></tr>)}</tbody></table></div></section></> : <section className="comparison-empty"><FileDiff size={28} /><div><b>حمّل برنامجين لبدء المقارنة</b><p>اختر نسخة مرجعية ثم تحديثاً لنفس المشروع. يمكنك استخدام البرنامج المفتوح كأساس أو تحميل XER/XML/JSON.</p></div></section>}</div>;
+      {baseline && update ? <GanttComparisonChart baseline={baseline} update={update} comparison={comparison} onExport={() => downloadText("tia-update-comparison.csv", comparisonToCsv(comparison), "text/csv;charset=utf-8")} /> : null}</> : <section className="comparison-empty"><FileDiff size={28} /><div><b>حمّل برنامجين لبدء المقارنة</b><p>اختر نسخة مرجعية ثم تحديثاً لنفس المشروع. يمكنك استخدام البرنامج المفتوح كأساس أو تحميل XER/XML/JSON.</p></div></section>}</div>;
 }
