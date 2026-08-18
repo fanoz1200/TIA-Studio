@@ -1,68 +1,97 @@
 // @vitest-environment jsdom
 import React from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import { GuidedAnalysisPanel } from "./GuidedAnalysisPanel";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { GuidedAnalysisPanel, type ScheduleSnapshot } from "./GuidedAnalysisPanel";
 import { fiveDayCalendar, type Schedule } from "@/lib/cpm";
+import { parseIssueRegisterExcel } from "@/lib/issue-excel";
+
+vi.mock("@/lib/issue-excel", () => ({
+  downloadIssueImportTemplate: vi.fn(),
+  parseIssueRegisterExcel: vi.fn(),
+}));
 
 const importedSchedule: Schedule = {
   id: "P6-TRAINING", name: "برنامج تدريبي", startDate: "2026-01-01", dataDate: "2026-01-05", calendar: fiveDayCalendar,
   source: "xer", activities: [{ id: "A100", name: "الحفر", duration: 5 }, { id: "A200", name: "الأساسات", duration: 4 }],
   relationships: [{ id: "R1", predecessorId: "A100", successorId: "A200", type: "FS" }],
 };
+const summary = { projectName: "Training P6", activitiesRead: 2, relationshipsRead: 1, wbsRead: 1, resourcesRead: 0, resourceAssignmentsRead: 0, assignmentsWithCosts: 0, activitiesWithProgress: 0, calendarName: "Five Day", warnings: [], tablesFound: ["TASK", "TASKPRED"] };
+const baseline: ScheduleSnapshot = { id: "BL-1", stage: "baseline", fileName: "baseline.xer", schedule: importedSchedule, summary };
+const preUpdate: ScheduleSnapshot = { id: "UP-1", stage: "pre-event-update", fileName: "update-before-event.xer", schedule: importedSchedule, summary };
 
-const summary = {
-  projectName: "Training P6", activitiesRead: 2, relationshipsRead: 1, wbsRead: 1, resourcesRead: 0,
-  resourceAssignmentsRead: 0, assignmentsWithCosts: 0, activitiesWithProgress: 0, calendarName: "Five Day",
-  warnings: [], tablesFound: ["TASK", "TASKPRED"],
-};
+function renderPanel(overrides: Partial<React.ComponentProps<typeof GuidedAnalysisPanel>> = {}) {
+  const props: React.ComponentProps<typeof GuidedAnalysisPanel> = {
+    schedule: importedSchedule, xerSummary: summary, journeyStep: 1, journeyPath: null, p6GateApproved: false, isXerImporting: false, baselineSnapshot: null, updateSnapshots: [],
+    onJourneyPathChange: vi.fn(), onJourneyStepChange: vi.fn(), onP6GateApprovedChange: vi.fn(), onScheduleUpload: vi.fn().mockResolvedValue(undefined), onApplyIssueExcel: vi.fn(), onPrepareSplit: vi.fn(), onNavigate: vi.fn(),
+    ...overrides,
+  };
+  render(<GuidedAnalysisPanel {...props} />);
+  return props;
+}
 
-describe("معالج رحلة TIA", () => {
-  it("يختار التحليل المباشر ثم يوجّه المستخدم إلى رفع البرنامج", () => {
-    const onJourneyPath = vi.fn();
-    const onStepChange = vi.fn();
-    const onNavigate = vi.fn();
-    render(<GuidedAnalysisPanel schedule={importedSchedule} summary={summary} step={1} journeyPath={null} approvedP6Gate={false} onP6GateApprovalChange={vi.fn()} onJourneyPath={onJourneyPath} onStepChange={onStepChange} onNavigate={onNavigate} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /التحليل المباشر/ }));
-    expect(onJourneyPath).toHaveBeenCalledWith("direct");
-    expect(onStepChange).toHaveBeenCalledWith(2);
-    expect(onNavigate).toHaveBeenCalledWith("schedule");
+describe("معالج رحلة TIA وفق Workshop 8", () => {
+  afterEach(cleanup);
+  it("يختار التحليل المباشر ثم يسمح بالانتقال إلى اختيار المنهج", () => {
+    const props = renderPanel();
+    fireEvent.click(screen.getByRole("button", { name: /تحليل مباشر/ }));
+    expect(props.onJourneyPathChange).toHaveBeenCalledWith("direct");
+    cleanup();
+    const directProps = renderPanel({ journeyPath: "direct" });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    expect(directProps.onJourneyStepChange).toHaveBeenCalledWith(2);
   });
 
-  it("لا يسمح بالانتقال إلى الحدث قبل رفع ملف P6 ومراجعة بوابة الاستيراد", () => {
-    const onNavigate = vi.fn();
-    const manualSchedule = { ...importedSchedule, source: "manual" as const };
-    render(<GuidedAnalysisPanel schedule={manualSchedule} summary={null} step={2} journeyPath="direct" approvedP6Gate={false} onP6GateApprovalChange={vi.fn()} onJourneyPath={vi.fn()} onStepChange={vi.fn()} onNavigate={onNavigate} />);
-
-    expect((screen.getByRole("button", { name: /انتقل لتحديد الحدث/ }) as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: /رفع برنامج P6/ }));
-    expect(onNavigate).toHaveBeenCalledWith("schedule");
+  it("لا يسمح بتجاوز Baseline في خطوة الملفات الإلزامية", () => {
+    const props = renderPanel({ journeyStep: 3, journeyPath: "direct" });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    expect(props.onJourneyStepChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { name: "ارفع Baseline المعتمد" })).toBeTruthy();
   });
 
-  it("يعرض عدّادات الأنشطة والعلاقات والتقاويم وملاحظات الاستيراد داخل بوابة P6", () => {
+  it("يعرض بوابة P6 وتحذيرات الاستيراد مع Update قبل الحدث", () => {
     const warningSummary = { ...summary, warnings: ["لم يُقرأ تقويم مخصص للنشاط A200."] };
-    render(<GuidedAnalysisPanel schedule={importedSchedule} summary={warningSummary} step={2} journeyPath="direct" approvedP6Gate={false} onP6GateApprovalChange={vi.fn()} onJourneyPath={vi.fn()} onStepChange={vi.fn()} onNavigate={vi.fn()} />);
-
-    const evidence = screen.getByLabelText("ملخص قراءات برنامج P6");
-    expect(within(evidence).getByText("الأنشطة")).toBeTruthy();
-    expect(within(evidence).getByText("العلاقات")).toBeTruthy();
-    expect(within(evidence).getByText("WBS")).toBeTruthy();
-    expect(within(evidence).getByText("الموارد")).toBeTruthy();
-    expect(within(evidence).getByText(/لم يُقرأ تقويم مخصص/)).toBeTruthy();
+    renderPanel({ journeyStep: 4, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [{ ...preUpdate, summary: warningSummary }], xerSummary: warningSummary });
+    expect(screen.getByRole("heading", { name: "Update قبل الحدث والتحديثات اللاحقة" })).toBeTruthy();
+    expect(screen.getByText(/لم يُقرأ تقويم مخصص/)).toBeTruthy();
+    expect(screen.getByLabelText(/أقرّ بمراجعة بيانات P6/)).toBeTruthy();
   });
 
-  it("يحجب فتح نموذج الحدث حتى اعتماد نسخة Pre-TIA المرجعية", () => {
-    const onNavigate = vi.fn();
-    const onStepChange = vi.fn();
-    render(<GuidedAnalysisPanel schedule={importedSchedule} summary={summary} step={3} journeyPath="direct" approvedP6Gate onP6GateApprovalChange={vi.fn()} onJourneyPath={vi.fn()} onStepChange={onStepChange} onNavigate={onNavigate} />);
+  it("يعرض معاينة تقسيم النشاط إلى Pre وEvent وPost قبل الحساب", () => {
+    renderPanel({ journeyStep: 6, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [preUpdate] });
+    const split = screen.getByText(/راجع تقسيم النشاط/).closest(".guided-content") as HTMLElement;
+    expect(within(split).getByText("Pre")).toBeTruthy();
+    expect(within(split).getByText("Event")).toBeTruthy();
+    expect(within(split).getByText("Post")).toBeTruthy();
+  });
 
-    const openEvent = screen.getByRole("button", { name: /افتح نموذج الحدث/ }) as HTMLButtonElement;
-    expect(openEvent.disabled).toBe(true);
-    fireEvent.click(screen.getByRole("radio", { name: /أعتمد البرنامج المستورد الحالي/ }));
-    expect(openEvent.disabled).toBe(false);
-    fireEvent.click(openEvent);
-    expect(onStepChange).toHaveBeenCalledWith(4);
-    expect(onNavigate).toHaveBeenCalledWith("event");
+  it("يمنع المتابعة من سجل Workshop 8 حتى تضاف واقعة كاملة للمراجعة", () => {
+    const props = renderPanel({ journeyStep: 5, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [preUpdate] });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    expect(props.onJourneyStepChange).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "أضف الواقعة للنموذج" }));
+    expect(screen.getByText(/جاهز للمراجعة: 1 واقعة منظمة/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    expect(props.onJourneyStepChange).toHaveBeenCalledWith(6);
+  });
+
+  it("يراجع صف Excel المرفوع ويرسله إلى سجل القضايا قبل المتابعة", async () => {
+    const reviewedRow = {
+      rowNumber: 2, issueNo: "W8-001", title: "تأخر اعتماد", occurrenceDate: "2026-01-04", reportedBy: "المخطط",
+      responsibleParty: "employer" as const, delayCause: "employer" as const, criticality: "potentially_critical" as const,
+      proposedDurationDays: 2, replacedRelationshipId: "R1", affectedActivityIds: ["A100"], description: "تأخر اعتماد مخططات.",
+      impactSummary: "يحتاج نمذجة TIA.", referenceNotes: "مرجع W8-001.",
+    };
+    vi.mocked(parseIssueRegisterExcel).mockReturnValue({ rows: [reviewedRow], errors: [], totalRows: 1 });
+    const props = renderPanel({ journeyStep: 5, journeyPath: "issue", baselineSnapshot: baseline, updateSnapshots: [preUpdate] });
+    const input = document.querySelector('input[accept=".xlsx,.xls"]') as HTMLInputElement;
+    const file = new File(["workshop"], "workshop-8.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    Object.defineProperty(file, "arrayBuffer", { value: vi.fn().mockResolvedValue(new ArrayBuffer(8)) });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(await screen.findByText(/جاهز للمراجعة: 1 واقعة منظمة/)).toBeTruthy();
+    expect(parseIssueRegisterExcel).toHaveBeenCalled();
+    expect(props.onApplyIssueExcel).toHaveBeenCalledWith([reviewedRow]);
   });
 });
