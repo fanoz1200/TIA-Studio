@@ -2,7 +2,7 @@
  * TIA Studio — XER schedule adapter
  * يحول جداول Primavera P6 النصية الضرورية لتحليل CPM محلياً دون رفع الملف.
  */
-import { calendarDayCalendar, type Activity, type Relationship, type RelationshipType, type Schedule } from "./cpm";
+import { calendarDayCalendar, type Activity, type Relationship, type RelationshipType, type Schedule, type WbsNode } from "./cpm";
 
 type XerRow = Record<string, string>;
 
@@ -10,6 +10,8 @@ export type XerImportSummary = {
   projectName: string;
   activitiesRead: number;
   relationshipsRead: number;
+  wbsRead: number;
+  activitiesWithProgress: number;
   calendarName?: string;
   warnings: string[];
   tablesFound: string[];
@@ -77,6 +79,29 @@ function numeric(value: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function percent(value: string) {
+  const result = numeric(value);
+  if (!result) return undefined;
+  return Math.max(0, Math.min(100, result <= 1 ? result * 100 : result));
+}
+
+function buildWbsNodes(rows: XerRow[]) {
+  const rawNodes = rows.map((row, index) => ({
+    id: firstValue(row, "wbs_id") || `WBS-${index + 1}`,
+    code: firstValue(row, "wbs_short_name", "wbs_code"),
+    name: firstValue(row, "wbs_name", "wbs_short_name") || `WBS ${index + 1}`,
+    parentId: firstValue(row, "parent_wbs_id") || undefined,
+  }));
+  const byId = new Map(rawNodes.map((node) => [node.id, node]));
+  const resolvePath = (node: typeof rawNodes[number], visited = new Set<string>()): string => {
+    if (visited.has(node.id)) return node.code || node.name;
+    const parent = node.parentId ? byId.get(node.parentId) : undefined;
+    const label = node.code ? `${node.code} — ${node.name}` : node.name;
+    return parent ? `${resolvePath(parent, new Set(Array.from(visited).concat(node.id)))} / ${label}` : label;
+  };
+  return rawNodes.map((node): WbsNode => ({ ...node, path: resolvePath(node) }));
+}
+
 /**
  * يقرأ نطاقاً مقصوداً ومحدوداً من XER: PROJECT, TASK, TASKPRED وCALENDAR.
  * لا يحاول استيراد التكاليف أو الموارد أو بيانات التقويم المشفرة في P6.
@@ -91,7 +116,8 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
 
   const warnings: string[] = [];
   const wbsRows = tables.get("PROJWBS") ?? tables.get("WBS") ?? [];
-  const wbsNames = new Map(wbsRows.map((row) => [firstValue(row, "wbs_id"), firstValue(row, "wbs_short_name", "wbs_name")]));
+  const wbsNodes = buildWbsNodes(wbsRows);
+  const wbsNames = new Map(wbsNodes.map((node) => [node.id, node.path]));
   const earliestDates: string[] = [];
   const activities: Activity[] = tasks.map((task, index) => {
     const id = firstValue(task, "task_id") || `TASK-${index + 1}`;
@@ -99,13 +125,22 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
     const title = firstValue(task, "task_name") || code;
     const start = parseXerDate(firstValue(task, "early_start_date", "target_start_date", "plan_start_date", "act_start_date"));
     if (start) earliestDates.push(start);
-    const durationHours = numeric(firstValue(task, "target_drtn_hr_cnt", "remain_drtn_hr_cnt", "orig_duration"));
+    const durationHours = numeric(firstValue(task, "target_drtn_hr_cnt", "orig_duration", "remain_drtn_hr_cnt"));
+    const remainingDuration = numeric(firstValue(task, "remain_drtn_hr_cnt"));
+    const progress = percent(firstValue(task, "phys_complete_pct", "complete_pct", "duration_pct", "percent_complete"));
+    const percentTypeRaw = firstValue(task, "complete_pct_type", "percent_complete_type").toLowerCase();
     return {
       id,
       name: code === title ? title : `${code} — ${title}`,
       duration: Math.max(0, durationHours / 8),
       wbs: wbsNames.get(firstValue(task, "wbs_id")) || firstValue(task, "wbs_id") || undefined,
+      wbsId: firstValue(task, "wbs_id") || undefined,
       owner: firstValue(task, "responsible_mgr_id") || undefined,
+      percentComplete: progress,
+      percentCompleteType: percentTypeRaw.includes("phys") ? "physical" : percentTypeRaw.includes("unit") ? "units" : progress === undefined ? undefined : "duration",
+      remainingDuration: remainingDuration ? Math.max(0, remainingDuration / 8) : undefined,
+      actualStart: parseXerDate(firstValue(task, "act_start_date")) || undefined,
+      actualFinish: parseXerDate(firstValue(task, "act_end_date", "act_finish_date")) || undefined,
     };
   });
 
@@ -150,7 +185,8 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
       calendar: { ...calendarDayCalendar, id: "xer-review-calendar", name: calendarName ? `${calendarName} — راجع النمط` : "تقويم XER — يحتاج مراجعة" },
       source: "xer",
       importNotes: warnings,
+      wbsNodes,
     },
-    summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
+    summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, wbsRead: wbsNodes.length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
   };
 }

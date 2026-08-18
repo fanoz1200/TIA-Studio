@@ -35,10 +35,24 @@ export type Activity = {
   name: string;
   duration: number;
   wbs?: string;
+  wbsId?: string;
   owner?: string;
   kind?: "base" | "fragnet";
   plannedStart?: number;
   calendarId?: string;
+  percentComplete?: number;
+  percentCompleteType?: "duration" | "physical" | "units" | "unknown";
+  remainingDuration?: number;
+  actualStart?: string;
+  actualFinish?: string;
+};
+
+export type WbsNode = {
+  id: string;
+  code?: string;
+  name: string;
+  parentId?: string;
+  path: string;
 };
 
 export type Relationship = {
@@ -57,8 +71,9 @@ export type Schedule = {
   activities: Activity[];
   relationships: Relationship[];
   calendar?: WorkingCalendar;
-  source?: "manual" | "json" | "csv" | "xer";
+  source?: "manual" | "json" | "csv" | "xer" | "p6-xml";
   importNotes?: string[];
+  wbsNodes?: WbsNode[];
 };
 
 export type Fragnet = {
@@ -195,6 +210,9 @@ function ensureValidSchedule(schedule: Schedule) {
     if (!activity.id.trim()) throw new Error("يوجد نشاط بلا معرف.");
     if (activityIds.has(activity.id)) throw new Error(`معرف النشاط مكرر: ${activity.id}`);
     if (!Number.isFinite(activity.duration) || activity.duration < 0) throw new Error(`مدة النشاط ${activity.id} يجب أن تكون رقماً غير سالب.`);
+    if (activity.percentComplete !== undefined && (!Number.isFinite(activity.percentComplete) || activity.percentComplete < 0 || activity.percentComplete > 100)) {
+      throw new Error(`نسبة إنجاز النشاط ${activity.id} يجب أن تكون بين 0 و100.`);
+    }
     activityIds.add(activity.id);
   }
 
