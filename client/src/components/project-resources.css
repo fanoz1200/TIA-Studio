@@ -1,0 +1,19 @@
+.resources-view { gap: 1.1rem; }
+.resources-hero { padding: 1.5rem; background: linear-gradient(135deg, rgba(11, 79, 108, .1), rgba(222, 119, 38, .1)); border-radius: 18px; }
+.local-use-banner { display: flex; align-items: flex-start; gap: .9rem; padding: 1rem 1.15rem; color: #17455a; background: #e9f2f3; border: 1px solid #b6d0d4; border-radius: 14px; }
+.local-use-banner p { margin: .25rem 0 0; font-size: .9rem; line-height: 1.7; }
+.resources-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.resource-card { display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: .85rem; padding: 1.1rem; background: #fffdf9; border: 1px solid #dbe3e3; border-radius: 16px; box-shadow: 0 9px 24px rgba(20, 47, 57, .05); }
+.resource-card__icon { display: grid; place-items: center; width: 2.55rem; height: 2.55rem; color: #fff; background: #0b4f6c; border-radius: 11px; }
+.resource-card span { color: #62737a; font-size: .72rem; font-weight: 800; letter-spacing: .05em; }
+.resource-card h2 { margin: .15rem 0 .4rem; color: #153647; font-size: 1rem; }
+.resource-card p { margin: 0; color: #607078; font-size: .84rem; line-height: 1.6; }
+.resource-download { display: inline-flex; align-items: center; gap: .35rem; color: #0b4f6c; font-size: .82rem; font-weight: 800; white-space: nowrap; }
+.example-downloads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+.example-downloads a { display: flex; align-items: center; gap: .55rem; padding: .85rem; color: #183f51; background: #f2f5f4; border: 1px solid #d9e2df; border-radius: 10px; font-size: .86rem; font-weight: 700; }
+.example-downloads small { margin-inline-start: auto; color: #63747a; font-size: .67rem; letter-spacing: .06em; }
+.resources-boundary { display: grid; grid-template-columns: minmax(190px, .7fr) 2fr; align-items: start; gap: 1.3rem; }
+.resources-boundary h2 { margin: .25rem 0 0; color: #173a4c; font-size: 1.08rem; }
+.resources-boundary > p { margin: 0; color: #53656d; line-height: 1.8; }
+@media (max-width: 800px) { .resources-grid, .example-downloads { grid-template-columns: 1fr; } .resources-boundary { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .resource-card { grid-template-columns: auto 1fr; } .resource-download { grid-column: 2; } }

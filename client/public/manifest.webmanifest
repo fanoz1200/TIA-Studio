@@ -1,0 +1,14 @@
+{
+  "name": "TIA Studio — تحليل التأخير",
+  "short_name": "TIA Studio",
+  "description": "منصة تحليل Time Impact Analysis للمشروعات الإنشائية.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f2ea",
+  "theme_color": "#0B4F6C",
+  "icons": [
+    { "src": "/manus-storage/tia-studio-symbol_a5a70021.png", "sizes": "192x192", "type": "image/png", "purpose": "any" }
+  ]
+}
