@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateFinancialImpact, dateToRelativeDay, resourceAssignmentsForEvent, runCPM, runTIA, type Fragnet, type Schedule } from "./cpm";
+import { buildActivitySplitFragnet, calculateFinancialImpact, createTiaAnalyticalCopies, dateToRelativeDay, getFragnetDelayDuration, insertFragnet, resourceAssignmentsForEvent, runCPM, runTIA, type Fragnet, type Schedule } from "./cpm";
 
 const baseSchedule: Schedule = {
   id: "baseline-01",
@@ -114,6 +114,52 @@ describe("Time Impact Analysis", () => {
 
   it("maps calendar dates to relative CPM days", () => {
     expect(dateToRelativeDay("2026-01-05", "2026-01-18")).toBe(13);
+  });
+
+  it("creates a Post-TIA-only Pre/Event/Post activity split without mutating the baseline", () => {
+    const split = buildActivitySplitFragnet(baseSchedule, {
+      id: "F-SPLIT-01",
+      title: "تأخر اعتماد التعديل",
+      description: "حدث مؤثر أثناء الأعمال الإنشائية.",
+      cause: "employer",
+      occurrenceDate: "2026-01-21",
+      eventDuration: 4,
+      targetActivityId: "A300",
+    });
+    const postTia = insertFragnet(baseSchedule, split);
+    const result = runTIA(baseSchedule, split);
+
+    expect(baseSchedule.activities.map((activity) => activity.id)).toContain("A300");
+    expect(postTia.activities.map((activity) => activity.id)).not.toContain("A300");
+    expect(postTia.activities.map((activity) => activity.id)).toEqual(expect.arrayContaining([
+      "F-SPLIT-01--A300--pre", "F-SPLIT-01--A300--event", "F-SPLIT-01--A300--post",
+    ]));
+    expect(result.impactDays).toBe(4);
+    expect(result.impacted.criticalActivityIds).toContain("F-SPLIT-01--A300--event");
+    expect(getFragnetDelayDuration(split)).toBe(4);
+  });
+
+  it("creates independent Pre-TIA and Post-TIA copies while preserving the imported source schedule", () => {
+    const sourceBefore = JSON.stringify(baseSchedule);
+    const split = buildActivitySplitFragnet(baseSchedule, {
+      id: "F-COPY-01",
+      title: "تعليق أعمال مؤقت",
+      description: "تمرين تحقق من عزل النسخ التحليلية.",
+      cause: "employer",
+      occurrenceDate: "2026-01-21",
+      eventDuration: 3,
+      targetActivityId: "A300",
+    });
+    const copies = createTiaAnalyticalCopies(baseSchedule, split);
+
+    expect(copies.preTia).not.toBe(baseSchedule);
+    expect(copies.preTia.activities).not.toBe(baseSchedule.activities);
+    expect(copies.preTia.id).toContain("--pre-tia--F-COPY-01");
+    expect(copies.postTia.id).toContain("--post-tia--F-COPY-01");
+    expect(copies.preTia.activities.map((activity) => activity.id)).toContain("A300");
+    expect(copies.postTia.activities.map((activity) => activity.id)).not.toContain("A300");
+    expect(copies.postTia.activities.map((activity) => activity.id)).toContain("F-COPY-01--A300--event");
+    expect(JSON.stringify(baseSchedule)).toBe(sourceBefore);
   });
 });
 

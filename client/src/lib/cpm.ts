@@ -105,7 +105,7 @@ export function resourceAssignmentsForEvent(schedule: Schedule, event?: Fragnet 
   const connectedBaseActivityIds = event.relationships
     .flatMap(relationship => [relationship.predecessorId, relationship.successorId])
     .filter(id => baseActivityIds.has(id));
-  const selectedActivityIds = new Set(Array.from(eventActivityIds).concat(connectedBaseActivityIds));
+  const selectedActivityIds = new Set(Array.from(eventActivityIds).concat(connectedBaseActivityIds, event.sourceActivityIds ?? []));
   return (schedule.resourceAssignments ?? []).filter(assignment => selectedActivityIds.has(assignment.activityId));
 }
 
@@ -140,6 +140,21 @@ export type Fragnet = {
   activities: Activity[];
   relationships: Relationship[];
   replacedRelationshipIds?: string[];
+  /** نشاط من المصدر يستبدل داخل نسخة Post-TIA فقط؛ لا يتغير ملف P6 المستورد. */
+  replacedActivityIds?: string[];
+  /** مرجع النشاط الأصلي لتتبع الموارد والتدقيق بعد إنشاء نسخة التحليل. */
+  sourceActivityIds?: string[];
+  model?: "relationship-fragnet" | "activity-split";
+};
+
+export type ActivitySplitInput = {
+  id: string;
+  title: string;
+  description: string;
+  cause: DelayCause;
+  occurrenceDate: string;
+  eventDuration: number;
+  targetActivityId: string;
 };
 
 export type AnalysisWindow = {
@@ -410,13 +425,17 @@ export function runCPM(schedule: Schedule): CpmResult {
 
 export function insertFragnet(schedule: Schedule, fragnet: Fragnet): Schedule {
   const baseActivityIds = new Set(schedule.activities.map((activity) => activity.id));
+  const replacedActivities = new Set(fragnet.replacedActivityIds ?? []);
+  for (const activityId of Array.from(replacedActivities)) {
+    if (!baseActivityIds.has(activityId)) throw new Error(`لا يمكن تقسيم النشاط «${activityId}» لأنه غير موجود في نسخة Pre-TIA.`);
+  }
   const fragnetActivityIds = new Set<string>();
   for (const activity of fragnet.activities) {
     if (baseActivityIds.has(activity.id) || fragnetActivityIds.has(activity.id)) throw new Error(`معرف نشاط الـ Fragnet مكرر أو موجود مسبقاً: ${activity.id}`);
     fragnetActivityIds.add(activity.id);
   }
   const replaced = new Set(fragnet.replacedRelationshipIds ?? []);
-  const keptRelationships = schedule.relationships.filter((relationship) => !replaced.has(relationship.id));
+  const keptRelationships = schedule.relationships.filter((relationship) => !replaced.has(relationship.id) && !replacedActivities.has(relationship.predecessorId) && !replacedActivities.has(relationship.successorId));
   const relationshipIds = new Set(keptRelationships.map((relationship) => relationship.id));
   for (const relationship of fragnet.relationships) {
     if (relationshipIds.has(relationship.id)) throw new Error(`معرف علاقة الـ Fragnet مكرر: ${relationship.id}`);
@@ -426,7 +445,7 @@ export function insertFragnet(schedule: Schedule, fragnet: Fragnet): Schedule {
     ...schedule,
     id: `${schedule.id}--${fragnet.id}`,
     name: `${schedule.name} + ${fragnet.title}`,
-    activities: [...schedule.activities.map((activity) => ({ ...activity, kind: activity.kind ?? "base" as const })), ...fragnet.activities.map((activity) => ({ ...activity, kind: "fragnet" as const }))],
+    activities: [...schedule.activities.filter((activity) => !replacedActivities.has(activity.id)).map((activity) => ({ ...activity, kind: activity.kind ?? "base" as const })), ...fragnet.activities.map((activity) => ({ ...activity, kind: activity.kind ?? "fragnet" as const }))],
     relationships: [...keptRelationships, ...fragnet.relationships],
   };
 }
@@ -435,20 +454,123 @@ export function insertFragnets(schedule: Schedule, fragments: Fragnet[]) {
   return fragments.reduce((current, fragnet) => insertFragnet(current, fragnet), schedule);
 }
 
+/**
+ * ينشئ Fragnet لتقسيم نشاط متأثر داخل نسخة تحليلية فقط. يقتصر التنفيذ الآلي
+ * على روابط FS بلا Lag؛ أما الشبكات الأكثر تعقيداً فتحتاج نمذجة صريحة من المحلل.
+ */
+export function buildActivitySplitFragnet(schedule: Schedule, input: ActivitySplitInput): Fragnet {
+  if (!input.id.trim() || !input.title.trim()) throw new Error("معرف الحدث وعنوانه مطلوبان لإنشاء تقسيم النشاط.");
+  if (!Number.isFinite(input.eventDuration) || input.eventDuration < 0) throw new Error("مدة الحدث يجب أن تكون رقماً غير سالب.");
+  parseIsoDate(input.occurrenceDate);
+  const target = schedule.activities.find((activity) => activity.id === input.targetActivityId);
+  if (!target) throw new Error("النشاط المتأثر غير موجود في نسخة Pre-TIA المختارة.");
+
+  const targetRelations = schedule.relationships.filter((relationship) => relationship.predecessorId === target.id || relationship.successorId === target.id);
+  if (targetRelations.some((relationship) => relationship.type !== "FS" || (relationship.lag ?? 0) !== 0)) {
+    throw new Error("لا يدعم التقسيم الآلي لهذا النشاط روابط غير FS أو روابط ذات Lag؛ أنشئ Fragnet يدوياً وراجع المنطق.");
+  }
+
+  const metrics = runCPM(schedule).activities.find((activity) => activity.id === target.id);
+  if (!metrics) throw new Error("تعذر حساب موضع النشاط المتأثر داخل برنامج Pre-TIA.");
+  const targetStart = addWorkingDays(schedule.startDate, metrics.earlyStart, schedule.calendar);
+  const targetFinish = addWorkingDays(schedule.startDate, metrics.earlyFinish, schedule.calendar);
+  if (input.occurrenceDate < targetStart || input.occurrenceDate > targetFinish) {
+    throw new Error(`تاريخ الحدث يجب أن يقع بين بداية النشاط ${targetStart} ونهايته ${targetFinish} وفق برنامج Pre-TIA.`);
+  }
+
+  const occurrenceDay = dateToRelativeDay(schedule.startDate, input.occurrenceDate, schedule.calendar);
+  const preDuration = Math.min(target.duration, Math.max(0, occurrenceDay - metrics.earlyStart));
+  const postDuration = Math.max(0, target.duration - preDuration);
+  const baseId = `${input.id}--${target.id}`;
+  const preId = `${baseId}--pre`;
+  const eventId = `${baseId}--event`;
+  const postId = `${baseId}--post`;
+  const inbound = targetRelations.filter((relationship) => relationship.successorId === target.id);
+  const outbound = targetRelations.filter((relationship) => relationship.predecessorId === target.id);
+
+  return {
+    id: input.id,
+    title: input.title,
+    description: input.description,
+    cause: input.cause,
+    occurrenceDate: input.occurrenceDate,
+    model: "activity-split",
+    replacedActivityIds: [target.id],
+    sourceActivityIds: [target.id],
+    activities: [
+      { ...target, id: preId, name: `قبل الحدث — ${target.name}`, duration: preDuration, kind: "fragnet" },
+      { ...target, id: eventId, name: `حدث TIA — ${input.title}`, duration: input.eventDuration, kind: "fragnet" },
+      { ...target, id: postId, name: `بعد الحدث — ${target.name}`, duration: postDuration, kind: "fragnet" },
+    ],
+    relationships: [
+      ...inbound.map((relationship) => ({ ...relationship, id: `${baseId}--in--${relationship.id}`, successorId: preId })),
+      { id: `${baseId}--pre-event`, predecessorId: preId, successorId: eventId, type: "FS" as const },
+      { id: `${baseId}--event-post`, predecessorId: eventId, successorId: postId, type: "FS" as const },
+      ...outbound.map((relationship) => ({ ...relationship, id: `${baseId}--out--${relationship.id}`, predecessorId: postId })),
+    ],
+  };
+}
+
+export type TiaAnalyticalCopies = {
+  /** لقطة مستقلة قابلة للمراجعة من البرنامج كما كان قبل الحدث. */
+  preTia: Schedule;
+  /** نسخة مستقلة تحتوي على الـ Fragnet أو تقسيم Pre/Event/Post فقط. */
+  postTia: Schedule;
+};
+
+function cloneScheduleForAnalysis(schedule: Schedule, id: string, name: string): Schedule {
+  return {
+    ...schedule,
+    id,
+    name,
+    activities: schedule.activities.map((activity) => ({ ...activity })),
+    relationships: schedule.relationships.map((relationship) => ({ ...relationship })),
+    calendar: schedule.calendar ? {
+      ...schedule.calendar,
+      workingWeekdays: [...schedule.calendar.workingWeekdays],
+      holidays: [...schedule.calendar.holidays],
+    } : undefined,
+    wbsNodes: schedule.wbsNodes?.map((node) => ({ ...node })),
+    resourceAssignments: schedule.resourceAssignments?.map((assignment) => ({ ...assignment })),
+  };
+}
+
+/**
+ * ينشئ لقطتي عمل منفصلتين ولا يغيّر أبداً كائن البرنامج المستورد أو ملف XER المصدر.
+ * تستخدم الأولى للحساب قبل الحدث، بينما تحتوي الثانية فقط على الإدراج التحليلي بعده.
+ */
+export function createTiaAnalyticalCopies(schedule: Schedule, fragnet: Fragnet): TiaAnalyticalCopies {
+  const preTia = cloneScheduleForAnalysis(schedule, `${schedule.id}--pre-tia--${fragnet.id}`, `${schedule.name} — Pre-TIA (${fragnet.id})`);
+  const insertedPostTia = insertFragnet(preTia, fragnet);
+  const postTia = cloneScheduleForAnalysis(
+    insertedPostTia,
+    `${schedule.id}--post-tia--${fragnet.id}`,
+    `${schedule.name} — Post-TIA (${fragnet.id})`,
+  );
+  return { preTia, postTia };
+}
+
 export function runTIA(schedule: Schedule, fragnet: Fragnet): TiaResult {
-  const baseline = runCPM(schedule);
-  const impacted = runCPM(insertFragnet(schedule, fragnet));
+  const copies = createTiaAnalyticalCopies(schedule, fragnet);
+  const baseline = runCPM(copies.preTia);
+  const impacted = runCPM(copies.postTia);
   const impactDays = impacted.projectDuration - baseline.projectDuration;
   const tiedToBase = fragnet.relationships.filter((relationship) => schedule.activities.some((activity) => activity.id === relationship.predecessorId) || schedule.activities.some((activity) => activity.id === relationship.successorId)).length;
-  const notes = [`تم الحساب على نسخة: ${schedule.name}.`, `تاريخ الإكمال قبل الإدراج: ${baseline.completionDate}.`, `تاريخ الإكمال بعد الإدراج: ${impacted.completionDate}.`, `التقويم المطبق: ${baseline.calendar.name}.`];
+  const notes = [`تم الحساب على نسخة Pre-TIA مستقلة من: ${schedule.name}.`, `تاريخ الإكمال قبل الإدراج: ${baseline.completionDate}.`, `تاريخ الإكمال بعد الإدراج في Post-TIA: ${impacted.completionDate}.`, `التقويم المطبق: ${baseline.calendar.name}.`];
   if (tiedToBase < 2) notes.push("تحذير: الـ Fragnet لا يبدو مرتبطاً بشبكة الأساس عند نقطتي دخول وخروج؛ تحقق من الرابط المنطقي.");
   if (impactDays === 0) notes.push("لم يتغير تاريخ الإكمال؛ يستهلك الحدث عائمة متاحة أو لا يصل إلى مسار الإكمال.");
   if (impactDays < 0) notes.push("أنتجت الشبكة تاريخ إكمال أبكر؛ راجع الـ leads أو العلاقات المستبدلة.");
   return { fragnetId: fragnet.id, fragnetTitle: fragnet.title, baseline, impacted, impactDays, baselineCompletionDate: baseline.completionDate, impactedCompletionDate: impacted.completionDate, outcome: impactDays > EPSILON ? "delayed" : impactDays < -EPSILON ? "accelerated" : "float-consumed", notes };
 }
 
+/** مدة التأخير المدخلة، لا إجمالي مراحل النشاط بعد تقسيمه إلى Pre/Event/Post. */
+export function getFragnetDelayDuration(event: Fragnet) {
+  const modeledEvent = event.activities.find((activity) => activity.id.endsWith("--event"));
+  return modeledEvent?.duration ?? event.activities.reduce((total, activity) => total + activity.duration, 0);
+}
+
 function eventEndDate(event: Fragnet, calendar?: WorkingCalendar) {
-  const duration = event.activities.reduce((total, activity) => total + activity.duration, 0);
+  const duration = getFragnetDelayDuration(event);
   return addWorkingDays(event.occurrenceDate, duration, calendar);
 }
 

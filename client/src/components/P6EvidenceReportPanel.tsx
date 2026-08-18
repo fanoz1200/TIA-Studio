@@ -9,12 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { importP6XmlSchedule, type P6XmlImportSummary } from "@/lib/p6-xml";
-import { calculateFinancialImpact, resourceAssignmentsForEvent, type Fragnet, type Schedule, type TiaResult, type WindowTiaResult } from "@/lib/cpm";
+import { calculateFinancialImpact, getFragnetDelayDuration, resourceAssignmentsForEvent, type Fragnet, type Schedule, type TiaResult, type WindowTiaResult } from "@/lib/cpm";
 import { exportClaimDocx, exportClaimPdf, type ClaimReportPayload, type ClaimTemplateDraft } from "@/lib/claim-export";
 import { ScheduleComparisonPanel } from "@/components/ScheduleComparisonPanel";
 import { evaluateWorkflowReadiness, workflowReadinessSummary, type WorkflowCheckState } from "@/lib/workflow-validation";
 
-type View = "schedule" | "event" | "analysis" | "report" | "overview" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
+type View = "guided" | "schedule" | "event" | "analysis" | "report" | "overview" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
 type EvidenceType = "correspondence" | "instruction" | "drawing" | "programme" | "photo" | "report" | "other";
 
 const initialTemplate: ClaimTemplateDraft = {
@@ -107,7 +107,7 @@ export function P6EvidenceReportPanel({
     const eventResources = resourceAssignmentsForEvent(schedule, selectedEvent);
     const financial = calculateFinancialImpact(Math.max(0, impactDays), eventResources, schedule.calendar?.hoursPerDay ?? 8);
     const financialImpact = eventResources.length ? { dailyCost: financial.dailyCost, extensionCost: financial.extensionCost, byResourceType: Object.entries(financial.byResourceType).map(([type, bucket]) => ({ label: type === "labor" ? "عمالة" : type === "nonlabor" ? "معدات / غير عمالة" : type === "material" ? "مواد" : "غير مصنف", dailyCost: bucket.dailyCost, extensionCost: bucket.extensionCost })), warnings: financial.warnings } : undefined;
-    return { projectName: schedule.name, scheduleSource: sourceLabel(schedule.source), baselineFinish: activeResult.baseline.completionDate, impactedFinish: activeResult.impacted.completionDate, impactDays, methodology: "Time Impact Analysis (CPM/Fragnet) — TIA Studio", narrative, template, events: events.map((event) => ({ id: event.id, title: event.title, occurrenceDate: event.occurrenceDate, duration: event.activities.reduce((sum, activity) => sum + activity.duration, 0), cause: event.cause })), evidence: currentEvidence, financialImpact, notices: notices.data?.map(item => ({ noticeNo: item.noticeNo, eventKey: item.eventKey, status: item.computedStatus, narrative: item.narrative, timeImpactDays: Number(item.timeImpactDays), costImpact: Number(item.costImpact), noticeDueDate: item.noticeDueDate })), review: review.data ? { currentStage: review.data.review.currentStage, status: review.data.review.status, auditCount: review.data.audit.length, participants: review.data.participants.map(item => ({ stage: item.stage, reviewerId: item.reviewerId })) } : null, generatedAt: new Date().toISOString() };
+    return { projectName: schedule.name, scheduleSource: sourceLabel(schedule.source), baselineFinish: activeResult.baseline.completionDate, impactedFinish: activeResult.impacted.completionDate, impactDays, methodology: "Time Impact Analysis (CPM/Fragnet) — TIA Studio", narrative, template, events: events.map((event) => ({ id: event.id, title: event.title, occurrenceDate: event.occurrenceDate, duration: getFragnetDelayDuration(event), cause: event.cause })), evidence: currentEvidence, financialImpact, notices: notices.data?.map(item => ({ noticeNo: item.noticeNo, eventKey: item.eventKey, status: item.computedStatus, narrative: item.narrative, timeImpactDays: Number(item.timeImpactDays), costImpact: Number(item.costImpact), noticeDueDate: item.noticeDueDate })), review: review.data ? { currentStage: review.data.review.currentStage, status: review.data.review.status, auditCount: review.data.audit.length, participants: review.data.participants.map(item => ({ stage: item.stage, reviewerId: item.reviewerId })) } : null, generatedAt: new Date().toISOString() };
   }
 
   async function exportReport(format: "docx" | "pdf") {

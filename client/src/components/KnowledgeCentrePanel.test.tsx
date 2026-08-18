@@ -27,6 +27,8 @@ describe("مركز التدريب والمكتبة المنهجية", () => {
     expect(screen.getAllByText("TIA من الصفر إلى التقرير").length).toBeGreaterThan(0);
     expect(screen.getAllByText("التأخيرات المتزامنة").length).toBeGreaterThan(0);
     expect(screen.getAllByText("تطبيق Primavera P6").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "مسار TIA العملي — Workshop 8" })).toBeTruthy();
+    expect(screen.getByText(/ملفات التمرين الأصلية خارج التطبيق/)).toBeTruthy();
     expect(screen.getByText(/لا توجد روابط بعد/)).toBeTruthy();
     expect(screen.getByText(/لم تُرفع موسوعة بعد/)).toBeTruthy();
   });

@@ -13,7 +13,7 @@ import { issueProposalToFragnet, type IssueFragnetProposal } from "@/lib/issue-f
 import { downloadIssueImportTemplate, exportIssueRegisterExcel, parseIssueRegisterExcel, type ExcelIssueRow } from "@/lib/issue-excel";
 import "./issue-log.css";
 
-type View = "overview" | "schedule" | "event" | "windows" | "methods" | "analysis" | "report" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
+type View = "guided" | "overview" | "schedule" | "event" | "windows" | "methods" | "analysis" | "report" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
 
 const responsibilityLabel: Record<string, string> = { employer: "صاحب العمل", contractor: "المقاول", engineer: "المهندس", third_party: "طرف ثالث", undetermined: "غير محددة" };
 const causeLabel: Record<string, string> = { employer: "صاحب العمل", contractor: "المقاول", neutral: "محايد / قيد التحقق" };
