@@ -55,6 +55,60 @@ export type WbsNode = {
   path: string;
 };
 
+/** مورد مسند إلى نشاط كما ورد من P6 أو أُدخل محلياً للتحليل. */
+export type ResourceAssignment = {
+  id: string;
+  activityId: string;
+  resourceId?: string;
+  resourceName?: string;
+  resourceType: "labor" | "nonlabor" | "material" | "unknown";
+  costAccountId?: string;
+  wbsId?: string;
+  targetQuantity?: number;
+  remainingQuantity?: number;
+  actualRegularQuantity?: number;
+  actualOvertimeQuantity?: number;
+  targetCost?: number;
+  remainingCost?: number;
+  actualRegularCost?: number;
+  actualOvertimeCost?: number;
+  costPerUnit?: number;
+  targetQuantityPerHour?: number;
+  remainingQuantityPerHour?: number;
+  activityRemainingDuration?: number;
+  source: "xer" | "p6-xml" | "manual";
+};
+
+export type FinancialImpactBucket = {
+  assignmentCount: number;
+  dailyCost: number;
+  extensionCost: number;
+};
+
+export type FinancialImpact = {
+  delayDays: number;
+  hoursPerDay: number;
+  dailyCost: number;
+  extensionCost: number;
+  byResourceType: Record<ResourceAssignment["resourceType"], FinancialImpactBucket>;
+  warnings: string[];
+};
+
+/**
+ * يحدد إسنادات الموارد الخاصة بنطاق حدث TIA عبر أنشطة الـ Fragnet ونقطتي الربط
+ * مع برنامج الأساس. لا يخلط هذا التقدير موارد المشروع غير المتصلة بالحدث.
+ */
+export function resourceAssignmentsForEvent(schedule: Schedule, event?: Fragnet | null): ResourceAssignment[] {
+  if (!event) return schedule.resourceAssignments ?? [];
+  const eventActivityIds = new Set(event.activities.map(activity => activity.id));
+  const baseActivityIds = new Set(schedule.activities.map(activity => activity.id));
+  const connectedBaseActivityIds = event.relationships
+    .flatMap(relationship => [relationship.predecessorId, relationship.successorId])
+    .filter(id => baseActivityIds.has(id));
+  const selectedActivityIds = new Set(Array.from(eventActivityIds).concat(connectedBaseActivityIds));
+  return (schedule.resourceAssignments ?? []).filter(assignment => selectedActivityIds.has(assignment.activityId));
+}
+
 export type Relationship = {
   id: string;
   predecessorId: string;
@@ -74,6 +128,7 @@ export type Schedule = {
   source?: "manual" | "json" | "csv" | "xer" | "p6-xml";
   importNotes?: string[];
   wbsNodes?: WbsNode[];
+  resourceAssignments?: ResourceAssignment[];
 };
 
 export type Fragnet = {
@@ -490,4 +545,38 @@ export function dateToRelativeDay(scheduleStartDate: string, targetDate: string,
     if (isWorkingDate(formatIsoDate(cursor), calendar)) days += direction;
   }
   return days;
+}
+
+/**
+ * يحسب تعرض تكلفة التمديد التخطيطي من مورد P6 المحلي. لا يمثل المبلغ استحقاقاً
+ * تعاقدياً أو مطالبة جاهزة؛ فالتكاليف غير المباشرة والقيود التعاقدية تحتاج مراجعة مستقلة.
+ */
+export function calculateFinancialImpact(delayDays: number, assignments: ResourceAssignment[], hoursPerDay = 8): FinancialImpact {
+  const safeDelayDays = Math.max(0, Number.isFinite(delayDays) ? delayDays : 0);
+  const safeHoursPerDay = Math.max(0, Number.isFinite(hoursPerDay) ? hoursPerDay : 8);
+  const byResourceType: FinancialImpact["byResourceType"] = {
+    labor: { assignmentCount: 0, dailyCost: 0, extensionCost: 0 },
+    nonlabor: { assignmentCount: 0, dailyCost: 0, extensionCost: 0 },
+    material: { assignmentCount: 0, dailyCost: 0, extensionCost: 0 },
+    unknown: { assignmentCount: 0, dailyCost: 0, extensionCost: 0 },
+  };
+  const warnings: string[] = [];
+  for (const assignment of assignments) {
+    const bucket = byResourceType[assignment.resourceType] ?? byResourceType.unknown;
+    const costPerUnit = Math.max(0, assignment.costPerUnit ?? 0);
+    const unitsPerHour = Math.max(0, assignment.remainingQuantityPerHour ?? assignment.targetQuantityPerHour ?? 0);
+    const remainingCost = Math.max(0, assignment.remainingCost ?? 0);
+    const targetCost = Math.max(0, assignment.targetCost ?? 0);
+    const activityDays = Math.max(0, assignment.activityRemainingDuration ?? 0);
+    const dailyCostFromRate = costPerUnit * unitsPerHour * safeHoursPerDay;
+    const dailyCostFromAllocatedRemainingCost = activityDays > 0 ? remainingCost / activityDays : 0;
+    const dailyCostFromAllocatedTargetCost = activityDays > 0 ? targetCost / activityDays : 0;
+    const dailyCost = dailyCostFromRate || dailyCostFromAllocatedRemainingCost || dailyCostFromAllocatedTargetCost;
+    if (!dailyCost) warnings.push(`لم يمكن اشتقاق تكلفة يومية للمورد «${assignment.resourceName || assignment.resourceId || assignment.id}»؛ لم يُدخل معدل أو مدة نشاط صالحة.`);
+    bucket.assignmentCount += 1;
+    bucket.dailyCost += dailyCost;
+    bucket.extensionCost += dailyCost * safeDelayDays;
+  }
+  const dailyCost = Object.values(byResourceType).reduce((sum, bucket) => sum + bucket.dailyCost, 0);
+  return { delayDays: safeDelayDays, hoursPerDay: safeHoursPerDay, dailyCost, extensionCost: dailyCost * safeDelayDays, byResourceType, warnings };
 }

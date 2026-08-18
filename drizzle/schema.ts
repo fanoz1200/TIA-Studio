@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { decimal, index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -58,7 +58,116 @@ export const claimTemplates = mysqlTable("claim_templates", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+/**
+ * A source-faithful snapshot of a P6 resource assignment (TASKRSRC or XML equivalent).
+ * Monetary values are planning inputs for cost-exposure modelling, not a legal entitlement.
+ */
+export const resourceAssignments = mysqlTable("resource_assignments", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  activityId: varchar("activityId", { length: 128 }).notNull(),
+  assignmentKey: varchar("assignmentKey", { length: 160 }).notNull(),
+  resourceId: varchar("resourceId", { length: 128 }),
+  resourceName: varchar("resourceName", { length: 255 }),
+  resourceType: mysqlEnum("resourceType", ["labor", "nonlabor", "material", "unknown"]).notNull().default("unknown"),
+  costAccountId: varchar("costAccountId", { length: 128 }),
+  wbsId: varchar("wbsId", { length: 128 }),
+  targetQuantity: decimal("targetQuantity", { precision: 18, scale: 4 }).notNull().default("0"),
+  remainingQuantity: decimal("remainingQuantity", { precision: 18, scale: 4 }).notNull().default("0"),
+  actualRegularQuantity: decimal("actualRegularQuantity", { precision: 18, scale: 4 }).notNull().default("0"),
+  actualOvertimeQuantity: decimal("actualOvertimeQuantity", { precision: 18, scale: 4 }).notNull().default("0"),
+  targetCost: decimal("targetCost", { precision: 18, scale: 4 }).notNull().default("0"),
+  remainingCost: decimal("remainingCost", { precision: 18, scale: 4 }).notNull().default("0"),
+  actualRegularCost: decimal("actualRegularCost", { precision: 18, scale: 4 }).notNull().default("0"),
+  actualOvertimeCost: decimal("actualOvertimeCost", { precision: 18, scale: 4 }).notNull().default("0"),
+  costPerUnit: decimal("costPerUnit", { precision: 18, scale: 4 }).notNull().default("0"),
+  sourceFormat: mysqlEnum("sourceFormat", ["xer", "p6_xml", "manual"]).notNull(),
+  importedAt: timestamp("importedAt").defaultNow().notNull(),
+}, table => [
+  uniqueIndex("resource_assignments_user_project_assignment_uq").on(table.userId, table.projectKey, table.assignmentKey),
+  index("resource_assignments_user_project_activity_idx").on(table.userId, table.projectKey, table.activityId),
+]);
+
+/** Event-linked notice register. A record represents a prepared and tracked notice, never an automatic legal dispatch. */
+export const noticeRegister = mysqlTable("notice_register", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  claimKey: varchar("claimKey", { length: 128 }).notNull(),
+  eventKey: varchar("eventKey", { length: 128 }).notNull(),
+  noticeNo: varchar("noticeNo", { length: 128 }).notNull(),
+  sender: varchar("sender", { length: 255 }),
+  recipient: varchar("recipient", { length: 255 }),
+  contractClause: varchar("contractClause", { length: 255 }),
+  awarenessDate: timestamp("awarenessDate"),
+  noticeDueDate: timestamp("noticeDueDate"),
+  sentDate: timestamp("sentDate"),
+  status: mysqlEnum("status", ["draft", "under_review", "sent", "overdue", "cancelled"]).notNull().default("draft"),
+  narrative: text("narrative").notNull(),
+  timeImpactDays: decimal("timeImpactDays", { precision: 12, scale: 2 }).notNull().default("0"),
+  costImpact: decimal("costImpact", { precision: 18, scale: 4 }).notNull().default("0"),
+  evidenceReferenceIds: text("evidenceReferenceIds"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("notice_register_user_project_notice_uq").on(table.userId, table.projectKey, table.noticeNo),
+  index("notice_register_user_project_event_idx").on(table.userId, table.projectKey, table.eventKey),
+]);
+
+/** The current electronic-review state for a locally identified claim. */
+export const claimReviews = mysqlTable("claim_reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  claimKey: varchar("claimKey", { length: 128 }).notNull(),
+  claimTitle: varchar("claimTitle", { length: 255 }).notNull(),
+  currentStage: mysqlEnum("currentStage", ["draft", "planning_review", "contract_review", "claims_manager_approval", "ready_to_export", "rejected"]).notNull().default("draft"),
+  status: mysqlEnum("status", ["draft", "in_review", "approved", "rejected", "ready_to_export"]).notNull().default("draft"),
+  createdBy: int("createdBy").notNull().references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("claim_reviews_user_project_claim_uq").on(table.userId, table.projectKey, table.claimKey),
+]);
+
+/** Append-only audit history of every review action. No update or delete procedure is exposed. */
+export const claimReviewStages = mysqlTable("claim_review_stages", {
+  id: int("id").autoincrement().primaryKey(),
+  claimReviewId: int("claimReviewId").notNull().references(() => claimReviews.id, { onDelete: "cascade" }),
+  stage: mysqlEnum("stage", ["draft", "planning_review", "contract_review", "claims_manager_approval", "ready_to_export", "rejected"]).notNull(),
+  reviewerId: int("reviewerId").notNull().references(() => users.id),
+  decision: mysqlEnum("decision", ["created", "submitted", "approved", "rejected", "commented", "reopened"]).notNull(),
+  comment: text("comment"),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+}, table => [
+  index("claim_review_stages_claim_recorded_idx").on(table.claimReviewId, table.recordedAt),
+]);
+
+/** Assigned reviewers are the authorization boundary for each gate in the claim-review workflow. */
+export const claimReviewParticipants = mysqlTable("claim_review_participants", {
+  id: int("id").autoincrement().primaryKey(),
+  claimReviewId: int("claimReviewId").notNull().references(() => claimReviews.id, { onDelete: "cascade" }),
+  stage: mysqlEnum("stage", ["planning_review", "contract_review", "claims_manager_approval"]).notNull(),
+  reviewerId: int("reviewerId").notNull().references(() => users.id),
+  assignedBy: int("assignedBy").notNull().references(() => users.id),
+  assignedAt: timestamp("assignedAt").defaultNow().notNull(),
+}, table => [
+  uniqueIndex("claim_review_participants_review_stage_uq").on(table.claimReviewId, table.stage),
+  index("claim_review_participants_reviewer_stage_idx").on(table.reviewerId, table.stage),
+]);
+
 export type EvidenceDocument = typeof evidenceDocuments.$inferSelect;
 export type InsertEvidenceDocument = typeof evidenceDocuments.$inferInsert;
 export type ClaimTemplate = typeof claimTemplates.$inferSelect;
 export type InsertClaimTemplate = typeof claimTemplates.$inferInsert;
+export type ResourceAssignment = typeof resourceAssignments.$inferSelect;
+export type InsertResourceAssignment = typeof resourceAssignments.$inferInsert;
+export type NoticeRegisterEntry = typeof noticeRegister.$inferSelect;
+export type InsertNoticeRegisterEntry = typeof noticeRegister.$inferInsert;
+export type ClaimReview = typeof claimReviews.$inferSelect;
+export type InsertClaimReview = typeof claimReviews.$inferInsert;
+export type ClaimReviewStage = typeof claimReviewStages.$inferSelect;
+export type InsertClaimReviewStage = typeof claimReviewStages.$inferInsert;
+export type ClaimReviewParticipant = typeof claimReviewParticipants.$inferSelect;
+export type InsertClaimReviewParticipant = typeof claimReviewParticipants.$inferInsert;

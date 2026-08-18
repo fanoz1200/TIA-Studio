@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Download, FileCheck2, FileCode2, FileText, FolderTree, LogIn, Paperclip, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { importP6XmlSchedule, type P6XmlImportSummary } from "@/lib/p6-xml";
-import type { Fragnet, Schedule, TiaResult, WindowTiaResult } from "@/lib/cpm";
+import { calculateFinancialImpact, resourceAssignmentsForEvent, type Fragnet, type Schedule, type TiaResult, type WindowTiaResult } from "@/lib/cpm";
 import { exportClaimDocx, exportClaimPdf, type ClaimReportPayload, type ClaimTemplateDraft } from "@/lib/claim-export";
 
-type View = "schedule" | "event" | "analysis" | "report" | "overview" | "windows" | "methods";
+type View = "schedule" | "event" | "analysis" | "report" | "overview" | "windows" | "methods" | "financial" | "notices" | "review";
 type EvidenceType = "correspondence" | "instruction" | "drawing" | "programme" | "photo" | "report" | "other";
 
 const initialTemplate: ClaimTemplateDraft = {
@@ -67,6 +67,9 @@ export function P6EvidenceReportPanel({
   const [template, setTemplate] = useState<ClaimTemplateDraft>(initialTemplate);
   const evidence = trpc.evidence.list.useQuery({ projectKey: schedule.id, eventKey: selectedEvent?.id ?? "none" }, { enabled: Boolean(selectedEvent) && isAuthenticated && (view === "event" || view === "analysis" || view === "report") });
   const templates = trpc.claimTemplate.list.useQuery(undefined, { enabled: isAuthenticated && view === "report" });
+  const claimKey = useMemo(() => `${schedule.id}:delay-claim`, [schedule.id]);
+  const notices = trpc.notice.list.useQuery({ projectKey: schedule.id, claimKey }, { enabled: isAuthenticated && view === "report" });
+  const review = trpc.claimReview.get.useQuery({ projectKey: schedule.id, claimKey }, { enabled: isAuthenticated && view === "report" });
   const upload = trpc.evidence.upload.useMutation({ onSuccess: () => { evidence.refetch(); toast.success("تم حفظ الدليل وربطه بالحدث المحدد."); setEvidenceTitle(""); setEvidenceDescription(""); setEvidenceDate(""); } });
   const remove = trpc.evidence.remove.useMutation({ onSuccess: () => evidence.refetch() });
   const saveTemplate = trpc.claimTemplate.create.useMutation({ onSuccess: () => { templates.refetch(); toast.success("تم حفظ قالب المطالبة ضمن حسابك."); } });
@@ -92,7 +95,10 @@ export function P6EvidenceReportPanel({
     if (!activeResult) { toast.error("شغّل تحليل TIA أولاً لتوليد تقرير المطالبة."); return null; }
     const impactDays = "totalImpactDays" in activeResult ? activeResult.totalImpactDays : activeResult.impactDays;
     const currentEvidence = (evidence.data ?? []).map((item) => ({ title: item.title, fileName: item.fileName, evidenceType: item.evidenceType, description: item.description, receivedAt: item.receivedAt }));
-    return { projectName: schedule.name, scheduleSource: sourceLabel(schedule.source), baselineFinish: activeResult.baseline.completionDate, impactedFinish: activeResult.impacted.completionDate, impactDays, methodology: "Time Impact Analysis (CPM/Fragnet) — TIA Studio", narrative, template, events: events.map((event) => ({ id: event.id, title: event.title, occurrenceDate: event.occurrenceDate, duration: event.activities.reduce((sum, activity) => sum + activity.duration, 0), cause: event.cause })), evidence: currentEvidence, generatedAt: new Date().toISOString() };
+    const eventResources = resourceAssignmentsForEvent(schedule, selectedEvent);
+    const financial = calculateFinancialImpact(Math.max(0, impactDays), eventResources, schedule.calendar?.hoursPerDay ?? 8);
+    const financialImpact = eventResources.length ? { dailyCost: financial.dailyCost, extensionCost: financial.extensionCost, byResourceType: Object.entries(financial.byResourceType).map(([type, bucket]) => ({ label: type === "labor" ? "عمالة" : type === "nonlabor" ? "معدات / غير عمالة" : type === "material" ? "مواد" : "غير مصنف", dailyCost: bucket.dailyCost, extensionCost: bucket.extensionCost })), warnings: financial.warnings } : undefined;
+    return { projectName: schedule.name, scheduleSource: sourceLabel(schedule.source), baselineFinish: activeResult.baseline.completionDate, impactedFinish: activeResult.impacted.completionDate, impactDays, methodology: "Time Impact Analysis (CPM/Fragnet) — TIA Studio", narrative, template, events: events.map((event) => ({ id: event.id, title: event.title, occurrenceDate: event.occurrenceDate, duration: event.activities.reduce((sum, activity) => sum + activity.duration, 0), cause: event.cause })), evidence: currentEvidence, financialImpact, notices: notices.data?.map(item => ({ noticeNo: item.noticeNo, eventKey: item.eventKey, status: item.computedStatus, narrative: item.narrative, timeImpactDays: Number(item.timeImpactDays), costImpact: Number(item.costImpact), noticeDueDate: item.noticeDueDate })), review: review.data ? { currentStage: review.data.review.currentStage, status: review.data.review.status, auditCount: review.data.audit.length, participants: review.data.participants.map(item => ({ stage: item.stage, reviewerId: item.reviewerId })) } : null, generatedAt: new Date().toISOString() };
   }
 
   if (view === "schedule") return <section className="p6-ops-panel"><div className="p6-ops-copy"><p className="eyebrow">P6 EXTENDED IMPORT</p><h2>بيانات التقدم وWBS من Primavera</h2><p>يدعم المستورد P6 XML عناصر Project وActivity وRelationship وWBS، ويعرض النسب كما وردت دون تحويلها إلى حكم استحقاق.</p></div><div className="p6-ops-actions"><Button variant="outline" className="outline-action" onClick={() => xmlInput.current?.click()}><FileCode2 size={16} />استيراد P6 XML</Button><input ref={xmlInput} hidden type="file" accept=".xml,text/xml,application/xml" onChange={(event) => { const file = event.target.files?.[0]; if (file) importXml(file); event.currentTarget.value = ""; }} /><div className="p6-stat"><FolderTree size={18} /><span><b>{schedule.wbsNodes?.length ?? 0}</b> عناصر WBS</span></div><div className="p6-stat"><FileCheck2 size={18} /><span><b>{schedule.activities.filter((activity) => activity.percentComplete !== undefined).length}</b> نسب إنجاز</span></div></div>{xmlSummary ? <div className="p6-summary"><b>آخر استيراد XML: {xmlSummary.projectName}</b><span>{xmlSummary.activitiesRead} نشاط · {xmlSummary.relationshipsRead} علاقة · {xmlSummary.wbsRead} WBS · {xmlSummary.activitiesWithProgress} نسبة إنجاز</span></div> : null}</section>;

@@ -2,7 +2,7 @@
  * TIA Studio — XER schedule adapter
  * يحول جداول Primavera P6 النصية الضرورية لتحليل CPM محلياً دون رفع الملف.
  */
-import { calendarDayCalendar, type Activity, type Relationship, type RelationshipType, type Schedule, type WbsNode } from "./cpm";
+import { calendarDayCalendar, type Activity, type Relationship, type RelationshipType, type ResourceAssignment, type Schedule, type WbsNode } from "./cpm";
 
 type XerRow = Record<string, string>;
 
@@ -11,6 +11,9 @@ export type XerImportSummary = {
   activitiesRead: number;
   relationshipsRead: number;
   wbsRead: number;
+  resourcesRead: number;
+  resourceAssignmentsRead: number;
+  assignmentsWithCosts: number;
   activitiesWithProgress: number;
   calendarName?: string;
   warnings: string[];
@@ -85,6 +88,14 @@ function percent(value: string) {
   return Math.max(0, Math.min(100, result <= 1 ? result * 100 : result));
 }
 
+function resourceType(value: string): ResourceAssignment["resourceType"] {
+  const normalized = value.replace(/[\s_-]/g, "").toLowerCase();
+  if (normalized.includes("nonlabor") || normalized.includes("nonlabour")) return "nonlabor";
+  if (normalized.includes("labor") || normalized.includes("labour")) return "labor";
+  if (normalized.includes("material")) return "material";
+  return "unknown";
+}
+
 function buildWbsNodes(rows: XerRow[]) {
   const rawNodes = rows.map((row, index) => ({
     id: firstValue(row, "wbs_id") || `WBS-${index + 1}`,
@@ -103,8 +114,8 @@ function buildWbsNodes(rows: XerRow[]) {
 }
 
 /**
- * يقرأ نطاقاً مقصوداً ومحدوداً من XER: PROJECT, TASK, TASKPRED وCALENDAR.
- * لا يحاول استيراد التكاليف أو الموارد أو بيانات التقويم المشفرة في P6.
+ * يقرأ بيانات الجدولة الأساسية وإسنادات TASKRSRC المتاحة في تصدير XER.
+ * لا يفك نمط تقويم P6 المشفر تلقائياً؛ يتطلب ذلك مراجعة المستخدم داخل التطبيق.
  */
 export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xer"): XerImportResult {
   const tables = parseTables(raw);
@@ -112,6 +123,8 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
   const predecessors = tables.get("TASKPRED") ?? [];
   const projects = tables.get("PROJECT") ?? [];
   const calendars = tables.get("CALENDAR") ?? [];
+  const resourceRows = tables.get("RSRC") ?? [];
+  const taskResources = tables.get("TASKRSRC") ?? [];
   if (!tasks.length) throw new Error("لم يعثر المستورد على جدول TASK داخل ملف XER.");
 
   const warnings: string[] = [];
@@ -145,6 +158,42 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
   });
 
   const activityIds = new Set(activities.map((activity) => activity.id));
+  const activityById = new Map(activities.map((activity) => [activity.id, activity]));
+  const resourcesById = new Map(resourceRows.map((resource) => [firstValue(resource, "rsrc_id"), resource]));
+  const resourceAssignments: ResourceAssignment[] = [];
+  for (let index = 0; index < taskResources.length; index += 1) {
+    const row = taskResources[index];
+    const activityId = firstValue(row, "task_id");
+    if (!activityIds.has(activityId)) {
+      warnings.push(`تم تجاهل إسناد مورد TASKRSRC رقم ${index + 1} لأنه لا يشير إلى نشاط مقروء.`);
+      continue;
+    }
+    const resourceId = firstValue(row, "rsrc_id");
+    const resource = resourcesById.get(resourceId);
+    const activity = activityById.get(activityId);
+    resourceAssignments.push({
+      id: firstValue(row, "taskrsrc_id", "guid") || `XER-RSRC-${index + 1}`,
+      activityId,
+      resourceId: resourceId || undefined,
+      resourceName: firstValue(resource, "rsrc_name", "rsrc_short_name") || undefined,
+      resourceType: resourceType(firstValue(row, "rsrc_type") || firstValue(resource, "rsrc_type")),
+      costAccountId: firstValue(row, "acct_id") || undefined,
+      wbsId: firstValue(row, "wbs_id", "taskrsrc.task|wbs_id") || activity?.wbsId,
+      targetQuantity: numeric(firstValue(row, "target_qty")),
+      remainingQuantity: numeric(firstValue(row, "remain_qty")),
+      actualRegularQuantity: numeric(firstValue(row, "act_reg_qty")),
+      actualOvertimeQuantity: numeric(firstValue(row, "act_ot_qty")),
+      targetCost: numeric(firstValue(row, "target_cost")),
+      remainingCost: numeric(firstValue(row, "remain_cost")),
+      actualRegularCost: numeric(firstValue(row, "act_reg_cost")),
+      actualOvertimeCost: numeric(firstValue(row, "act_ot_cost")),
+      costPerUnit: numeric(firstValue(row, "cost_per_qty")),
+      targetQuantityPerHour: numeric(firstValue(row, "target_qty_per_hr")),
+      remainingQuantityPerHour: numeric(firstValue(row, "remain_qty_per_hr")),
+      activityRemainingDuration: activity?.remainingDuration ?? activity?.duration,
+      source: "xer",
+    });
+  }
   const relationships: Relationship[] = [];
   for (let index = 0; index < predecessors.length; index += 1) {
     const row = predecessors[index];
@@ -173,6 +222,7 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
   if (calendars.length) warnings.push("تم التعرف على سجل التقويم في XER، لكن نمط العمل المشفر في P6 لا يُفك تلقائياً؛ راجع التقويم واختر أيام العمل والعطل من التطبيق.");
   else warnings.push("لم يعثر المستورد على سجل CALENDAR؛ طُبق تقويم الأيام التقويمية حتى يراجعه المستخدم.");
   warnings.push("حُولت مدد P6 من ساعات إلى أيام عمل على أساس 8 ساعات/يوم؛ راجع الإعداد إذا كان المشروع يستخدم يوماً مختلفاً.");
+  if (!taskResources.length) warnings.push("لم يعثر المستورد على جدول TASKRSRC؛ ستبقى شاشة الأثر المالي بلا إسنادات موارد حتى تُستورد نسخة P6 تتضمن الموارد.");
 
   return {
     schedule: {
@@ -186,7 +236,8 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
       source: "xer",
       importNotes: warnings,
       wbsNodes,
+      resourceAssignments,
     },
-    summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, wbsRead: wbsNodes.length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
+    summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, wbsRead: wbsNodes.length, resourcesRead: resourceRows.length, resourceAssignmentsRead: resourceAssignments.length, assignmentsWithCosts: resourceAssignments.filter((assignment) => Boolean(assignment.targetCost || assignment.remainingCost || assignment.actualRegularCost || assignment.actualOvertimeCost)).length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
   };
 }

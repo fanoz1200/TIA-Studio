@@ -1,15 +1,18 @@
 /**
  * Primavera XML adapter. It reads the portable schedule elements required by
- * TIA Studio: Project, Activity, Relationship/Predecessor, WBS and progress.
- * It deliberately does not infer costs, resources, or P6 calendar exceptions.
+ * TIA Studio: Project, Activity, Relationship/Predecessor, WBS, progress,
+ * and ResourceAssignment values. It does not infer P6 calendar exceptions.
  */
-import { calendarDayCalendar, type Activity, type Relationship, type RelationshipType, type Schedule, type WbsNode } from "./cpm";
+import { calendarDayCalendar, type Activity, type Relationship, type RelationshipType, type ResourceAssignment, type Schedule, type WbsNode } from "./cpm";
 
 export type P6XmlImportSummary = {
   projectName: string;
   activitiesRead: number;
   relationshipsRead: number;
   wbsRead: number;
+  resourcesRead: number;
+  resourceAssignmentsRead: number;
+  assignmentsWithCosts: number;
   activitiesWithProgress: number;
   warnings: string[];
 };
@@ -55,6 +58,14 @@ function percent(value: string) {
 function relationshipType(value: string): RelationshipType {
   const normalized = value.replace(/^PR_/i, "").toUpperCase();
   return normalized === "SS" || normalized === "FF" || normalized === "SF" ? normalized : "FS";
+}
+
+function resourceType(value: string): ResourceAssignment["resourceType"] {
+  const normalized = value.replace(/[\s_-]/g, "").toLowerCase();
+  if (normalized.includes("nonlabor") || normalized.includes("nonlabour")) return "nonlabor";
+  if (normalized.includes("labor") || normalized.includes("labour")) return "labor";
+  if (normalized.includes("material")) return "material";
+  return "unknown";
 }
 
 function buildWbsNodes(elements: Element[]) {
@@ -109,6 +120,43 @@ export function importP6XmlSchedule(raw: string, fileName = "Primavera Schedule.
     };
   });
   const activityIds = new Set(activities.map((activity) => activity.id));
+  const activityById = new Map(activities.map((activity) => [activity.id, activity]));
+  const resourceElements = childrenByLocalName(project, ["Resource"]).filter((element) => Boolean(textValue(element, "ObjectId", "Id", "ResourceId")));
+  const resourcesById = new Map(resourceElements.map((element) => [textValue(element, "ObjectId", "Id", "ResourceId"), element]));
+  const resourceAssignments: ResourceAssignment[] = [];
+  childrenByLocalName(project, ["ResourceAssignment"]).forEach((element, index) => {
+    const rawActivityId = textValue(element, "ActivityObjectId", "TaskObjectId", "ActivityId", "TaskId");
+    const activityId = objectToActivity.get(rawActivityId) || rawActivityId;
+    if (!activityIds.has(activityId)) {
+      warnings.push(`تم تجاهل إسناد مورد XML رقم ${index + 1} لأنه لا يشير إلى نشاط مقروء.`);
+      return;
+    }
+    const resourceId = textValue(element, "ResourceObjectId", "ResourceId");
+    const resource = resourcesById.get(resourceId);
+    const activity = activityById.get(activityId);
+    resourceAssignments.push({
+      id: textValue(element, "ObjectId", "Id", "ResourceAssignmentObjectId") || `XML-RSRC-${index + 1}`,
+      activityId,
+      resourceId: resourceId || undefined,
+      resourceName: textValue(resource ?? element, "Name", "ResourceName", "ShortName") || undefined,
+      resourceType: resourceType(textValue(element, "ResourceType", "Type") || (resource ? textValue(resource, "ResourceType", "Type") : "")),
+      costAccountId: textValue(element, "CostAccountObjectId", "CostAccountId", "AccountId") || undefined,
+      wbsId: textValue(element, "WBSObjectId", "WbsObjectId") || activity?.wbsId,
+      targetQuantity: numberValue(textValue(element, "BudgetedUnits", "TargetQuantity", "PlannedUnits")),
+      remainingQuantity: numberValue(textValue(element, "RemainingUnits", "RemainingQuantity")),
+      actualRegularQuantity: numberValue(textValue(element, "ActualRegularUnits", "ActualRegularQuantity")),
+      actualOvertimeQuantity: numberValue(textValue(element, "ActualOvertimeUnits", "ActualOvertimeQuantity")),
+      targetCost: numberValue(textValue(element, "BudgetedCost", "TargetCost", "PlannedCost")),
+      remainingCost: numberValue(textValue(element, "RemainingCost")),
+      actualRegularCost: numberValue(textValue(element, "ActualRegularCost")),
+      actualOvertimeCost: numberValue(textValue(element, "ActualOvertimeCost")),
+      costPerUnit: numberValue(textValue(element, "PricePerUnit", "CostPerUnit")),
+      targetQuantityPerHour: numberValue(textValue(element, "BudgetedUnitsPerTime", "TargetQuantityPerHour", "PlannedUnitsPerTime")),
+      remainingQuantityPerHour: numberValue(textValue(element, "RemainingUnitsPerTime", "RemainingQuantityPerHour")),
+      activityRemainingDuration: activity?.remainingDuration ?? activity?.duration,
+      source: "p6-xml",
+    });
+  });
   const relationships: Relationship[] = [];
   childrenByLocalName(project, ["Relationship", "Predecessor"]).forEach((element, index) => {
     const rawPredecessor = textValue(element, "PredecessorActivityObjectId", "PredecessorTaskObjectId", "PredecessorActivityId", "PredTaskId");
@@ -126,6 +174,7 @@ export function importP6XmlSchedule(raw: string, fileName = "Primavera Schedule.
   });
   if (!wbsNodes.length) warnings.push("لم يعثر المستورد على عناصر WBS قابلة للقراءة؛ احتُفظ بالنشاط من دون مسار WBS.");
   if (!relationships.length) warnings.push("لم يعثر المستورد على علاقات قابلة للربط؛ راجع تصدير عنصر Relationships من P6 XML.");
+  if (!resourceAssignments.length) warnings.push("لم يعثر المستورد على إسنادات ResourceAssignment قابلة للربط؛ صدّر الموارد من P6 XML لاحتساب الأثر المالي.");
   warnings.push("تُستخدم نسبة الإنجاز كما وردت في P6 للعرض والتقرير فقط؛ لا تُبدّل منطق CPM أو تحليل الاستحقاق.");
   const name = textValue(project, "Name", "ProjectName") || fileName.replace(/\.xml$/i, "") || "برنامج P6 XML مستورد";
   const startDate = isoDate(textValue(project, "PlannedStartDate", "StartDate")) || activities.map((activity) => activity.actualStart).filter(Boolean).sort()[0];
@@ -142,7 +191,8 @@ export function importP6XmlSchedule(raw: string, fileName = "Primavera Schedule.
       source: "p6-xml",
       importNotes: warnings,
       wbsNodes,
+      resourceAssignments,
     },
-    summary: { projectName: name, activitiesRead: activities.length, relationshipsRead: relationships.length, wbsRead: wbsNodes.length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, warnings },
+    summary: { projectName: name, activitiesRead: activities.length, relationshipsRead: relationships.length, wbsRead: wbsNodes.length, resourcesRead: resourceElements.length, resourceAssignmentsRead: resourceAssignments.length, assignmentsWithCosts: resourceAssignments.filter((assignment) => Boolean(assignment.targetCost || assignment.remainingCost || assignment.actualRegularCost || assignment.actualOvertimeCost)).length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, warnings },
   };
 }

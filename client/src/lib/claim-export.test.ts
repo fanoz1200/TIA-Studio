@@ -29,6 +29,18 @@ describe("claim report exporters", () => {
     expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("تسعة أيام");
   });
 
+  it("includes financial exposure, notices, and review status when the claim has them", () => {
+    const sections = claimReportSections({
+      ...payload,
+      financialImpact: { dailyCost: 340, extensionCost: 3060, byResourceType: [{ label: "عمالة", dailyCost: 240, extensionCost: 2160 }, { label: "معدات / غير عمالة", dailyCost: 100, extensionCost: 900 }], warnings: ["بيان تكلفة واحد يحتاج مراجعة."] },
+      notices: [{ noticeNo: "N-001", eventKey: "D-01", status: "under_review", narrative: "إشعار أولي مع حفظ الحقوق.", timeImpactDays: 9, costImpact: 3060, noticeDueDate: "2026-03-17" }],
+      review: { currentStage: "contract_review", status: "in_review", auditCount: 3 },
+    });
+    expect(sections.find((section) => section.heading === "ملخص الأثر المالي التشغيلي")?.body).toContain("٣٬٠٦٠");
+    expect(sections.find((section) => section.heading === "سجل الإشعارات المرتبطة")?.body).toContain("N-001");
+    expect(sections.find((section) => section.heading === "حالة المراجعة الإلكترونية")?.body).toContain("contract_review");
+  });
+
   it("generates a valid DOCX package", async () => {
     const blob = await buildClaimDocxBlob(payload);
     const bytes = new Uint8Array(await blob.arrayBuffer());

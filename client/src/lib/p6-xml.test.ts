@@ -12,8 +12,10 @@ const sample = `<?xml version="1.0" encoding="UTF-8"?>
     <ObjectId>100</ObjectId><Name>Metro Extension — Revision 07</Name><PlannedStartDate>2026-01-05T08:00:00</PlannedStartDate><DataDate>2026-02-01T08:00:00</DataDate>
     <WBS><ObjectId>10</ObjectId><Code>1.0</Code><Name>Civil Works</Name></WBS>
     <WBS><ObjectId>11</ObjectId><Code>1.1</Code><Name>Station A</Name><ParentObjectId>10</ParentObjectId></WBS>
+    <Resource><ObjectId>501</ObjectId><Id>LAB-01</Id><Name>Excavation Crew</Name><ResourceType>Labor</ResourceType></Resource>
     <Activity><ObjectId>1001</ObjectId><Id>A100</Id><Name>Excavation</Name><WBSObjectId>11</WBSObjectId><PlannedDuration>40</PlannedDuration><PhysicalPercentComplete>0.25</PhysicalPercentComplete><PercentCompleteType>Physical</PercentCompleteType><ActualStartDate>2026-01-05T08:00:00</ActualStartDate></Activity>
     <Activity><ObjectId>1002</ObjectId><Id>A110</Id><Name>Concrete Works</Name><WBSObjectId>11</WBSObjectId><PlannedDuration>80</PlannedDuration><DurationPercentComplete>50</DurationPercentComplete><PercentCompleteType>Duration</PercentCompleteType><RemainingDuration>40</RemainingDuration></Activity>
+    <ResourceAssignment><ObjectId>701</ObjectId><ActivityObjectId>1001</ActivityObjectId><ResourceObjectId>501</ResourceObjectId><BudgetedUnits>80</BudgetedUnits><RemainingUnits>40</RemainingUnits><ActualRegularUnits>40</ActualRegularUnits><BudgetedCost>1600</BudgetedCost><RemainingCost>800</RemainingCost><ActualRegularCost>800</ActualRegularCost><PricePerUnit>20</PricePerUnit><RemainingUnitsPerTime>2</RemainingUnitsPerTime></ResourceAssignment>
     <Relationship><ObjectId>300</ObjectId><PredecessorActivityObjectId>1001</PredecessorActivityObjectId><SuccessorActivityObjectId>1002</SuccessorActivityObjectId><Type>PR_FS</Type><Lag>8</Lag></Relationship>
   </Project>
 </APIBusinessObjects>`;
@@ -29,6 +31,8 @@ describe("importP6XmlSchedule", () => {
     expect(schedule.activities[0]).toMatchObject({ id: "A100", duration: 5, percentComplete: 25, percentCompleteType: "physical", wbsId: "11" });
     expect(schedule.activities[1]).toMatchObject({ id: "A110", duration: 10, percentComplete: 50, remainingDuration: 5, percentCompleteType: "duration" });
     expect(schedule.relationships[0]).toMatchObject({ predecessorId: "A100", successorId: "A110", type: "FS", lag: 1 });
+    expect(summary).toMatchObject({ resourcesRead: 1, resourceAssignmentsRead: 1, assignmentsWithCosts: 1 });
+    expect(schedule.resourceAssignments).toEqual([expect.objectContaining({ id: "701", activityId: "A100", resourceId: "501", resourceName: "Excavation Crew", resourceType: "labor", targetCost: 1600, remainingCost: 800, remainingQuantityPerHour: 2 })]);
   });
 
   it("reports a useful error when activities are missing", () => {
