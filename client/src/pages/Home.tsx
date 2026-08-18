@@ -79,22 +79,22 @@ function defaultWindow(schedule: Schedule): AnalysisWindow {
 }
 
 const navItems: { key: ViewKey; label: string; icon: typeof Network }[] = [
-  { key: "guided", label: "ابدأ رحلة TIA", icon: Play },
-  { key: "overview", label: "لوحة القرار", icon: BarChart3 },
-  { key: "schedule", label: "البرنامج والتقويم", icon: Network },
-  { key: "event", label: "نمذجة Fragnet", icon: Zap },
+  { key: "guided", label: "1. ابدأ التحليل", icon: Play },
+  { key: "overview", label: "لوحة المتابعة", icon: BarChart3 },
+  { key: "schedule", label: "2. ارفع برنامج P6", icon: Network },
+  { key: "issues", label: "3. سجّل الواقعة", icon: ClipboardList },
+  { key: "event", label: "4. نمذجة الحدث (Fragnet)", icon: Zap },
+  { key: "analysis", label: "5. نتيجة التحليل", icon: ScanSearch },
+  { key: "report", label: "6. تقرير المطالبة", icon: TextQuote },
   { key: "windows", label: "نوافذ وتزامن", icon: CalendarClock },
-  { key: "analysis", label: "نتيجة التحليل", icon: ScanSearch },
   { key: "financial", label: "الأثر المالي", icon: WalletCards },
   { key: "notices", label: "سجل Notices", icon: BellRing },
   { key: "review", label: "الاعتماد الإلكتروني", icon: ClipboardCheck },
   { key: "members", label: "أعضاء المشروع", icon: UsersRound },
-  { key: "issues", label: "سجل القضايا", icon: ClipboardList },
   { key: "compare", label: "مقارنة التحديثات", icon: GitCompareArrows },
-  { key: "resources", label: "الأدلة والتنزيل", icon: HardDriveDownload },
-  { key: "learning", label: "التدريب والمكتبة", icon: BookOpenCheck },
-  { key: "report", label: "السرد والتقرير", icon: TextQuote },
-  { key: "methods", label: "المكتبة العلمية SCL", icon: LibraryBig },
+  { key: "resources", label: "الأدلة والملفات", icon: HardDriveDownload },
+  { key: "learning", label: "التدريب والشرح", icon: BookOpenCheck },
+  { key: "methods", label: "الموسوعة العلمية (SCL)", icon: LibraryBig },
 ];
 
 const causeLabel: Record<DelayCause, string> = { employer: "صاحب العمل", contractor: "المقاول", neutral: "محايد / قوة قاهرة", concurrent: "متزامن" };
