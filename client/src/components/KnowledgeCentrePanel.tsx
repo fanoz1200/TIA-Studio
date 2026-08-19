@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, BookOpenCheck, CheckCircle2, FileText, LibraryBig, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { masterClaimCases, type MasterClaimCase } from "@/lib/master-claim-cases";
+import { enrichHtmlCase, loadMasterClaimExcelCases, type DetailedMasterClaimCase } from "@/lib/master-claim-excel";
 import "./knowledge-centre.css";
 import "./training-video.css";
 
@@ -55,15 +56,50 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedId, setSelectedId] = useState(masterClaimCases[0].id);
   const [methodOverride, setMethodOverride] = useState<AnalysisMethod | null>(null);
+  const [excelCases, setExcelCases] = useState<DetailedMasterClaimCase[] | null>(null);
+  const [excelError, setExcelError] = useState<string | null>(null);
 
-  const categories = useMemo(() => Array.from(new Set(masterClaimCases.map(item => item.category))).sort((a, b) => a.localeCompare(b, "ar")), []);
-  const selectedCase = masterClaimCases.find(item => item.id === selectedId) ?? masterClaimCases[0];
+  useEffect(() => {
+    let mounted = true;
+    loadMasterClaimExcelCases()
+      .then(rows => {
+        if (mounted) setExcelCases(rows);
+      })
+      .catch(() => {
+        if (mounted) setExcelError("تعذر تحميل التفاصيل الإضافية من ملف Excel المرجعي حالياً؛ يبقى فهرس HTML متاحاً للقراءة.");
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  const libraryCases = useMemo(() => {
+    const combined = new Map<string, DetailedMasterClaimCase>();
+    masterClaimCases.forEach(item => combined.set(item.id, enrichHtmlCase(item)));
+    excelCases?.forEach(item => {
+      const previous = combined.get(item.id);
+      combined.set(item.id, {
+        ...previous,
+        ...item,
+        title_ar: item.title_ar || previous?.title_ar || item.id,
+        title_en: item.title_en || previous?.title_en || "",
+        category: item.category || previous?.category || "غير مصنف",
+        description: item.description || previous?.description || "",
+        root_cause: item.root_cause || previous?.root_cause || "",
+        schedule_impact: item.schedule_impact || previous?.schedule_impact || "",
+        contractual_basis: item.contractual_basis || previous?.contractual_basis || "",
+        burden_of_proof: item.burden_of_proof || previous?.burden_of_proof || "",
+      });
+    });
+    return Array.from(combined.values()).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+  }, [excelCases]);
+
+  const categories = useMemo(() => Array.from(new Set(libraryCases.map(item => item.category))).filter(Boolean).sort((a, b) => a.localeCompare(b, "ar")), [libraryCases]);
+  const selectedCase = libraryCases.find(item => item.id === selectedId) ?? libraryCases[0];
   const selectedMethod = methodOverride ?? methodFromSource(selectedCase.methodology);
   const selectedMethodInfo = methods.find(item => item.id === selectedMethod) ?? methods[0];
 
   const matchingCases = useMemo(() => {
     const terms = normalize(query).split(" ").filter(Boolean);
-    return masterClaimCases.filter(item => {
+    return libraryCases.filter(item => {
       const sourceMethod = methodFromSource(item.methodology);
       const haystack = normalize([
         item.id,
@@ -82,7 +118,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         && (categoryFilter === "all" || item.category === categoryFilter)
         && terms.every(term => haystack.includes(term));
     });
-  }, [categoryFilter, methodFilter, query]);
+  }, [categoryFilter, libraryCases, methodFilter, query]);
 
   const chooseCase = (caseItem: MasterClaimCase) => {
     setSelectedId(caseItem.id);
@@ -104,15 +140,16 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         <div>
           <p className="eyebrow">MASTER CLAIM INTELLIGENCE · READ ONLY</p>
           <h2>مكتبة المنهجيات والحالات العملية</h2>
-          <p>هذه المكتبة تعرض الآن <b>{masterClaimCases.length} حالة</b> فعلية من ملف الموسوعة الذي أرسلته، تشمل وصف الواقعة والأثر الزمني والمساند التعاقدي والأدلة المقترحة. البحث يرشدك ولا يصدر حكماً تعاقدياً آلياً.</p>
+          <p>تجمع المكتبة فهرس الموسوعة مع السجل التفصيلي المقروء محلياً من ملف Excel: الوصف والأثر الزمني والمساند التعاقدي والأدلة وقواعد TIA وFragnet عند توافرها. البحث يرشدك ولا يصدر حكماً تعاقدياً آلياً.</p>
         </div>
         <LibraryBig size={26} />
       </div>
 
       <article className="master-library-status" aria-label="حالة مصدر الموسوعة">
-        <div><ShieldCheck size={19} /><span><b>المصدر المرجعي محمّل للقراءة فقط.</b> فُهرست الحالات من ملف Master Claim Intelligence دون تعديل الأصل أو إدخاله في قاعدة البيانات.</span></div>
-        <span className="master-library-count">{masterClaimCases.length} حالة مفهرسة</span>
+        <div><ShieldCheck size={19} /><span><b>المصدر المرجعي محمّل للقراءة فقط.</b> فُهرست الحالات من HTML، وتُقرأ تفاصيل Excel في متصفحك دون تعديل الأصل أو إدخاله في قاعدة البيانات.</span></div>
+        <span className="master-library-count">{excelCases ? `${excelCases.length} حالة Excel تفصيلية` : "جارٍ قراءة تفاصيل Excel…"}</span>
       </article>
+      {excelError ? <p className="case-source-warning">{excelError}</p> : null}
 
       <article className="case-search-gate master-case-catalog">
         <div className="case-search-header">
@@ -123,7 +160,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         <div className="case-catalog-toolbar">
           <div><Label><SlidersHorizontal size={14} />المنهج المرجح</Label><Select value={methodFilter} onValueChange={value => setMethodFilter(value as AnalysisMethod | "all")}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل المناهج</SelectItem>{methods.map(method => <SelectItem key={method.id} value={method.id}>{method.label}</SelectItem>)}</SelectContent></Select></div>
           <div><Label><FileText size={14} />تصنيف الواقعة</Label><Select value={categoryFilter} onValueChange={setCategoryFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل التصنيفات</SelectItem>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select></div>
-          <p><b>{matchingCases.length}</b> نتيجة من أصل {masterClaimCases.length} حالة</p>
+          <p><b>{matchingCases.length}</b> نتيجة من أصل {libraryCases.length} حالة مفهرسة</p>
         </div>
 
         <div className="case-result-grid rich-case-grid">
@@ -154,8 +191,14 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
           <section><h4>وصف الحالة</h4><p>{selectedCase.description}</p></section>
           <section><h4>الأسباب الجذرية</h4><p>{selectedCase.root_cause}</p></section>
           <section><h4>الأثر المتوقع على البرنامج</h4><p>{selectedCase.schedule_impact}</p></section>
-          <section className="contractual-reference"><h4>المساند التعاقدي المذكور في الموسوعة</h4><p>{selectedCase.contractual_basis}</p></section>
+          <section className="contractual-reference"><h4>المساند التعاقدي والقوانين المذكورة في المصدر</h4><p>{selectedCase.contractual_basis}</p></section>
           <section className="evidence-reference"><h4>الأدلة والمستندات المقترحة</h4><p>{selectedCase.burden_of_proof}</p></section>
+          {selectedCase.source === "excel" ? <>
+            <section><h4>الحل المقترح</h4><p>{selectedCase.recommended_solution || "لم يرد حل تفصيلي لهذه الحالة في ملف Excel."}</p></section>
+            <section><h4>إجراءات الوقاية</h4><p>{selectedCase.mitigation || "لم ترد إجراءات وقاية لهذه الحالة في ملف Excel."}</p></section>
+            <section><h4>قواعد TIA وFragnet</h4><p>{[selectedCase.fragnet_id && `Fragnet: ${selectedCase.fragnet_id}`, selectedCase.fragnet_activities && `الأنشطة: ${selectedCase.fragnet_activities}`, selectedCase.tia_baseline_rule && `Baseline: ${selectedCase.tia_baseline_rule}`, selectedCase.calendar_rule && `التقويم: ${selectedCase.calendar_rule}`, selectedCase.float_rule && `Float: ${selectedCase.float_rule}`].filter(Boolean).join("\n") || "لم ترد قواعد Fragnet أو TIA إضافية لهذه الحالة في ملف Excel."}</p></section>
+            <section><h4>إجراء التحديث والاستدراك</h4><p>{[selectedCase.update_procedure, selectedCase.recovery_procedure].filter(Boolean).join("\n\n") || "لم يرد إجراء تحديث أو استدراك إضافي لهذه الحالة في ملف Excel."}</p></section>
+          </> : null}
         </div>
         <div className="case-search-actions">
           <span><ShieldCheck size={16} />هذه خلاصة مرجعية من ملفك؛ راجع نسخة العقد والشروط الخاصة قبل الاعتماد أو المطالبة.</span>

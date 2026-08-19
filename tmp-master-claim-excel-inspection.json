@@ -1,0 +1,365 @@
+{
+  "file": "/home/ubuntu/upload/Master_Claim_Intelligence.xlsx",
+  "sheets": [
+    {
+      "sheet": "00_How_to_Use",
+      "rowCount": 15,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "00 — How to Use This Workbook | دليل الاستخدام التفاعلي",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": ""
+        },
+        {
+          "__EMPTY": "Scenario-based routing guide · Find the right tab for your situation",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": ""
+        }
+      ]
+    },
+    {
+      "sheet": "00_Decision_Tree",
+      "rowCount": 36,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4",
+        "__EMPTY_5"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "00 — Decision Tree | شجرة القرارات لاختيار المنهجية",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": ""
+        },
+        {
+          "__EMPTY": "Strict Logic · Q1 → Q2 → Q3 · Do not invent new logic",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": ""
+        }
+      ]
+    },
+    {
+      "sheet": "00_Dashboard",
+      "rowCount": 115,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4",
+        "__EMPTY_5",
+        "__EMPTY_6",
+        "__EMPTY_7",
+        "__EMPTY_8",
+        "__EMPTY_9",
+        "__EMPTY_10",
+        "__EMPTY_11",
+        "__EMPTY_12",
+        "__EMPTY_13"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "Master Claim Intelligence — لوحة التحكم الرئيسية",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": "",
+          "__EMPTY_7": "",
+          "__EMPTY_8": "",
+          "__EMPTY_9": "",
+          "__EMPTY_10": "",
+          "__EMPTY_11": "",
+          "__EMPTY_12": "",
+          "__EMPTY_13": ""
+        },
+        {
+          "__EMPTY": "Forensic Delay Analysis Academy for Planners | FIDIC Arbitration Reference",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": "",
+          "__EMPTY_7": "",
+          "__EMPTY_8": "",
+          "__EMPTY_9": "",
+          "__EMPTY_10": "",
+          "__EMPTY_11": "",
+          "__EMPTY_12": "",
+          "__EMPTY_13": ""
+        }
+      ]
+    },
+    {
+      "sheet": "01_Forensic_Audit",
+      "rowCount": 39,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4",
+        "__EMPTY_5",
+        "__EMPTY_6",
+        "__EMPTY_7",
+        "__EMPTY_8"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "01 — Forensic Schedule Audit v2.0 | قائمة تدقيق فحص الجدول الزمني",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": "",
+          "__EMPTY_7": "",
+          "__EMPTY_8": ""
+        },
+        {
+          "__EMPTY": "DCMA 14-Point Check · Logic Check · Progress Check · P6 Remediation (Click-by-Click)",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": "",
+          "__EMPTY_7": "",
+          "__EMPTY_8": ""
+        }
+      ]
+    },
+    {
+      "sheet": "02_Case_Library",
+      "rowCount": 74,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4",
+        "__EMPTY_5",
+        "__EMPTY_6",
+        "__EMPTY_7",
+        "__EMPTY_8",
+        "__EMPTY_9",
+        "__EMPTY_10",
+        "__EMPTY_11",
+        "__EMPTY_12",
+        "__EMPTY_13",
+        "__EMPTY_14",
+        "__EMPTY_15",
+        "__EMPTY_16",
+        "__EMPTY_17",
+        "__EMPTY_18",
+        "__EMPTY_19",
+        "__EMPTY_20",
+        "__EMPTY_21"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "02 — Case Library v2.0 | مكتبة الحالات الموحدة",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": "",
+          "__EMPTY_7": "",
+          "__EMPTY_8": "",
+          "__EMPTY_9": "",
+          "__EMPTY_10": "",
+          "__EMPTY_11": "",
+          "__EMPTY_12": "",
+          "__EMPTY_13": "",
+          "__EMPTY_14": "",
+          "__EMPTY_15": "",
+          "__EMPTY_16": "",
+          "__EMPTY_17": "",
+          "__EMPTY_18": "",
+          "__EMPTY_19": "",
+          "__EMPTY_20": "",
+          "__EMPTY_21": ""
+        },
+        {
+          "__EMPTY": "70 cases · Fragnet Protocol · TIA/Baseline · Calendars · Float · Burden of Proof · Ongoing Event Procedure",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": "",
+          "__EMPTY_7": "",
+          "__EMPTY_8": "",
+          "__EMPTY_9": "",
+          "__EMPTY_10": "",
+          "__EMPTY_11": "",
+          "__EMPTY_12": "",
+          "__EMPTY_13": "",
+          "__EMPTY_14": "",
+          "__EMPTY_15": "",
+          "__EMPTY_16": "",
+          "__EMPTY_17": "",
+          "__EMPTY_18": "",
+          "__EMPTY_19": "",
+          "__EMPTY_20": "",
+          "__EMPTY_21": ""
+        }
+      ]
+    },
+    {
+      "sheet": "03_Objections_Rebuttals",
+      "rowCount": 25,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4",
+        "__EMPTY_5",
+        "__EMPTY_6",
+        "__EMPTY_7",
+        "__EMPTY_8"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "03 — Objections & Rebuttals | مكتبة اعتراضات الاستشاري والردود",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": "",
+          "__EMPTY_7": "",
+          "__EMPTY_8": ""
+        },
+        {
+          "__EMPTY": "Consultant objections · Technical rebuttals · Legal & contractual basis (FIDIC + SCL Protocol)",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": "",
+          "__EMPTY_7": "",
+          "__EMPTY_8": ""
+        }
+      ]
+    },
+    {
+      "sheet": "04_Templates",
+      "rowCount": 63,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4",
+        "__EMPTY_5"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "04 — Templates | النماذج الجاهزة",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": ""
+        },
+        {
+          "__EMPTY": "Notice of Delay · TIA Report Template · Claim Letter · FIDIC-compliant formats",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": ""
+        }
+      ]
+    },
+    {
+      "sheet": "05_Quantum_Calculations",
+      "rowCount": 57,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4",
+        "__EMPTY_5",
+        "__EMPTY_6"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "05 — Quantum Calculations | حسابات الخسارة المالية",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": ""
+        },
+        {
+          "__EMPTY": "Prolongation Costs · Hudson/Eichleay Formulas · Measured Mile Analysis (MCA)",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": "",
+          "__EMPTY_6": ""
+        }
+      ]
+    },
+    {
+      "sheet": "06_Final_Checklist",
+      "rowCount": 25,
+      "fields": [
+        "__EMPTY",
+        "__EMPTY_1",
+        "__EMPTY_2",
+        "__EMPTY_3",
+        "__EMPTY_4",
+        "__EMPTY_5"
+      ],
+      "sample": [
+        {
+          "__EMPTY": "06 — Final Checklist | قائمة الفحص النهائية قبل التقديم",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": ""
+        },
+        {
+          "__EMPTY": "20-point Pre-Submission Checklist · FIDIC + SCL Protocol Compliance",
+          "__EMPTY_1": "",
+          "__EMPTY_2": "",
+          "__EMPTY_3": "",
+          "__EMPTY_4": "",
+          "__EMPTY_5": ""
+        }
+      ]
+    }
+  ]
+}
