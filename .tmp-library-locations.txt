@@ -1,0 +1,160 @@
+8177:        <div class="modal-overlay" id="modal-D-047" onclick="closeCaseModalOnOverlay(event, 'D-047')">
+8181:                        <span class="modal-case-id">D-047</span>
+8185:                    <button class="modal-close" onclick="closeCaseModal('D-047')" title="إغلاق">×</button>
+8287:        <div class="modal-overlay" id="modal-D-048" onclick="closeCaseModalOnOverlay(event, 'D-048')">
+8291:                        <span class="modal-case-id">D-048</span>
+8295:                    <button class="modal-close" onclick="closeCaseModal('D-048')" title="إغلاق">×</button>
+8397:        <div class="modal-overlay" id="modal-D-049" onclick="closeCaseModalOnOverlay(event, 'D-049')">
+8401:                        <span class="modal-case-id">D-049</span>
+8405:                    <button class="modal-close" onclick="closeCaseModal('D-049')" title="إغلاق">×</button>
+8507:        <div class="modal-overlay" id="modal-D-050" onclick="closeCaseModalOnOverlay(event, 'D-050')">
+8511:                        <span class="modal-case-id">D-050</span>
+8515:                    <button class="modal-close" onclick="closeCaseModal('D-050')" title="إغلاق">×</button>
+8617:        <div class="modal-overlay" id="modal-D-051" onclick="closeCaseModalOnOverlay(event, 'D-051')">
+8621:                        <span class="modal-case-id">D-051</span>
+8625:                    <button class="modal-close" onclick="closeCaseModal('D-051')" title="إغلاق">×</button>
+8731:        <div class="modal-overlay" id="modal-D-052" onclick="closeCaseModalOnOverlay(event, 'D-052')">
+8735:                        <span class="modal-case-id">D-052</span>
+8739:                    <button class="modal-close" onclick="closeCaseModal('D-052')" title="إغلاق">×</button>
+8847:        <div class="modal-overlay" id="modal-D-053" onclick="closeCaseModalOnOverlay(event, 'D-053')">
+8851:                        <span class="modal-case-id">D-053</span>
+8855:                    <button class="modal-close" onclick="closeCaseModal('D-053')" title="إغلاق">×</button>
+8962:        <div class="modal-overlay" id="modal-D-054" onclick="closeCaseModalOnOverlay(event, 'D-054')">
+8966:                        <span class="modal-case-id">D-054</span>
+8970:                    <button class="modal-close" onclick="closeCaseModal('D-054')" title="إغلاق">×</button>
+9077:        <div class="modal-overlay" id="modal-D-055" onclick="closeCaseModalOnOverlay(event, 'D-055')">
+9081:                        <span class="modal-case-id">D-055</span>
+9085:                    <button class="modal-close" onclick="closeCaseModal('D-055')" title="إغلاق">×</button>
+12776:                    <div class="modal-section-body">حالات D-001 إلى D-005 (Shop Drawings Approval) — اعتراض &#x27;التأخير استهلك Float فلا EOT&#x27;.</div>
+13331:                    <td>D-001 to D-005 (Shop Drawings), D-006 to D-009 (RFIs)</td>
+13351:                    <td>D-046 (Errors in Setting Out)</td>
+13361:                    <td>D-047 (Unforeseen Ground Conditions)</td>
+13371:                    <td>D-026 to D-028 (Owner-Supplied Items)</td>
+13391:                    <td>كل حالات EOT (D-001 to D-055)</td>
+13401:                    <td>D-029 to D-031 (Suspension by Employer)</td>
+13411:                    <td>D-029 to D-031</td>
+13421:                    <td>D-055 (Handover Delays)</td>
+13431:                    <td>VAR-001 (VO vs CO), D-010 to D-015 (Variation Orders)</td>
+13441:                    <td>VAR-001, D-010 to D-015</td>
+13451:                    <td>D-015 (Daywork Variations)</td>
+13461:                    <td>D-016 to D-018 (Payment Delays)</td>
+13471:                    <td>D-048, D-049 (Force Majeure-like events)</td>
+13481:                    <td>D-050, D-051 (Force Majeure events)</td>
+13541:  'D-001': {
+13542:    case_id: 'D-001',
+13554:  'D-002': {
+13555:    case_id: 'D-002',
+13567:  'D-003': {
+13568:    case_id: 'D-003',
+13580:  'D-004': {
+13581:    case_id: 'D-004',
+13593:  'D-005': {
+13594:    case_id: 'D-005',
+13606:  'D-006': {
+13607:    case_id: 'D-006',
+13619:  'D-007': {
+13620:    case_id: 'D-007',
+13632:  'D-008': {
+13633:    case_id: 'D-008',
+13645:  'D-009': {
+13646:    case_id: 'D-009',
+13658:  'D-010': {
+13659:    case_id: 'D-010',
+13671:  'D-011': {
+13672:    case_id: 'D-011',
+13684:  'D-012': {
+13685:    case_id: 'D-012',
+13697:  'D-013': {
+13698:    case_id: 'D-013',
+13710:  'D-014': {
+13711:    case_id: 'D-014',
+13723:  'D-015': {
+13724:    case_id: 'D-015',
+13736:  'D-016': {
+13737:    case_id: 'D-016',
+13749:  'D-017': {
+13750:    case_id: 'D-017',
+13762:  'D-018': {
+13763:    case_id: 'D-018',
+13775:  'D-019': {
+13776:    case_id: 'D-019',
+13788:  'D-020': {
+13789:    case_id: 'D-020',
+13801:  'D-021': {
+13802:    case_id: 'D-021',
+13814:  'D-022': {
+13815:    case_id: 'D-022',
+13827:  'D-023': {
+13828:    case_id: 'D-023',
+13840:  'D-024': {
+13841:    case_id: 'D-024',
+13853:  'D-025': {
+13854:    case_id: 'D-025',
+13866:  'D-026': {
+13867:    case_id: 'D-026',
+13879:  'D-027': {
+13880:    case_id: 'D-027',
+13892:  'D-028': {
+13893:    case_id: 'D-028',
+13905:  'D-029': {
+13906:    case_id: 'D-029',
+13918:  'D-030': {
+13919:    case_id: 'D-030',
+13931:  'D-031': {
+13932:    case_id: 'D-031',
+13944:  'D-032': {
+13945:    case_id: 'D-032',
+13957:  'D-033': {
+13958:    case_id: 'D-033',
+13970:  'D-034': {
+13971:    case_id: 'D-034',
+13983:  'D-035': {
+13984:    case_id: 'D-035',
+13996:  'D-036': {
+13997:    case_id: 'D-036',
+14009:  'D-037': {
+14010:    case_id: 'D-037',
+14022:  'D-038': {
+14023:    case_id: 'D-038',
+14035:  'D-039': {
+14036:    case_id: 'D-039',
+14048:  'D-040': {
+14049:    case_id: 'D-040',
+14061:  'D-041': {
+14062:    case_id: 'D-041',
+14074:  'D-042': {
+14075:    case_id: 'D-042',
+14087:  'D-043': {
+14088:    case_id: 'D-043',
+14100:  'D-044': {
+14101:    case_id: 'D-044',
+14113:  'D-045': {
+14114:    case_id: 'D-045',
+14126:  'D-046': {
+14127:    case_id: 'D-046',
+14139:  'D-047': {
+14140:    case_id: 'D-047',
+14152:  'D-048': {
+14153:    case_id: 'D-048',
+14165:  'D-049': {
+14166:    case_id: 'D-049',
+14178:  'D-050': {
+14179:    case_id: 'D-050',
+14191:  'D-051': {
+14192:    case_id: 'D-051',
+14204:  'D-052': {
+14205:    case_id: 'D-052',
+14217:  'D-053': {
+14218:    case_id: 'D-053',
+14230:  'D-054': {
+14231:    case_id: 'D-054',
+14243:  'D-055': {
+14244:    case_id: 'D-055',
+14565:        const caseData = window.CASES_DATA[caseId];
+14566:        if (!caseData) {
+14573:            caseId, caseData.title_ar, caseData.title_en, caseData.category,
+14574:            caseData.delay_type, caseData.methodology, caseData.description,
+14575:            caseData.root_cause, caseData.schedule_impact, caseData.contractual_basis,
+14576:            caseData.burden_of_proof
+14580:        const matchCat = !catFilter || caseData.category === catFilter;
+14584:            const m = (caseData.methodology || '').toLowerCase();

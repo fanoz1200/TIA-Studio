@@ -34,6 +34,7 @@ import { KnowledgeCentrePanel } from "@/components/KnowledgeCentrePanel";
 import { ClaimContinuityPanel } from "@/components/ClaimContinuityPanel";
 import { IssueLogPanel } from "@/components/IssueLogPanel";
 import { GuidedAnalysisPanel, type ScheduleSnapshot, type ScheduleStage } from "@/components/GuidedAnalysisPanel";
+import "./home-mobile-nav.css";
 
 const logoUrl = "/manus-storage/tia-studio-symbol_a5a70021.png";
 const workspaceImageUrl = "/manus-storage/tia-studio-workspace-hero_f79d49ba.png";

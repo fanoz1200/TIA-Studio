@@ -19,18 +19,16 @@ vi.mock("@/lib/trpc", () => ({
   },
 }));
 
-describe("بوابة الموسوعة واختيار المنهج", () => {
-  it("يعرض البحث ومسارات TIA والتزامن وPrimavera بالعربية مع حالة فيديو فارغة واضحة", () => {
+describe("مكتبة المنهجيات والحالات العملية", () => {
+  it("يعرض فهرس الحالات الحقيقي والبحث والحالة المرجعية المختارة للقراءة فقط", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
 
-    expect(screen.getByRole("heading", { name: "الموسوعة وبوابة اختيار الحل" })).toBeTruthy();
-    expect(screen.getByText(/ابحث عن المشكلة كما حدثت في المشروع/)).toBeTruthy();
-    expect(screen.getAllByText("TIA من الصفر إلى التقرير").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("التأخيرات المتزامنة").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("تطبيق Primavera P6").length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: "مسار TIA العملي — Workshop 8" })).toBeTruthy();
-    expect(screen.getByText(/هذا المركز مرجعي فقط/)).toBeTruthy();
-    expect(screen.getByText(/لا توجد روابط بعد/)).toBeTruthy();
-    expect(screen.getByText(/لم تُرفع موسوعة بعد/)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "مكتبة المنهجيات والحالات العملية" })).toBeTruthy();
+    expect(screen.getByText(/حالة مفهرسة/)).toBeTruthy();
+    expect(screen.getByText(/ابحث في العناوين والوصف والأدلة والمساندات/)).toBeTruthy();
+    expect(screen.getByText(/نتيجة من أصل/)).toBeTruthy();
+    expect(screen.getAllByText(/المصدر المرجعي محمّل للقراءة فقط/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: /وصف الحالة/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /طبّق هذه الحالة الآن/ })).toBeTruthy();
   });
 });
