@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { masterClaimCases, type MasterClaimCase } from "@/lib/master-claim-cases";
 import "./knowledge-centre.css";
+import "./training-video.css";
 
 export type AnalysisMethod = "tia" | "windows" | "disruption" | "quantity";
 export type KnowledgeRoute = {
@@ -167,6 +168,18 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         <article className="learning-path"><CheckCircle2 size={20} /><h3>ما الذي ينتقل إلى التحليل؟</h3><p>رقم الحالة والعنوان والمنهج المختار فقط. تبقى البيانات الحسابية مبنية على ملفات P6 وExcel التي ترفعها في الرحلة.</p></article>
         <article className="learning-path"><ShieldCheck size={20} /><h3>حدود المكتبة</h3><p>الموسوعة دليل عملي وتعليمي. لا تستبدل العقد أو الرأي القانوني أو التحقق من شروط المشروع الخاصة.</p></article>
       </div>
+
+      <article className="training-video-card" aria-label="فيديو تمهيدي لرحلة TIA">
+        <div>
+          <p className="eyebrow">فيديو تدريبي · Workshop 8</p>
+          <h3>رحلة TIA في ثماني ثوانٍ</h3>
+          <p>شاهد التسلسل العملي: ابحث في الموسوعة، اختر المنهج، ثم ثبّت Baseline وUpdate وExcel وقسّم النشاط إلى Pre / Event / Post قبل الحساب.</p>
+        </div>
+        <video controls preload="metadata" className="training-video" aria-label="فيديو توضيحي لمسار تحليل الأثر الزمني TIA">
+          <source src="/manus-storage/tia-workshop8-guided-workflow_21ac3c32.mp4" type="video/mp4" />
+          متصفحك لا يدعم تشغيل الفيديو.
+        </video>
+      </article>
     </section>
   );
 }

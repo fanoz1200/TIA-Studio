@@ -31,4 +31,13 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     expect(screen.getByRole("heading", { name: /وصف الحالة/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /طبّق هذه الحالة الآن/ })).toBeTruthy();
   });
+
+  it("يعرض الفيديو التدريبي لمسار Workshop 8 من أصل التطبيق الدائم", () => {
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    const video = screen.getAllByLabelText("فيديو توضيحي لمسار تحليل الأثر الزمني TIA").at(-1) as HTMLVideoElement;
+    const source = video.querySelector("source");
+    expect(source?.getAttribute("src")).toBe("/manus-storage/tia-workshop8-guided-workflow_21ac3c32.mp4");
+    expect(screen.getAllByRole("heading", { name: "رحلة TIA في ثماني ثوانٍ" }).at(-1)).toBeTruthy();
+  });
 });

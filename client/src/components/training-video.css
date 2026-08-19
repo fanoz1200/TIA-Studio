@@ -1,0 +1,38 @@
+.training-video-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(320px, 1.18fr);
+  gap: 22px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid rgba(19, 101, 126, 0.16);
+  border-radius: 18px;
+  background: linear-gradient(118deg, rgba(225, 246, 248, 0.82), rgba(255, 252, 244, 0.96));
+}
+
+.training-video-card h3 {
+  margin: 4px 0 8px;
+  color: #0b526c;
+}
+
+.training-video-card p:not(.eyebrow) {
+  margin: 0;
+  color: #49616b;
+  line-height: 1.8;
+}
+
+.training-video {
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  background: #073d53;
+  box-shadow: 0 12px 24px rgba(5, 54, 73, 0.18);
+}
+
+@media (max-width: 720px) {
+  .training-video-card {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px;
+  }
+}
