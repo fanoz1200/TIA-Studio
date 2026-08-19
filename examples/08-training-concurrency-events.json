@@ -1,0 +1,28 @@
+{
+  "title": "حدثان متزامنان — تدريب فقط",
+  "warning": "الغرض هو إظهار أن الأثر الزمني المدمج لا يساوي بالضرورة جمع مدد الحدثين. لا يحسم المثال المسؤولية أو الاستحقاق التعاقدي.",
+  "events": [
+    {
+      "id": "F-TRAIN-CON-EMP",
+      "title": "تأخر قرار موقع — تدريب",
+      "cause": "employer",
+      "activities": [{ "id": "FCE100", "name": "انتظار قرار الموقع — تدريب", "duration": 3, "kind": "fragnet", "owner": "صاحب العمل" }],
+      "relationships": [
+        { "id": "FCE-R1", "predecessorId": "C200", "successorId": "FCE100", "type": "FS", "lag": 0 },
+        { "id": "FCE-R2", "predecessorId": "FCE100", "successorId": "C300", "type": "FS", "lag": 0 }
+      ],
+      "replacedRelationshipIds": ["CR-200"]
+    },
+    {
+      "id": "F-TRAIN-CON-CON",
+      "title": "تصحيح رسومات داخلي — تدريب",
+      "cause": "contractor",
+      "activities": [{ "id": "FCC100", "name": "تصحيح رسومات داخلي — تدريب", "duration": 3, "kind": "fragnet", "owner": "المقاول" }],
+      "relationships": [
+        { "id": "FCC-R1", "predecessorId": "C250", "successorId": "FCC100", "type": "FS", "lag": 0 },
+        { "id": "FCC-R2", "predecessorId": "FCC100", "successorId": "C300", "type": "FS", "lag": 0 }
+      ],
+      "replacedRelationshipIds": ["CR-250"]
+    }
+  ]
+}

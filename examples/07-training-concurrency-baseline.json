@@ -1,0 +1,33 @@
+{
+  "id": "training-concurrency-007",
+  "name": "تدريب تزامن — مساران حرجان متوازيان",
+  "startDate": "2026-05-04",
+  "dataDate": "2026-05-04",
+  "source": "training-json",
+  "calendar": {
+    "id": "training-concurrency-5d",
+    "name": "تقويم تدريبي خمسة أيام",
+    "workingWeekdays": [1, 2, 3, 4, 5],
+    "holidays": [],
+    "hoursPerDay": 8
+  },
+  "wbsNodes": [
+    { "id": "CW-01", "code": "1.0", "name": "التحضير المشترك", "path": "تدريب تزامن > التحضير" },
+    { "id": "CW-02", "code": "2.0", "name": "مسار الموقع", "path": "تدريب تزامن > مسار الموقع" },
+    { "id": "CW-03", "code": "3.0", "name": "مسار الرسومات", "path": "تدريب تزامن > مسار الرسومات" }
+  ],
+  "activities": [
+    { "id": "C100", "name": "بدء وتعبئة الموقع", "duration": 2, "wbsId": "CW-01", "wbs": "التحضير المشترك", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "C200", "name": "تنفيذ أعمال الموقع", "duration": 6, "wbsId": "CW-02", "wbs": "مسار الموقع", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "C250", "name": "إصدار الرسومات التنفيذية", "duration": 6, "wbsId": "CW-03", "wbs": "مسار الرسومات", "owner": "الاستشاري", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "C300", "name": "تنفيذ الأساسات المشتركة", "duration": 4, "wbsId": "CW-02", "wbs": "مسار الموقع", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "C400", "name": "استلام تدريبي", "duration": 2, "wbsId": "CW-02", "wbs": "مسار الموقع", "owner": "الاستشاري", "percentComplete": 0, "percentCompleteType": "duration" }
+  ],
+  "relationships": [
+    { "id": "CR-100", "predecessorId": "C100", "successorId": "C200", "type": "FS", "lag": 0 },
+    { "id": "CR-150", "predecessorId": "C100", "successorId": "C250", "type": "FS", "lag": 0 },
+    { "id": "CR-200", "predecessorId": "C200", "successorId": "C300", "type": "FS", "lag": 0 },
+    { "id": "CR-250", "predecessorId": "C250", "successorId": "C300", "type": "FS", "lag": 0 },
+    { "id": "CR-300", "predecessorId": "C300", "successorId": "C400", "type": "FS", "lag": 0 }
+  ]
+}

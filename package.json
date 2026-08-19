@@ -1,6 +1,8 @@
 {
   "name": "tia-delay-analysis",
   "version": "1.0.0",
+  "description": "Arabic Time Impact Analysis studio with local CPM/TIA verification and professional claim exports.",
+  "author": "TIA Studio",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -10,7 +12,10 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate"
+    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "desktop:dev": "pnpm build && electron .",
+    "desktop:pack": "pnpm build && electron-builder --linux AppImage --x64 --publish never",
+    "desktop:pack:windows": "pnpm build && electron-builder --win portable --x64 --publish never"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
@@ -97,6 +102,8 @@
     "add": "^2.0.6",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.31.4",
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
     "esbuild": "^0.25.0",
     "jsdom": "^30.0.1",
     "pnpm": "^10.15.1",
@@ -109,6 +116,38 @@
     "vite": "^7.1.7",
     "vite-plugin-manus-runtime": "0.0.59",
     "vitest": "^2.1.4"
+  },
+  "main": "desktop/main.cjs",
+  "build": {
+    "appId": "com.tiastudio.delayanalysis",
+    "productName": "TIA Studio",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "dist",
+        "to": "dist"
+      }
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Office",
+      "synopsis": "تحليل التأخير بطريقة TIA"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ]
+    }
   },
   "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af",
   "pnpm": {

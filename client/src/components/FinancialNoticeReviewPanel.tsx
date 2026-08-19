@@ -11,7 +11,7 @@ import { calculateFinancialImpact, resourceAssignmentsForEvent, type Fragnet, ty
 import { trpc } from "@/lib/trpc";
 import { ProjectMembersPanel } from "@/components/ProjectMembersPanel";
 
-type View = "guided" | "overview" | "schedule" | "event" | "analysis" | "report" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
+type View = "guided" | "overview" | "schedule" | "quality" | "event" | "analysis" | "report" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
 type NoticeStatus = "draft" | "under_review" | "sent" | "overdue" | "cancelled";
 
 const resourceLabels = { labor: "عمالة", nonlabor: "معدات / غير عمالة", material: "مواد", unknown: "غير مصنف" };

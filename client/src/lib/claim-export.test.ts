@@ -45,6 +45,21 @@ describe("claim report exporters", () => {
     expect(sections.find((section) => section.heading === "حالة المراجعة الإلكترونية")?.body).toContain("contract_review");
   });
 
+  it("adds the auditable schedule-quality summary and result-source limits when supplied", () => {
+    const sections = claimReportSections({
+      ...payload,
+      scheduleQuality: {
+        scheduleFingerprint: "SQ-1a2b3c4d", generatedAt: "2026-04-01T10:00:00.000Z", analysisReadiness: "review", exportReadiness: "review",
+        summary: { passed: 9, warnings: 2, blockers: 0 },
+        rules: [{ id: "SQ-010", title: "تاريخ البيانات", severity: "warning", detail: "لا يوجد تاريخ بيانات محدد.", action: "أدخل Data Date." }],
+      },
+      resultSources: ["مصدر البرنامج: P6 XML.", "محرك الحساب: CPM محلي."],
+    });
+    expect(sections.find((section) => section.heading === "بوابة جودة البرنامج الزمني")?.body).toContain("SQ-010");
+    expect(sections.find((section) => section.heading === "بوابة جودة البرنامج الزمني")?.body).toContain("يتطلب مراجعة مهنية");
+    expect(sections.find((section) => section.heading === "مصادر النتائج وحدودها")?.body).toContain("CPM محلي");
+  });
+
   it("generates a valid DOCX package", async () => {
     const blob = await buildClaimDocxBlob(payload);
     const bytes = new Uint8Array(await blob.arrayBuffer());

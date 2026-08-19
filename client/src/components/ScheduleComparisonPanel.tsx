@@ -7,8 +7,9 @@ import { GanttComparisonChart } from "@/components/GanttComparisonChart";
 import { importP6XmlSchedule } from "@/lib/p6-xml";
 import { comparisonToCsv, compareScheduleUpdates } from "@/lib/schedule-comparison";
 import { importXerSchedule } from "@/lib/xer";
-import { exportExperimentalXer } from "@/lib/xer-export";
+import { exportExperimentalXer, validateExperimentalXerRoundTrip } from "@/lib/xer-export";
 import { insertFragnet, type Fragnet, type Schedule } from "@/lib/cpm";
+import { assessScheduleQuality } from "@/lib/schedule-quality";
 
 type SourceSlot = "baseline" | "update";
 
@@ -48,9 +49,21 @@ export function ScheduleComparisonPanel({ currentSchedule, selectedEvent }: { cu
   function downloadXer(snapshot: "pre-tia" | "post-tia") {
     try {
       const source = snapshot === "post-tia" && selectedEvent ? insertFragnet(currentSchedule, selectedEvent) : currentSchedule;
+      const quality = assessScheduleQuality(source);
+      if (quality.exportReadiness === "blocked") {
+        const reasons = quality.rules.filter((rule) => rule.severity === "blocker").map((rule) => rule.title).join("، ");
+        toast.error(`أُوقف تنزيل XER: صحح موانع جودة البرنامج أولاً${reasons ? ` (${reasons})` : ""}.`);
+        return;
+      }
       const output = exportExperimentalXer(source, snapshot);
+      const roundTrip = validateExperimentalXerRoundTrip(output);
+      if (roundTrip.state === "blocked") {
+        toast.error(`أُوقف تنزيل XER: ${roundTrip.messages[0] ?? "فشل فحص الاستيراد العكسي."}`);
+        return;
+      }
       downloadText(output.fileName, output.content, "text/plain;charset=utf-8");
-      toast.success(`تم تنزيل ${snapshot === "post-tia" ? "Post-TIA" : "Pre-TIA"} التجريبي: ${output.activityCount} نشاط و${output.relationshipCount} علاقة.`);
+      toast.success(`تم تنزيل ${snapshot === "post-tia" ? "Post-TIA" : "Pre-TIA"} التجريبي بعد فحص الاستيراد العكسي: ${roundTrip.activityCount} نشاط و${roundTrip.relationshipCount} علاقة.`);
+      if (roundTrip.state === "review") toast.warning("راجِع قيود التقويم وحقول P6 غير المدعومة في رسالة التنزيل قبل استخدام الملف خارجياً.");
     } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر إنشاء ملف XER التجريبي."); }
   }
 

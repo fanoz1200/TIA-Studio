@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 import type { AnalysisWindow, Fragnet, Schedule } from "@/lib/cpm";
 import "./claim-continuity.css";
 
-type View = "guided" | "overview" | "schedule" | "event" | "analysis" | "report" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
+type View = "guided" | "overview" | "schedule" | "quality" | "event" | "analysis" | "report" | "windows" | "methods" | "financial" | "notices" | "review" | "members" | "compare" | "resources" | "learning" | "issues";
 const keyPart = (value: string) => value.trim().replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 72);
 
 export function ClaimContinuityPanel({ view, schedule, events, selectedWindow, isAuthenticated, onActiveClaimChange }: { view: View; schedule: Schedule; events: Fragnet[]; selectedWindow: AnalysisWindow | null; isAuthenticated: boolean; onActiveClaimChange: (claimKey: string, narrative: string) => void }) {

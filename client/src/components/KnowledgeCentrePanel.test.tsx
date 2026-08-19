@@ -106,4 +106,13 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     expect(screen.getAllByRole("heading", { name: "Baseline ثم Update قبل الحدث" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("heading", { name: "وثّق الواقعة قبل إنشاء Fragnet" }).length).toBeGreaterThan(0);
   });
+
+  it("يعرض روابط التنزيل الدائمة لحزمة البرومبتات ومشروعي التدريب المصطنعين", () => {
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    expect(screen.getAllByRole("heading", { name: "حزمة آمنة للتجربة وإنتاج الفيديو خارج المنصة" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: /تنزيل حزمة البرومبتات/ }).at(-1)?.getAttribute("href")).toBe("/manus-storage/google-video-prompts-ar_8d21a82e.md");
+    expect(screen.getAllByRole("link", { name: "Baseline JSON" }).some(link => link.getAttribute("href") === "/manus-storage/05-training-tia-baseline_65e0778b.json")).toBe(true);
+    expect(screen.getAllByRole("link", { name: "بطاقتا الحدث JSON" }).at(-1)?.getAttribute("href")).toBe("/manus-storage/08-training-concurrency-events_8b000149.json");
+  });
 });

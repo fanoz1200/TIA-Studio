@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { runCPM, type Schedule } from "./cpm";
-import { exportExperimentalXer } from "./xer-export";
+import { exportExperimentalXer, validateExperimentalXerRoundTrip } from "./xer-export";
 import { importXerSchedule } from "./xer";
 
 const schedule: Schedule = {
@@ -34,5 +34,13 @@ describe("experimental XER export", () => {
     const result = exportExperimentalXer(schedule);
     expect(result.warnings.join(" ")).toContain("الموارد");
     expect(result.warnings.join(" ")).toContain("لا يستبدل ملف P6 المصدر");
+  });
+
+  it("returns reverse-import evidence and keeps the export in review until Primavera is checked separately", () => {
+    const result = exportExperimentalXer(schedule);
+    const check = validateExperimentalXerRoundTrip(result);
+    expect(check).toMatchObject({ state: "review", activityCount: 2, relationshipCount: 1 });
+    expect(check.messages.join(" ")).toContain("نجح فحص البنية والأعداد");
+    expect(check.messages.join(" ")).toContain("Primavera");
   });
 });

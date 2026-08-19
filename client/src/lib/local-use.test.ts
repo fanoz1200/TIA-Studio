@@ -26,4 +26,14 @@ describe("عقد التشغيل المحلي", () => {
     expect(localUseGuide).toContain("دون اتصال");
     expect(localUseGuide).toContain("PWA");
   });
+
+  it("يوثق مسار نسخة سطح المكتب وحدودها دون اتصال", () => {
+    const desktopGuide = readProjectFile("docs/TIA_STUDIO_DESKTOP_RELEASE_AR.md");
+    const packageJson = readProjectFile("package.json");
+
+    expect(desktopGuide).toContain("127.0.0.1");
+    expect(desktopGuide).toContain("دون اتصال");
+    expect(desktopGuide).toContain("تجريبي محدود النطاق");
+    expect(packageJson).toContain("desktop:pack");
+  });
 });

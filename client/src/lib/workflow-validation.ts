@@ -1,4 +1,5 @@
 import type { Fragnet, Schedule, TiaResult, WindowTiaResult } from "./cpm";
+import { assessScheduleQuality } from "./schedule-quality";
 import { evaluateTiaResultQuality } from "./tia-result-validation";
 
 export type WorkflowCheckState = "pass" | "attention" | "blocked" | "info";
@@ -26,6 +27,7 @@ export function evaluateWorkflowReadiness(input: WorkflowValidationInput): Workf
   const isP6Source = input.schedule.source === "xer" || input.schedule.source === "p6-xml";
   const impactDays = input.analysis ? ("totalImpactDays" in input.analysis ? input.analysis.totalImpactDays : input.analysis.impactDays) : null;
   const engineQuality = evaluateTiaResultQuality({ schedule: input.schedule, selectedEvent: input.selectedEvent, analysis: input.analysis });
+  const scheduleQuality = assessScheduleQuality(input.schedule);
 
   return [
     {
@@ -39,6 +41,16 @@ export function evaluateWorkflowReadiness(input: WorkflowValidationInput): Workf
       title: "منطق الشبكة",
       state: !input.schedule.activities.length ? "blocked" : input.schedule.relationships.length ? "pass" : "attention",
       detail: input.schedule.relationships.length ? `توجد ${input.schedule.relationships.length} علاقة منطقية قابلة لحساب CPM.` : "لا توجد علاقات منطقية؛ راجع الروابط قبل الاعتماد على المسار الحرج.",
+    },
+    {
+      id: "schedule-quality",
+      title: "بوابة جودة البرنامج",
+      state: scheduleQuality.analysisReadiness === "blocked" ? "blocked" : scheduleQuality.analysisReadiness === "review" ? "attention" : "pass",
+      detail: scheduleQuality.analysisReadiness === "blocked"
+        ? `أوقفت بوابة الجودة التحليل: ${scheduleQuality.summary.blockers} مانع فني في شبكة البرنامج أو تقويمه. لا يصدر التقرير قبل المعالجة.`
+        : scheduleQuality.analysisReadiness === "review"
+          ? `لا توجد موانع آلية، لكن توجد ${scheduleQuality.summary.warnings} نقطة تحتاج مراجعة مهنية قبل التصدير.`
+          : "اجتازت نسخة البرنامج قواعد الجودة الداخلية القابلة للحساب؛ لا يعد ذلك حكماً تعاقدياً أو اعتماداً من Primavera.",
     },
     {
       id: "event",

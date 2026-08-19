@@ -1,0 +1,15 @@
+{
+  "id": "F-TRAIN-TIA-001",
+  "title": "تأخر اعتماد الحفر — تدريب",
+  "description": "Fragnet تدريبي لمدة أربعة أيام عمل بين الحفر والأساسات. لا يمثل واقعة أو استحقاقاً فعلياً.",
+  "cause": "employer",
+  "occurrenceDate": "2026-04-13",
+  "activities": [
+    { "id": "FT100", "name": "انتظار اعتماد الحفر — تدريب", "duration": 4, "kind": "fragnet", "owner": "صاحب العمل" }
+  ],
+  "relationships": [
+    { "id": "FTR-100", "predecessorId": "T200", "successorId": "FT100", "type": "FS", "lag": 0 },
+    { "id": "FTR-200", "predecessorId": "FT100", "successorId": "T300", "type": "FS", "lag": 0 }
+  ],
+  "replacedRelationshipIds": ["TR-200"]
+}

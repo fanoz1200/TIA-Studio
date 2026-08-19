@@ -16,6 +16,8 @@ const resources = [
   { title: "الذكاء الاصطناعي والتشغيل المحلي", description: "توضيح ما يُحسب محلياً، وما يحتاج حساباً وخدمات تخزين، وما لا يستخدم نموذجاً ذكياً إطلاقاً.", href: "/manus-storage/TIA_STUDIO_AI_AND_LOCAL_USE_AR_edf36f0d.md", icon: Info, kind: "Markdown" },
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
   { title: "حزمة مصدر التشغيل المحلي", description: "نسخة ZIP من المصدر والأدلة والأمثلة. فكّها، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/tia-studio-source-package_0a28a8d2.zip", icon: HardDriveDownload, kind: "ZIP · Source" },
+  { title: "نسخة سطح المكتب — Windows", description: "حزمة محمولة بصيغة ZIP للاختبار على Windows x64. غير موقعة رقمياً؛ افحصها ببرنامج الحماية، ثم ابدأ بمشروع تدريبي مصطنع قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.0-windows-x64-portable_a9431577.zip", icon: HardDriveDownload, kind: "Windows x64 · Portable" },
+  { title: "نسخة سطح المكتب — Linux", description: "حزمة AppImage للاختبار على Linux x64. امنح الملف صلاحية التنفيذ، واستخدم مشروعاً تدريبياً للتحقق من الاستيراد والتحليل والتقرير قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.0-linux-x64_8ac9e8fe.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
 const examples = [
@@ -67,7 +69,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
 
     <section className="local-use-banner">
       <WifiOff size={22} />
-      <div><b>وضع الاستخدام المحلي</b><p>بعد فتح التطبيق عبر اتصال آمن وتشغيله مرة واحدة، يحفظ المتصفح واجهة التشغيل للاستخدام اللاحق. حساب CPM وTIA وقراءة ملفات XER/XML والتقرير تتم داخل المتصفح؛ أما الحسابات والأدلة والاعتمادات المحفوظة فتحتاج اتصالاً وخدمة الخادم.</p></div>
+      <div><b>وضع الاستخدام المحلي</b><p>بعد فتح التطبيق عبر اتصال آمن وتشغيله مرة واحدة، يحفظ المتصفح واجهة التشغيل للاستخدام اللاحق. حساب CPM وTIA وقراءة ملفات XER/XML والتقرير تتم داخل المتصفح؛ أما الحسابات والأدلة والاعتمادات المحفوظة فتحتاج اتصالاً وخدمة الخادم. تتوفر أيضاً حزم Windows وLinux للتجربة المحلية؛ لا تُعد بديلاً عن المراجعة المهنية أو اختبار استيراد Primavera على نسخة غير إنتاجية.</p></div>
     </section>
 
     <section className="resources-grid" aria-label="ملفات التوثيق والتنزيل">

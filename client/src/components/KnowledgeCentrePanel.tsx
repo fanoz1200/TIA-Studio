@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, BookOpenCheck, CheckCircle2, FileText, LibraryBig, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, BookOpenCheck, CheckCircle2, Download, FileText, LibraryBig, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -232,6 +232,30 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
             <h4>وثّق الواقعة قبل إنشاء Fragnet</h4>
             <ol><li>اكتب رقم القضية والوصف وتاريخ البدء والمدة والمسؤولية.</li><li>اختر الأنشطة ونقاط الربط من بيانات البرنامج المستورد، لا من أمثلة ثابتة.</li><li>راجع صفوف Excel ثم اعرض تقسيم Pre / Event / Post قبل الحساب.</li></ol>
             <p>لا تنتقل الرحلة عند نقص الحقول الجوهرية، حتى يبقى سجل الواقعة قابلاً للمراجعة.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="training-resource-downloads" aria-label="حزمة التدريب والبرومبتات">
+        <div className="training-resource-heading"><Download size={20} /><div><p className="eyebrow">موارد تدريب قابلة للتنزيل</p><h3>حزمة آمنة للتجربة وإنتاج الفيديو خارج المنصة</h3><p>هذه ملفات تعليمية مصطنعة وليست برنامج مشروع أو مطالبة فعلية. لا ترفعها إلى Primavera؛ استخدمها داخل TIA Studio لفهم البيانات والحساب والتحقق فقط.</p></div></div>
+        <div className="training-resource-grid">
+          <article>
+            <span>01 · برومبتات فيديو عربية</span>
+            <h4>فيديو رفع P6 وفيديو Excel — 5 إلى 6 دقائق</h4>
+            <p>نصوص مشهدية جاهزة لأداة فيديو خارجية، بصوت أنثوي مصري دافئ وحيوي وواضح مهنيًا، مع منع استخدام أي بيانات مشروع أو صياغة استحقاق قانوني قاطع.</p>
+            <a className="training-download-link" href="/manus-storage/google-video-prompts-ar_8d21a82e.md" download><Download size={15} />تنزيل حزمة البرومبتات</a>
+          </article>
+          <article>
+            <span>02 · مشروع TIA تدريبي</span>
+            <h4>تأخير اعتماد بسيط بنتيجة متوقعة</h4>
+            <p>استورد الـ Baseline بصيغة JSON من تبويب الاستيراد، ثم استخدم بطاقة الحدث في رحلة TIA. النتيجة المتوقعة موثقة ومغطاة باختبار انحدار.</p>
+            <div className="training-download-group"><a href="/manus-storage/05-training-tia-baseline_65e0778b.json" download>Baseline JSON</a><a href="/manus-storage/06-training-tia-event_7550a22f.json" download>بطاقة الحدث JSON</a></div>
+          </article>
+          <article>
+            <span>03 · مشروع تزامن تدريبي</span>
+            <h4>حدثان متداخلان للفحص الفني</h4>
+            <p>نموذج مصطنع يوضح قراءة أثر حدثين متزامنين تقنيًا. هو مرشح فني تعليمي ولا يوزع المسؤولية أو الاستحقاق التعاقدي.</p>
+            <div className="training-download-group"><a href="/manus-storage/07-training-concurrency-baseline_98d84044.json" download>Baseline JSON</a><a href="/manus-storage/08-training-concurrency-events_8b000149.json" download>بطاقتا الحدث JSON</a></div>
           </article>
         </div>
       </section>

@@ -34,7 +34,8 @@ import { P6EvidenceReportPanel } from "./P6EvidenceReportPanel";
 
 const schedule: Schedule = {
   id: "p6-test", name: "برنامج اختبار P6", startDate: "2026-01-01", dataDate: "2026-01-02", source: "p6-xml",
-  activities: [{ id: "A100", name: "أعمال الأساس", duration: 5 }, { id: "B100", name: "أعمال لاحقة", duration: 4 }], relationships: [{ id: "R1", predecessorId: "A100", successorId: "B100", type: "FS", lag: 0 }], wbsNodes: [], resourceAssignments: [],
+  calendar: { id: "cal-test", name: "تقويم اختبار", workingWeekdays: [0, 1, 2, 3, 4], holidays: [], hoursPerDay: 8 },
+  activities: [{ id: "A100", name: "أعمال الأساس", duration: 5, wbsId: "W1" }, { id: "B100", name: "أعمال لاحقة", duration: 4, wbsId: "W1" }], relationships: [{ id: "R1", predecessorId: "A100", successorId: "B100", type: "FS", lag: 0 }], wbsNodes: [{ id: "W1", code: "1", name: "أعمال اختبار", path: "1" }], resourceAssignments: [],
 };
 
 const event: Fragnet = {

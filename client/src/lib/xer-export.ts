@@ -3,6 +3,7 @@
  * (PROJECT / CALENDAR / PROJWBS / TASK / TASKPRED) ولا يدّعي تكافؤ نسخة P6 كاملة.
  */
 import { addWorkingDays, runCPM, type Schedule } from "./cpm";
+import { importXerSchedule } from "./xer";
 
 export type XerExportResult = {
   content: string;
@@ -10,6 +11,13 @@ export type XerExportResult = {
   warnings: string[];
   activityCount: number;
   relationshipCount: number;
+};
+
+export type XerRoundTripCheck = {
+  state: "ready" | "review" | "blocked";
+  activityCount: number;
+  relationshipCount: number;
+  messages: string[];
 };
 
 const hoursPerDayFallback = 8;
@@ -101,4 +109,38 @@ export function exportExperimentalXer(schedule: Schedule, snapshot: "pre-tia" | 
       "افتحه في نسخة Primavera منفصلة وتحقق من الأعداد والعلاقات والتواريخ قبل استعماله في عمل رسمي؛ لا يستبدل ملف P6 المصدر.",
     ],
   };
+}
+
+/**
+ * يتحقق من أن ملف التبادل الذي أنشأه التطبيق يمكن قراءته ثانيةً بواسطة قارئ XER المحلي.
+ * لا يثبت ذلك قبوله في كل إصدار من Primavera؛ بل يمنع تنزيل ملف أخفق في سلامة البنية
+ * أو فقد عدداً من الأنشطة أو العلاقات مقارنةً بما كتبه المُصدّر.
+ */
+export function validateExperimentalXerRoundTrip(output: XerExportResult): XerRoundTripCheck {
+  try {
+    const imported = importXerSchedule(output.content, output.fileName);
+    const messages: string[] = [];
+    if (imported.summary.activitiesRead !== output.activityCount) messages.push(`فشل تطابق الأنشطة بعد الاستيراد العكسي: صُدّر ${output.activityCount} وقُرئ ${imported.summary.activitiesRead}.`);
+    if (imported.summary.relationshipsRead !== output.relationshipCount) messages.push(`فشل تطابق العلاقات بعد الاستيراد العكسي: صُدّر ${output.relationshipCount} وقُرئ ${imported.summary.relationshipsRead}.`);
+    const requiredTables = ["PROJECT", "CALENDAR", "PROJWBS", "TASK", "TASKPRED"];
+    const missingTables = requiredTables.filter((table) => !imported.summary.tablesFound.includes(table));
+    if (missingTables.length) messages.push(`لم تُقرأ جداول التبادل المطلوبة: ${missingTables.join("، ")}.`);
+    if (messages.length) return { state: "blocked", activityCount: imported.summary.activitiesRead, relationshipCount: imported.summary.relationshipsRead, messages };
+
+    const reviewMessages = imported.summary.warnings.map((warning) => `مراجعة الاستيراد العكسي: ${warning}`);
+    reviewMessages.push("نجح فحص البنية والأعداد داخل TIA Studio؛ افتح الناتج في نسخة Primavera منفصلة قبل استعماله رسمياً.");
+    return {
+      state: reviewMessages.length > 1 ? "review" : "ready",
+      activityCount: imported.summary.activitiesRead,
+      relationshipCount: imported.summary.relationshipsRead,
+      messages: reviewMessages,
+    };
+  } catch (error) {
+    return {
+      state: "blocked",
+      activityCount: 0,
+      relationshipCount: 0,
+      messages: [error instanceof Error ? `تعذّر الاستيراد العكسي: ${error.message}` : "تعذّر الاستيراد العكسي لملف XER التجريبي."],
+    };
+  }
 }

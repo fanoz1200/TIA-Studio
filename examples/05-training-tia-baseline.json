@@ -1,0 +1,32 @@
+{
+  "id": "training-tia-005",
+  "name": "تدريب TIA — اعتماد أعمال الحفر",
+  "startDate": "2026-04-06",
+  "dataDate": "2026-04-06",
+  "source": "training-json",
+  "calendar": {
+    "id": "training-5d",
+    "name": "تقويم تدريبي خمسة أيام",
+    "workingWeekdays": [1, 2, 3, 4, 5],
+    "holidays": [],
+    "hoursPerDay": 8
+  },
+  "wbsNodes": [
+    { "id": "TW-01", "code": "1.0", "name": "التحضير", "path": "تدريب TIA > التحضير" },
+    { "id": "TW-02", "code": "2.0", "name": "تنفيذ الأساسات", "path": "تدريب TIA > تنفيذ الأساسات" }
+  ],
+  "activities": [
+    { "id": "T100", "name": "تجهيز موقع التدريب", "duration": 3, "wbsId": "TW-01", "wbs": "التحضير", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "T200", "name": "الحفر التجريبي", "duration": 5, "wbsId": "TW-01", "wbs": "التحضير", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "T300", "name": "تنفيذ الأساسات", "duration": 7, "wbsId": "TW-02", "wbs": "تنفيذ الأساسات", "owner": "المقاول", "percentComplete": 0, "percentCompleteType": "duration" },
+    { "id": "T400", "name": "استلام تدريبي", "duration": 2, "wbsId": "TW-02", "wbs": "تنفيذ الأساسات", "owner": "الاستشاري", "percentComplete": 0, "percentCompleteType": "duration" }
+  ],
+  "relationships": [
+    { "id": "TR-100", "predecessorId": "T100", "successorId": "T200", "type": "FS", "lag": 0 },
+    { "id": "TR-200", "predecessorId": "T200", "successorId": "T300", "type": "FS", "lag": 0 },
+    { "id": "TR-300", "predecessorId": "T300", "successorId": "T400", "type": "FS", "lag": 0 }
+  ],
+  "resourceAssignments": [
+    { "id": "TRA-100", "activityId": "T200", "resourceId": "TR-EXC", "resourceName": "معدات الحفر التدريبية", "resourceType": "nonlabor", "costAccountId": "TR-01", "wbsId": "TW-01", "targetQuantity": 40, "remainingQuantity": 40, "targetCost": 4800, "remainingCost": 4800, "costPerUnit": 120, "targetQuantityPerHour": 1, "remainingQuantityPerHour": 1, "activityRemainingDuration": 5, "source": "manual" }
+  ]
+}

@@ -7,6 +7,14 @@ dist/
 build/
 *.dist
 
+# Electron desktop build outputs are distributed through permanent file storage,
+# not through the application source repository.
+release/
+dist-electron/
+*.AppImage
+*.dmg
+*.exe
+
 # Environment variables
 .env
 .env.local
