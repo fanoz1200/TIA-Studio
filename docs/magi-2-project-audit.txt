@@ -1,0 +1,26 @@
+== Key components ==
+FOUND client/src/components/KnowledgeCentrePanel.tsx
+FOUND client/src/components/GuidedAnalysisPanel.tsx
+FOUND client/src/components/KnowledgeCentrePanel.test.tsx
+FOUND client/src/components/GuidedAnalysisPanel.test.tsx
+== Last commits ==
+[33me72bcd4[m Checkpoint: تحسين مكتبة المنهجيات دون انتظار مصدر الحالات الإضافي: إظهار شفاف لعدد السجلات الموثقة المتاحة من Excel والحالات المنتظرة، إرشاد نصي تفاعلي لرفع P6 وإدخال Excel إلى حين إنتاج الفيديوهين، وحالات خطأ/تحميل أوضح للمصدر المرجعي. اجتازت الحزمة الاختبارات وبناء الإنتاج والتحقق البصري للهاتف. تبقى الحالات D-056 إلى D-088 وفيديوَا P6/Excel معلقة لحين مصدر المستخدم وتجدد حصة الفيديو.
+[33m4adbc77[m Checkpoint: إدراج مكتبة حالات Excel المرجعية للقراءة المحلية مع تفاصيل قانونية وفنية ومساندات للسجلات الفعلية المتاحة (D-001 إلى D-055)، وإصلاح شبكة الهاتف لظهور تبويب نوافذ وتزامن وكل العناوين. اجتازت الحزمة 83 اختباراً وبناء الإنتاج. يبقى استكمال الحالات حتى 88 مرهوناً بتوفير المصدر الذي يحتوي 33 سجلاً إضافياً، ويبقى مقطعا P6 وExcel مرهونين بتجدد حصة الفيديو المجانية.
+[33m361fb4a[m Checkpoint: إضافة فيديو عربي تمهيدي لمسار Workshop 8 داخل مكتبة المنهجيات، مرتبط بأصل دائم خارج المشروع، مع تنسيق متجاوب واختبار واجهة يثبت ظهوره. اجتازت الحزمة 82 اختباراً وبناء الإنتاج.
+[33m825f97a[m Checkpoint: إصلاح مكتبة المنهجيات: استخراج فهرس الحالات الفعلية من موسوعة HTML المرجعية للعرض المحلي للقراءة فقط، مع بحث وقراءة وتطبيق مسار التحليل، وإصلاح قائمة التنقل على الهاتف لتظهر جميع التبويبات في شبكة متجاوبة. اجتازت الحزمة 81 اختباراً وبناء الإنتاج والتحقق البصري للهاتف.
+[33m097a7d8[m Checkpoint: إعادة بناء رحلة TIA وفق Workshop 8: بوابة موسوعة للبحث واختيار المنهج والتحويل للتحليل، مراحل إلزامية لرفع Baseline وUpdate قبل الحدث والتحديثات اللاحقة، سجل Excel منظم مع رفع ومراجعة، وتقسيم Pre/Event/Post مرئي قبل الحساب. أضيفت اختبارات صريحة للرفع ومنع نقص البيانات؛ اجتازت الحزمة 81 اختباراً وبناء الإنتاج. النشر التلقائي مفعّل.
+== Worktree ==
+ [31mM[m todo.md
+[31m??[m docs/magi-2-local-environment-check.txt
+[31m??[m docs/magi-2-preview-evaluation-notes.md
+[31m??[m docs/magi-2-project-audit.txt
+== Package scripts ==
+{
+  "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
+  "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+  "start": "NODE_ENV=production node dist/index.js",
+  "check": "tsc --noEmit",
+  "format": "prettier --write .",
+  "test": "vitest run",
+  "db:push": "drizzle-kit generate && drizzle-kit migrate"
+}

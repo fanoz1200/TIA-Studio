@@ -1,0 +1,49 @@
+23-Over the past two years, the video generation community has likewise expanded models, datasets, and training investment, but the path from **model scaling to better generation** has remained less clear. Prior work has begun to characterize loss scaling in DiTs and Video DiTs, including the relationships among model size, data, learning rate, and batch size [3][4]. Yet public evidence remains limited on whether scale can translate consistently into better complex motion, physical plausibility, long-term consistency, and audio-video synchronization.
+24-
+25:Magi-2 approaches this problem across three dimensions - model architecture, training systems, and data methodology - so that model capacity can continue to grow, training and inference costs remain practical, and data continues to provide richer and more accurate learning signals.
+26-
+27-Our work on Magi-2 therefore focuses on three interdependent directions:
+--
+29-1. **Scalable Model Architecture:** an architecture that can reach the 100B scale while maintaining a much smaller activated parameters.
+30-2. **Scalable Training System:** architecture-infrastructure co-design for communication, kernels, routing stability, optimization, and memory efficiency.
+31:3. **Scalable Data:** a shift from a filtering-centric pipeline toward high-throughput data production and precise multimodal annotation.
+32-
+33-Magi-2 Preview is an intermediate research release. It validates that the architecture, training system, and data methodology can scale together at the 100B level, while revealing several scaling signals that merit further study. More complete scaling curves, controlled ablations, and capability-boundary analyses remain priorities for the next stage.
+--
+37-We did not directly carry over Magi-1's autoregressive chunking. Autoregressive chunking introduces additional temporal dependencies and a more complex generation schedule. Combining it with unified audio-video modeling and 100B-scale distributed training would cause the number of system variables to grow rapidly. To focus on jointly scaling the model, data, and infrastructure, Magi-2 adopts a simpler modeling starting point.
+38-
+39:We build on the single-stream design validated in _Speed by Simplicity: A Single-Stream Architecture for Fast Audio-Video Generative Foundation Model_ [2]. MagiHuman uses a single Transformer to process text, video, and audio as one unified token sequence using self-attention only, avoiding the additional complexity introduced by multiple modality towers and cross-attention interfaces.
+40-
+41-Text, video, and audio describe the same event. Language, lip movements, body motion, environmental sound, music, and camera rhythm are continuously interdependent. Placing these modalities in a single sequence allows them to exchange information throughout the same backbone, rather than interacting only at a small number of predefined interfaces.
+--
+49-The first is training infrastructure. Increasing FFN width or adding layers simultaneously increases parameters, gradients, optimizer states, and the computation performed for every token. At the 100B scale, more aggressive parameter sharding and model parallelism introduce additional collective communication, cross-device synchronization, and activation memory. For long-sequence video training, dense scaling can become a systems problem before anything else.
+50-
+51:The second is inference cost. Video generation processes a large number of spatiotemporal tokens and repeatedly executes a denoising network, making it inherently more expensive than text generation. If a 100B dense model invokes all of its parameters at every step, generation latency and serving cost will constrain its practical use. Inference efficiency therefore needs to be considered at the architecture-design stage, not after training is complete.
+52-
+53-MoE offers a common structure for addressing both constraints: organizing feed-forward capacity as a conditionally accessed expert pool [9]. A model can store a large number of parameters while each token invokes only the small subset selected by its router. In simplified form:
+--
+67-The problem is not only that communication grows with k . The destination devices, the number of tokens received by each rank, and the receive-buffer shapes are all determined by the routing result of the current batch. Communication and computation are therefore dynamic and potentially imbalanced:
+68-
+69:1. **Stragglers and bubbles:** all-to-all traffic and expert computation are uneven across ranks, so overall throughput is bounded by the slowest rank.
+70-2. **Imbalanced peak memory:** receive buffers, permuted activations, and backward saved tensors vary with local expert load, potentially causing localized OOMs or frequent allocator-cache reclamation.
+71-3. **Host-side control overhead:** dynamic token counts, routing metadata, and offsets can introduce GPU-CPU synchronization, increase CPU overhead, and interrupt asynchronous GPU execution.
+--
+216-> 
+217-
+218:### 4\.2 From Filtering-Centric Curation to High-Throughput Production and Precise Annotation
+219-
+220:Magi-2 shifts the center of its data pipeline from filtering toward high-throughput data production and precise annotation.
+221-
+222-Necessary data governance remains in place, including safety, compliance, privacy, severe-corruption handling, and deduplication. But whether a sample is easy for the current model to generate is no longer the primary admission criterion. Wherever possible, we retain complex motion, multi-person interactions, shot transitions, long-tail subjects, subtitles, on-screen text, and complex audio relationships.
+--
+244-These three dimensions depend on one another. Without sufficient data coverage, a larger expert pool has little reason to form meaningful specialization. Without a new way to organize capacity, more data must still be absorbed by the same dense parameters. Without a system matched to the architecture, thousands of fine-grained experts cannot run efficiently on long video sequences.
+245-
+246:Magi-2 Preview is an intermediate validation of this scaling path. Through this research release, we want to make the architecture, routing behavior, and inference characteristics of a 100B-scale video MoE directly available for study by the community.
+247-
+248-Magi-2 Preview does not suggest that more parameters automatically produce a better model. Rather, model capacity, data complexity, and systems efficiency must scale together: **the model architecture determines how capacity is organized, data determines what that capacity can learn, and the system determines whether that capacity can be trained and deployed reliably.**
+--
+254-[1] [MAGI-1: Autoregressive Video Generation at Scale](https://arxiv.org/abs/2505.13211)
+255-
+256:[2] [Speed by Simplicity: A Single-Stream Architecture for Fast Audio-Video Generative Foundation Model](https://arxiv.org/abs/2603.21986)
+257-
+258-[3] [Scaling Laws for Diffusion Transformers](https://arxiv.org/abs/2410.08184)

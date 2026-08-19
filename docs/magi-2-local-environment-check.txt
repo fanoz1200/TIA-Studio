@@ -1,0 +1,13 @@
+== GPU ==
+bash: nvidia-smi: command not found
+== CUDA compiler ==
+bash: nvcc: command not found
+== Storage ==
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/root        48G   11G   37G  23% /
+== Memory ==
+               total        used        free      shared  buff/cache   available
+Mem:            23Gi       3.7Gi        20Gi        10Mi       953Mi        20Gi
+Swap:          2.0Gi          0B       2.0Gi
+== Docker ==
+bash: docker: command not found
