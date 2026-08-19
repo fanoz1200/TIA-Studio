@@ -50,6 +50,8 @@ function journeyFor(method: AnalysisMethod): "issue" | "direct" {
   return method === "tia" ? "direct" : "issue";
 }
 
+const requestedCaseCount = 88;
+
 export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: string; projectKey: string; isAuthenticated: boolean; onBeginGuidedAnalysis?: (route: KnowledgeRoute) => void }) {
   const [query, setQuery] = useState("");
   const [methodFilter, setMethodFilter] = useState<AnalysisMethod | "all">("all");
@@ -91,6 +93,9 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
     });
     return Array.from(combined.values()).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
   }, [excelCases]);
+
+  const verifiedExcelCount = excelCases?.length ?? 0;
+  const pendingCaseCount = Math.max(0, requestedCaseCount - verifiedExcelCount);
 
   const categories = useMemo(() => Array.from(new Set(libraryCases.map(item => item.category))).filter(Boolean).sort((a, b) => a.localeCompare(b, "ar")), [libraryCases]);
   const selectedCase = libraryCases.find(item => item.id === selectedId) ?? libraryCases[0];
@@ -146,9 +151,10 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
       </div>
 
       <article className="master-library-status" aria-label="حالة مصدر الموسوعة">
-        <div><ShieldCheck size={19} /><span><b>المصدر المرجعي محمّل للقراءة فقط.</b> فُهرست الحالات من HTML، وتُقرأ تفاصيل Excel في متصفحك دون تعديل الأصل أو إدخاله في قاعدة البيانات.</span></div>
-        <span className="master-library-count">{excelCases ? `${excelCases.length} حالة Excel تفصيلية` : "جارٍ قراءة تفاصيل Excel…"}</span>
+        <div><ShieldCheck size={19} /><span><b>المصدر المرجعي محمّل للقراءة فقط.</b> فُهرست الحالات من HTML، وتُقرأ تفاصيل Excel في متصفحك دون تعديل الأصل أو إدخاله في قاعدة البيانات. {excelCases ? `المتاح في الملف الحالي: ${verifiedExcelCount} حالة موثقة.` : "يجري التحقق من سجل Excel الحالي."}</span></div>
+        <span className="master-library-count">{excelCases ? `${verifiedExcelCount} حالة Excel تفصيلية` : "جارٍ قراءة تفاصيل Excel…"}</span>
       </article>
+      {excelCases ? <p className="case-source-note" aria-live="polite"><b>حالة الفهرسة:</b> عرضنا جميع السجلات الموثقة من الملف الحالي. الهدف المرجعي 88 حالة؛ تنتظر {pendingCaseCount} حالة إضافية ملف المصدر الذي سيوفره فريق المشروع، ولن تُنشأ بيانات بديلة عنها.</p> : null}
       {excelError ? <p className="case-source-warning">{excelError}</p> : null}
 
       <article className="case-search-gate master-case-catalog">
@@ -211,6 +217,24 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         <article className="learning-path"><CheckCircle2 size={20} /><h3>ما الذي ينتقل إلى التحليل؟</h3><p>رقم الحالة والعنوان والمنهج المختار فقط. تبقى البيانات الحسابية مبنية على ملفات P6 وExcel التي ترفعها في الرحلة.</p></article>
         <article className="learning-path"><ShieldCheck size={20} /><h3>حدود المكتبة</h3><p>الموسوعة دليل عملي وتعليمي. لا تستبدل العقد أو الرأي القانوني أو التحقق من شروط المشروع الخاصة.</p></article>
       </div>
+
+      <section className="text-training-guides" aria-label="إرشادات رفع P6 وإدخال Excel">
+        <div className="text-training-guides-heading"><FileText size={20} /><div><p className="eyebrow">تدريب عملي مكتوب</p><h3>دليل سريع حتى يتاح الفيديوان المستقلان</h3></div></div>
+        <div className="text-training-guide-grid">
+          <article>
+            <span>01 · رفع برنامج P6</span>
+            <h4>Baseline ثم Update قبل الحدث</h4>
+            <ol><li>من رحلة TIA اختر ملف Baseline بصيغة XER أو XML.</li><li>راجع عدادات الأنشطة والعلاقات والتقويم قبل الاعتماد.</li><li>أضف Update الأقرب قبل تاريخ الواقعة، ثم التحديثات اللاحقة عند وجودها.</li></ol>
+            <p>لا يُعدّل الملف الأصلي؛ يعمل المحرك على نسخ تحليلية مستقلة فقط.</p>
+          </article>
+          <article>
+            <span>02 · إدخال واقعة Excel</span>
+            <h4>وثّق الواقعة قبل إنشاء Fragnet</h4>
+            <ol><li>اكتب رقم القضية والوصف وتاريخ البدء والمدة والمسؤولية.</li><li>اختر الأنشطة ونقاط الربط من بيانات البرنامج المستورد، لا من أمثلة ثابتة.</li><li>راجع صفوف Excel ثم اعرض تقسيم Pre / Event / Post قبل الحساب.</li></ol>
+            <p>لا تنتقل الرحلة عند نقص الحقول الجوهرية، حتى يبقى سجل الواقعة قابلاً للمراجعة.</p>
+          </article>
+        </div>
+      </section>
 
       <article className="training-video-card" aria-label="فيديو تمهيدي لرحلة TIA">
         <div>

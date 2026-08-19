@@ -91,10 +91,19 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
 
     expect((await screen.findAllByText("55 حالة Excel تفصيلية")).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/تنتظر 33 حالة إضافية ملف المصدر/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("حالة Excel تفصيلية").length).toBeGreaterThan(0);
     expect(screen.getAllByText("المساند التعاقدي والقوانين المذكورة في المصدر").length).toBeGreaterThan(0);
     expect(screen.getAllByText("الأدلة والمستندات المقترحة").length).toBeGreaterThan(0);
     expect(screen.getAllByText("الحل المقترح").length).toBeGreaterThan(0);
     expect(screen.getAllByText("قواعد TIA وFragnet").length).toBeGreaterThan(0);
+  });
+
+  it("يعرض دليلي التدريب النصيين لرفع P6 وإدخال Excel إلى حين توفر الفيديوهين المستقلين", () => {
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    expect(screen.getAllByRole("heading", { name: "دليل سريع حتى يتاح الفيديوان المستقلان" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("heading", { name: "Baseline ثم Update قبل الحدث" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("heading", { name: "وثّق الواقعة قبل إنشاء Fragnet" }).length).toBeGreaterThan(0);
   });
 });
