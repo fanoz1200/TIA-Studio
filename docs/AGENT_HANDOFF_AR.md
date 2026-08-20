@@ -17,6 +17,8 @@ pnpm build
 pnpm dev
 ```
 
+عند تغيير حزمة Windows، نفّذ بعد بناء حزم سطح المكتب `pnpm desktop:verify:windows-sandbox` في Linux مزود بـ Wine وXvfb. يثبت الأمر إقلاع ملف EXE واستجابة خادمه المحلي في ملف مستخدم مؤقت، ولا يغني عن فحص SmartScreen أو التجربة على جهاز Windows فعلي.
+
 ## نقاط البداية التقنية
 
 | الحاجة | الملف الأساسي |

@@ -10,6 +10,7 @@ describe("حزمة سطح المكتب المحلية", () => {
     expect(packageJson.build.files).toContain("dist/**/*");
     expect(packageJson.build.extraResources).toBeUndefined();
     expect(packageJson.scripts["desktop:verify:packaged"]).toBe("node desktop/verify-packaged-local-server.mjs");
+    expect(packageJson.scripts["desktop:verify:windows-sandbox"]).toBe("bash desktop/verify-windows-package-wine.sh");
   });
 
   it("يشغّل الخادم من app.asar ويحتفظ بسجل خطأ قابل للإرسال", () => {
@@ -30,5 +31,13 @@ describe("حزمة سطح المكتب المحلية", () => {
   it("يطلب من الخادم المضمّن البقاء على حلقة الجهاز المحلية فقط", () => {
     const main = fs.readFileSync(path.join(projectRoot, "desktop", "main.cjs"), "utf8");
     expect(main).toContain('TIA_DESKTOP_LOCAL: "1"');
+  });
+
+  it("يوفر تحققاً معزولاً من ملف Windows واستجابة خادمه المحلي", () => {
+    const verifier = fs.readFileSync(path.join(projectRoot, "desktop", "verify-windows-package-wine.sh"), "utf8");
+    expect(verifier).toContain('WINEPREFIX="$WORK_DIR/wine-prefix"');
+    expect(verifier).toContain('xvfb-run -a wine "$EXE_PATH"');
+    expect(verifier).toContain('http://127.0.0.1:${port}/');
+    expect(verifier).toContain('TIA Studio');
   });
 });
