@@ -63,7 +63,7 @@ async function createWindow() {
   fs.writeFileSync(getLocalServerLogPath(), "بدء سجل خادم TIA Studio المحلي\n", "utf8");
   serverProcess = spawn(process.execPath, [serverEntry], {
     cwd: path.dirname(serverEntry),
-    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", NODE_ENV: "production", PORT: String(port) },
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", NODE_ENV: "production", PORT: String(port), TIA_DESKTOP_LOCAL: "1" },
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
   });

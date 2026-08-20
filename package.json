@@ -16,7 +16,8 @@
     "desktop:dev": "pnpm build && electron .",
     "desktop:pack": "pnpm build && electron-builder --linux AppImage --x64 --publish never",
     "desktop:pack:windows": "pnpm build && electron-builder --win portable --x64 --publish never",
-    "desktop:release": "pnpm build && electron-builder --linux AppImage --win portable --x64 --publish never"
+    "desktop:release": "pnpm build && electron-builder --linux AppImage --win portable --x64 --publish never",
+    "desktop:verify:packaged": "node desktop/verify-packaged-local-server.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",

@@ -9,6 +9,7 @@ describe("حزمة سطح المكتب المحلية", () => {
     const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
     expect(packageJson.build.files).toContain("dist/**/*");
     expect(packageJson.build.extraResources).toBeUndefined();
+    expect(packageJson.scripts["desktop:verify:packaged"]).toBe("node desktop/verify-packaged-local-server.mjs");
   });
 
   it("يشغّل الخادم من app.asar ويحتفظ بسجل خطأ قابل للإرسال", () => {
@@ -21,7 +22,13 @@ describe("حزمة سطح المكتب المحلية", () => {
   it("يلتزم الخادم بالمنفذ الذي يختاره تطبيق سطح المكتب", () => {
     const server = fs.readFileSync(path.join(projectRoot, "server", "_core", "index.ts"), "utf8");
     expect(server).toContain('parseInt(process.env.PORT || "3000", 10)');
-    expect(server).toContain('server.listen(port, "127.0.0.1"');
+    expect(server).toContain('process.env.TIA_DESKTOP_LOCAL === "1" ? "127.0.0.1" : "0.0.0.0"');
+    expect(server).toContain("server.listen(port, host");
     expect(server).not.toContain("findAvailablePort(preferredPort)");
+  });
+
+  it("يطلب من الخادم المضمّن البقاء على حلقة الجهاز المحلية فقط", () => {
+    const main = fs.readFileSync(path.join(projectRoot, "desktop", "main.cjs"), "utf8");
+    expect(main).toContain('TIA_DESKTOP_LOCAL: "1"');
   });
 });

@@ -32,8 +32,9 @@ async function startServer() {
   }
 
   const port = parseInt(process.env.PORT || "3000", 10);
-  server.listen(port, "127.0.0.1", () => {
-    console.log(`Server running on http://localhost:${port}/`);
+  const host = process.env.TIA_DESKTOP_LOCAL === "1" ? "127.0.0.1" : "0.0.0.0";
+  server.listen(port, host, () => {
+    console.log(`Server running on http://${host}:${port}/`);
   });
 }
 
