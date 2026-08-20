@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { KnowledgeCentrePanel } from "./KnowledgeCentrePanel";
 
@@ -76,6 +76,15 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     expect(screen.getAllByText(/المصدر المرجعي محمّل للقراءة فقط/).length).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: /وصف الحالة/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /طبّق هذه الحالة الآن/ })).toBeTruthy();
+  });
+
+  it("ينقل الحالة المختارة إلى رحلة التحليل مرة واحدة مع منع الضغط المتكرر أثناء الانتقال", () => {
+    const onBeginGuidedAnalysis = vi.fn();
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated onBeginGuidedAnalysis={onBeginGuidedAnalysis} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /طبّق هذه الحالة الآن/ }));
+    expect(onBeginGuidedAnalysis).toHaveBeenCalledWith(expect.objectContaining({ caseId: "D-001", method: "tia", journeyPath: "direct" }));
+    expect(screen.getByRole("button", { name: /جاري فتح رحلة التحليل/ })).toBeTruthy();
   });
 
   it("يعرض الفيديو التدريبي لمسار Workshop 8 من أصل التطبيق الدائم", () => {

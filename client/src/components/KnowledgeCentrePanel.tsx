@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, BookOpenCheck, CheckCircle2, Download, FileText, LibraryBig, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,6 +61,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const [methodOverride, setMethodOverride] = useState<AnalysisMethod | null>(null);
   const [excelCases, setExcelCases] = useState<DetailedMasterClaimCase[] | null>(null);
   const [excelError, setExcelError] = useState<string | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -130,12 +132,19 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
     setMethodOverride(null);
   };
 
-  const applyCase = () => onBeginGuidedAnalysis?.({
-    method: selectedMethod,
-    journeyPath: journeyFor(selectedMethod),
-    caseId: selectedCase.id,
-    caseTitle: selectedCase.title_ar,
-  });
+  const applyCase = () => {
+    if (!onBeginGuidedAnalysis || isApplying) return;
+    setIsApplying(true);
+    toast.success("جاري فتح رحلة التحليل للحالة المختارة…");
+    onBeginGuidedAnalysis({
+      method: selectedMethod,
+      journeyPath: journeyFor(selectedMethod),
+      caseId: selectedCase.id,
+      caseTitle: selectedCase.title_ar,
+    });
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+    window.setTimeout(() => setIsApplying(false), 500);
+  };
 
   if (view !== "learning") return null;
 
@@ -208,7 +217,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         </div>
         <div className="case-search-actions">
           <span><ShieldCheck size={16} />هذه خلاصة مرجعية من ملفك؛ راجع نسخة العقد والشروط الخاصة قبل الاعتماد أو المطالبة.</span>
-          <Button className="run-button" onClick={applyCase}>طبّق هذه الحالة الآن <ArrowLeft size={16} /></Button>
+          <Button className="run-button" type="button" onClick={applyCase} disabled={isApplying} aria-busy={isApplying}>{isApplying ? "جاري فتح رحلة التحليل…" : "طبّق هذه الحالة الآن"} <ArrowLeft size={16} /></Button>
         </div>
       </article>
 

@@ -1,9 +1,13 @@
-export const LOCAL_RELEASE = {
-  version: "1.0.1",
+export const releaseInfo = {
+  version: "1.0.2",
   publishedOn: "20 أغسطس 2026",
   channel: "سطح المكتب المحلي · Windows x64 وLinux x64",
-  launcher: "Windows: ملف TIA-Studio-1.0.1-Windows-x64.exe واحد. Linux: ملف TIA-Studio-1.0.1-Linux-x64.AppImage واحد.",
+  launcher: "Windows: ملف TIA-Studio-1.0.2-Windows-x64.exe واحد. Linux: ملف TIA-Studio-1.0.2-Linux-x64.AppImage واحد.",
 } as const;
+
+// الاسم المستهلك في واجهة مركز الموارد. يبقى هذا الربط صريحاً كي لا ينفصل
+// الدليل الحيّ عن بطاقة الإصدار عند تغيير بيانات الحزمة لاحقاً.
+export const LOCAL_RELEASE = releaseInfo;
 
 export const methodologyGuide = [
   {
@@ -51,6 +55,8 @@ export const systemLinks = [
 ] as const;
 
 export const releaseChanges = [
+  "إصلاح انتقال زر «طبّق هذه الحالة الآن» ليبدأ رحلة التحليل فوراً مع رسالة واضحة، بدلاً من التجمّد الظاهري.",
+  "إضافة زر تنزيل سطح المكتب في الشريط العلوي وأزرار Windows وLinux المباشرة داخل مركز الموارد.",
   "إضافة دليل حيّ داخل التطبيق يربط المنهجيات والمحركات وسير العمل برقم الإصدار الحالي.",
   "تثبيت معيار التوزيع المحلي بنقرة واحدة: ملف EXE محمول واحد لـ Windows وملف AppImage واحد لـ Linux.",
   "إلزام مركز الموارد بعرض رابط الإصدار وتعليمات التشغيل وسجل التغييرات مع كل حزمة محفوظة.",

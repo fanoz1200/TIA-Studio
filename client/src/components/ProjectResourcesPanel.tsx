@@ -17,8 +17,8 @@ const resources = [
   { title: "الذكاء الاصطناعي والتشغيل المحلي", description: "توضيح ما يُحسب محلياً، وما يحتاج حساباً وخدمات تخزين، وما لا يستخدم نموذجاً ذكياً إطلاقاً.", href: "/manus-storage/TIA_STUDIO_AI_AND_LOCAL_USE_AR_edf36f0d.md", icon: Info, kind: "Markdown" },
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
   { title: "حزمة مصدر التشغيل المحلي", description: "نسخة ZIP من المصدر والأدلة والأمثلة. فكّها، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/tia-studio-source-package_0a28a8d2.zip", icon: HardDriveDownload, kind: "ZIP · Source" },
-  { title: "نسخة سطح المكتب — Windows", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64؛ لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.1-Windows-x64_b7ec7566.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
-  { title: "نسخة سطح المكتب — Linux", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.1-Linux-x64_4e81995f.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
+  { title: "نسخة سطح المكتب — Windows", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64؛ لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.2-Windows-x64-final_61600d13.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
+  { title: "نسخة سطح المكتب — Linux", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.2-Linux-x64-final_8ed7d939.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
 const examples = [
@@ -71,6 +71,14 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="local-use-banner">
       <WifiOff size={22} />
       <div><b>وضع الاستخدام المحلي</b><p>بعد فتح التطبيق عبر اتصال آمن وتشغيله مرة واحدة، يحفظ المتصفح واجهة التشغيل للاستخدام اللاحق. حساب CPM وTIA وقراءة ملفات XER/XML والتقرير تتم داخل المتصفح؛ أما الحسابات والأدلة والاعتمادات المحفوظة فتحتاج اتصالاً وخدمة الخادم. تتوفر أيضاً حزم Windows وLinux للتجربة المحلية؛ لا تُعد بديلاً عن المراجعة المهنية أو اختبار استيراد Primavera على نسخة غير إنتاجية.</p></div>
+    </section>
+
+    <section className="desktop-download-quick" aria-label="تنزيل نسخة الكمبيوتر">
+      <div><HardDriveDownload size={24} /><div><b>حمّل نسخة الكمبيوتر الآن</b><p>اختر نظامك ثم افتح ملفاً واحداً فقط: لا تحتاج إلى Node.js أو أوامر أو فك ملف ZIP.</p></div></div>
+      <div className="desktop-download-quick__actions">
+        <a className="desktop-download-quick__primary" href={resources[6].href} download><Download size={17} />Windows — تنزيل ملف EXE</a>
+        <a className="desktop-download-quick__secondary" href={resources[7].href} download><Download size={17} />Linux — تنزيل AppImage</a>
+      </div>
     </section>
 
     <section id="release-guide" className="panel release-guide" aria-labelledby="release-guide-title">
