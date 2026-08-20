@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import React from "react";
-import { BookOpenCheck, Download, FileArchive, FileCode2, FileText, HardDriveDownload, Info, ShieldCheck, WifiOff } from "lucide-react";
+import { BookOpenCheck, Boxes, Download, FileArchive, FileCode2, FileText, GitBranch, HardDriveDownload, Info, ListChecks, Network, ShieldCheck, WifiOff, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { engineGuide, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
 import "./project-resources.css";
 
 type DeferredInstallPrompt = Event & {
@@ -16,8 +17,8 @@ const resources = [
   { title: "الذكاء الاصطناعي والتشغيل المحلي", description: "توضيح ما يُحسب محلياً، وما يحتاج حساباً وخدمات تخزين، وما لا يستخدم نموذجاً ذكياً إطلاقاً.", href: "/manus-storage/TIA_STUDIO_AI_AND_LOCAL_USE_AR_edf36f0d.md", icon: Info, kind: "Markdown" },
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
   { title: "حزمة مصدر التشغيل المحلي", description: "نسخة ZIP من المصدر والأدلة والأمثلة. فكّها، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/tia-studio-source-package_0a28a8d2.zip", icon: HardDriveDownload, kind: "ZIP · Source" },
-  { title: "نسخة سطح المكتب — Windows", description: "حزمة محمولة بصيغة ZIP للاختبار على Windows x64. غير موقعة رقمياً؛ افحصها ببرنامج الحماية، ثم ابدأ بمشروع تدريبي مصطنع قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.0-windows-x64-portable_a9431577.zip", icon: HardDriveDownload, kind: "Windows x64 · Portable" },
-  { title: "نسخة سطح المكتب — Linux", description: "حزمة AppImage للاختبار على Linux x64. امنح الملف صلاحية التنفيذ، واستخدم مشروعاً تدريبياً للتحقق من الاستيراد والتحليل والتقرير قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.0-linux-x64_8ac9e8fe.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
+  { title: "نسخة سطح المكتب — Windows", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64؛ لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.1-Windows-x64_b7ec7566.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
+  { title: "نسخة سطح المكتب — Linux", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.1-Linux-x64_4e81995f.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
 const examples = [
@@ -70,6 +71,23 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="local-use-banner">
       <WifiOff size={22} />
       <div><b>وضع الاستخدام المحلي</b><p>بعد فتح التطبيق عبر اتصال آمن وتشغيله مرة واحدة، يحفظ المتصفح واجهة التشغيل للاستخدام اللاحق. حساب CPM وTIA وقراءة ملفات XER/XML والتقرير تتم داخل المتصفح؛ أما الحسابات والأدلة والاعتمادات المحفوظة فتحتاج اتصالاً وخدمة الخادم. تتوفر أيضاً حزم Windows وLinux للتجربة المحلية؛ لا تُعد بديلاً عن المراجعة المهنية أو اختبار استيراد Primavera على نسخة غير إنتاجية.</p></div>
+    </section>
+
+    <section id="release-guide" className="panel release-guide" aria-labelledby="release-guide-title">
+      <div className="release-guide__heading">
+        <div><p className="eyebrow">LIVE RELEASE GUIDE · {LOCAL_RELEASE.version}</p><h2 id="release-guide-title">الدليل الحيّ: كيف يعمل البرنامج من البداية للنهاية؟</h2><p>هذا الدليل مضمّن داخل التطبيق، ويرتبط بالإصدار الحالي حتى تعرف بالضبط ما الذي تغير وكيف ينتقل العمل بين الأقسام والمحركات.</p></div>
+        <div className="release-stamp"><b>الإصدار {LOCAL_RELEASE.version}</b><span>{LOCAL_RELEASE.publishedOn}</span><small>{LOCAL_RELEASE.channel}</small></div>
+      </div>
+      <div className="release-launcher"><HardDriveDownload size={20} /><div><b>تشغيل محلي بنقرة واحدة</b><p>{LOCAL_RELEASE.launcher} بعد التنزيل افتح الملف مباشرة؛ لا تحتاج إلى تشغيل Node.js أو كتابة أوامر. تظهر أي رسالة حماية لأنها حزم غير موقعة رقمياً؛ افحص الملف من الرابط الرسمي فقط قبل السماح له بالتشغيل.</p></div></div>
+      <div className="guide-card-grid">
+        <article><div className="guide-card-title"><BookOpenCheck size={18} /><h3>المنهجيات: متى نستخدم ماذا؟</h3></div>{methodologyGuide.map(method => <div className="guide-item" key={method.title}><b>{method.title}</b><p>{method.purpose}</p><small><strong>يستخدم عندما:</strong> {method.useWhen}</small></div>)}</article>
+        <article><div className="guide-card-title"><Boxes size={18} /><h3>المحركات المختلفة</h3></div>{engineGuide.map(engine => <div className="engine-row" key={engine.name}><b>{engine.name}</b><span><strong>يدخل:</strong> {engine.input}</span><span><strong>ينتج:</strong> {engine.output}</span></div>)}</article>
+      </div>
+      <div className="guide-flow-grid">
+        <article><div className="guide-card-title"><Workflow size={18} /><h3>سير العمل المعتمد</h3></div><ol className="live-workflow">{workflowGuide.map(step => <li key={step}>{step}</li>)}</ol></article>
+        <article><div className="guide-card-title"><Network size={18} /><h3>كيف ترتبط الأقسام؟</h3></div><ul className="system-links">{systemLinks.map(link => <li key={link}>{link}</li>)}</ul></article>
+      </div>
+      <div className="release-changelog"><div className="guide-card-title"><GitBranch size={18} /><h3>سجل تغييرات هذا الإصدار</h3></div><ul>{releaseChanges.map(change => <li key={change}>{change}</li>)}</ul><p><ListChecks size={16} />قاعدة التحديث: أي تعديل يؤثر على الاستيراد أو CPM أو Fragnet أو الجودة أو التقرير يحدّث هذا الدليل ورقم الإصدار وسجل التغييرات، ثم يعاد الاختبار والبناء قبل إتاحة التنزيل.</p></div>
     </section>
 
     <section className="resources-grid" aria-label="ملفات التوثيق والتنزيل">

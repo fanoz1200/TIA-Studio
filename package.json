@@ -1,6 +1,6 @@
 {
   "name": "tia-delay-analysis",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Arabic Time Impact Analysis studio with local CPM/TIA verification and professional claim exports.",
   "author": "TIA Studio",
   "type": "module",
@@ -15,7 +15,8 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "desktop:dev": "pnpm build && electron .",
     "desktop:pack": "pnpm build && electron-builder --linux AppImage --x64 --publish never",
-    "desktop:pack:windows": "pnpm build && electron-builder --win portable --x64 --publish never"
+    "desktop:pack:windows": "pnpm build && electron-builder --win portable --x64 --publish never",
+    "desktop:release": "pnpm build && electron-builder --linux AppImage --win portable --x64 --publish never"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
@@ -137,6 +138,7 @@
       }
     ],
     "linux": {
+      "artifactName": "TIA-Studio-${version}-Linux-x64.${ext}",
       "target": [
         "AppImage"
       ],
@@ -144,6 +146,7 @@
       "synopsis": "تحليل التأخير بطريقة TIA"
     },
     "win": {
+      "artifactName": "TIA-Studio-${version}-Windows-x64.${ext}",
       "target": [
         "portable"
       ]
