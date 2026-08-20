@@ -1,6 +1,6 @@
 {
   "name": "tia-delay-analysis",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Arabic Time Impact Analysis studio with local CPM/TIA verification and professional claim exports.",
   "author": "TIA Studio",
   "type": "module",
@@ -128,14 +128,9 @@
     },
     "files": [
       "desktop/**/*",
+      "dist/**/*",
       "package.json",
       "node_modules/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "dist",
-        "to": "dist"
-      }
     ],
     "linux": {
       "artifactName": "TIA-Studio-${version}-Linux-x64.${ext}",

@@ -16,9 +16,10 @@ const resources = [
   { title: "مرجع المنهجيات", description: "ارتباط واجهات التطبيق بمنهجية TIA وبروتوكول SCL وحدود النتيجة المهنية.", href: "/manus-storage/TIA_STUDIO_METHODOLOGY_AR_f914a14f.md", icon: FileText, kind: "Markdown" },
   { title: "الذكاء الاصطناعي والتشغيل المحلي", description: "توضيح ما يُحسب محلياً، وما يحتاج حساباً وخدمات تخزين، وما لا يستخدم نموذجاً ذكياً إطلاقاً.", href: "/manus-storage/TIA_STUDIO_AI_AND_LOCAL_USE_AR_edf36f0d.md", icon: Info, kind: "Markdown" },
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
-  { title: "حزمة مصدر التشغيل المحلي", description: "نسخة ZIP من المصدر والأدلة والأمثلة. فكّها، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/tia-studio-source-package_0a28a8d2.zip", icon: HardDriveDownload, kind: "ZIP · Source" },
-  { title: "نسخة سطح المكتب — Windows", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64؛ لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.2-Windows-x64-final_61600d13.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
-  { title: "نسخة سطح المكتب — Linux", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.2-Linux-x64-final_8ed7d939.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
+  { title: "حزمة المصدر والاستمرارية — 1.0.3", description: "نسخة ZIP من المصدر والأدلة والأمثلة وملفيّ التسليم. فكّها، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/TIA-Studio-1.0.3-Source-and-Handoff_2492ace5.zip", icon: HardDriveDownload, kind: "ZIP · Source + Handoff" },
+  { title: "دليل استمرارية المشروع وتسليمه", description: "خطوات حفظ المصدر، استعادة العمل، متابعة التطوير عبر GitHub أو من حزمة المصدر، وحدود ما يلزم اختباره قبل أي إصدار جديد.", href: "/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md", icon: GitBranch, kind: "Markdown · Continuity" },
+  { title: "نسخة سطح المكتب — Windows 1.0.3", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64؛ يحتوي إصلاح بدء الخادم المضمّن. لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.3-Windows-x64_b812f3a0.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
+  { title: "نسخة سطح المكتب — Linux 1.0.3", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.3-Linux-x64_9684b12c.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
 const examples = [
@@ -76,8 +77,8 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="desktop-download-quick" aria-label="تنزيل نسخة الكمبيوتر">
       <div><HardDriveDownload size={24} /><div><b>حمّل نسخة الكمبيوتر الآن</b><p>اختر نظامك ثم افتح ملفاً واحداً فقط: لا تحتاج إلى Node.js أو أوامر أو فك ملف ZIP.</p></div></div>
       <div className="desktop-download-quick__actions">
-        <a className="desktop-download-quick__primary" href={resources[6].href} download><Download size={17} />Windows — تنزيل ملف EXE</a>
-        <a className="desktop-download-quick__secondary" href={resources[7].href} download><Download size={17} />Linux — تنزيل AppImage</a>
+        <a className="desktop-download-quick__primary" href={resources[7].href} download><Download size={17} />Windows 1.0.3 — تنزيل ملف EXE</a>
+        <a className="desktop-download-quick__secondary" href={resources[8].href} download><Download size={17} />Linux 1.0.3 — تنزيل AppImage</a>
       </div>
     </section>
 
