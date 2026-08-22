@@ -21,8 +21,8 @@ describe("عقد التشغيل المحلي", () => {
     const resourcesPanel = readProjectFile("client/src/components/ProjectResourcesPanel.tsx");
     const localUseGuide = readProjectFile("docs/TIA_STUDIO_AI_AND_LOCAL_USE_AR.md");
 
-    expect(resourcesPanel).toContain("حزمة المصدر والاستمرارية — 1.0.3");
-    expect(resourcesPanel).toContain("TIA-Studio-1.0.3-Source-and-Handoff_2492ace5.zip");
+    expect(resourcesPanel).toContain("حزمة المصدر والاستمرارية — 1.0.4");
+    expect(resourcesPanel).toContain("TIA-Studio-1.0.4-Source-final.tar_6ca01026.gz");
     expect(localUseGuide).toContain("دون اتصال");
     expect(localUseGuide).toContain("PWA");
   });

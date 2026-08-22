@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { masterClaimCases, type MasterClaimCase } from "@/lib/master-claim-cases";
 import { enrichHtmlCase, loadMasterClaimExcelCases, type DetailedMasterClaimCase } from "@/lib/master-claim-excel";
+import { claimTrainingScenarios, fidicClaimReferences } from "@/lib/user-claim-references";
 import "./knowledge-centre.css";
 import "./training-video.css";
 
@@ -62,6 +63,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const [excelCases, setExcelCases] = useState<DetailedMasterClaimCase[] | null>(null);
   const [excelError, setExcelError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
+  const [selectedFidicClause, setSelectedFidicClause] = useState(fidicClaimReferences[0]?.clause ?? "");
 
   useEffect(() => {
     let mounted = true;
@@ -103,6 +105,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const selectedCase = libraryCases.find(item => item.id === selectedId) ?? libraryCases[0];
   const selectedMethod = methodOverride ?? methodFromSource(selectedCase.methodology);
   const selectedMethodInfo = methods.find(item => item.id === selectedMethod) ?? methods[0];
+  const selectedFidicReference = fidicClaimReferences.find(item => item.clause === selectedFidicClause) ?? fidicClaimReferences[0];
 
   const matchingCases = useMemo(() => {
     const terms = normalize(query).split(" ").filter(Boolean);
@@ -166,6 +169,29 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
       {excelCases ? <p className="case-source-note" aria-live="polite"><b>حالة الفهرسة:</b> عرضنا جميع السجلات الموثقة من الملف الحالي. الهدف المرجعي 88 حالة؛ تنتظر {pendingCaseCount} حالة إضافية ملف المصدر الذي سيوفره فريق المشروع، ولن تُنشأ بيانات بديلة عنها.</p> : null}
       {excelError ? <p className="case-source-warning">{excelError}</p> : null}
 
+      <section className="fidic-reference-library" aria-label="مرجع بنود FIDIC 2017">
+        <div className="reference-library-heading">
+          <FileText size={20} />
+          <div><p className="eyebrow">FIDIC 2017 · PLANNER REFERENCE</p><h3>مرجع بنود FIDIC 2017 للمخطط والمطالبة</h3><p>يعرض {fidicClaimReferences.length} بنداً موثقاً من ملفك: قراءة عملية للمخطط، الإجراء، السجلات، والملاحظات. هذه المراجع مستقلة عن حالات D ولا تُنشئ استحقاقاً قانونياً تلقائياً.</p></div>
+        </div>
+        <div className="fidic-clause-grid">
+          {fidicClaimReferences.map(reference => <button type="button" key={reference.clause} className={`fidic-clause-card ${reference.clause === selectedFidicReference?.clause ? "selected" : ""}`} onClick={() => setSelectedFidicClause(reference.clause)} aria-pressed={reference.clause === selectedFidicReference?.clause}>
+            <span>FIDIC {reference.clause}</span><b>{reference.title}</b><small>الأثر: {reference.adjustment || "غير مذكور"}</small>
+          </button>)}
+        </div>
+        {selectedFidicReference ? <article className="fidic-reference-detail" aria-live="polite">
+          <div><span>FIDIC {selectedFidicReference.clause}</span><h4>{selectedFidicReference.title}</h4><b>{selectedFidicReference.adjustment || "الأثر غير مذكور في الملف"}</b></div>
+          <div className="fidic-detail-grid">
+            <section><h5>شرح البند للمخطط</h5><p>{selectedFidicReference.plannerSummary || "لم يرد شرح مختصر في المصدر."}</p></section>
+            <section><h5>إجراء عملي</h5><p>{selectedFidicReference.plannerAction || "لم يرد إجراء عملي في المصدر."}</p></section>
+            <section><h5>السجلات والأدلة</h5><p>{selectedFidicReference.evidence || "لم تحدد سجلات في المصدر."}</p></section>
+            <section><h5>المرجع القانوني المصري المذكور</h5><p>{selectedFidicReference.egyptianLawReference || "لم يرد مرجع قانوني مصري في المصدر."}</p></section>
+            <section className="fidic-practical-notes"><h5>ملاحظات تطبيقية</h5><p>{selectedFidicReference.practicalNotes || "لم ترد ملاحظات تطبيقية إضافية في المصدر."}</p></section>
+          </div>
+          <small className="reference-provenance">المصدر: {selectedFidicReference.source}. راجع العقد والشروط الخاصة والنص الأصلي قبل الاعتماد.</small>
+        </article> : null}
+      </section>
+
       <article className="case-search-gate master-case-catalog">
         <div className="case-search-header">
           <span><Search size={18} />ابحث في العناوين والوصف والأدلة والمساندات</span>
@@ -226,6 +252,13 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         <article className="learning-path"><CheckCircle2 size={20} /><h3>ما الذي ينتقل إلى التحليل؟</h3><p>رقم الحالة والعنوان والمنهج المختار فقط. تبقى البيانات الحسابية مبنية على ملفات P6 وExcel التي ترفعها في الرحلة.</p></article>
         <article className="learning-path"><ShieldCheck size={20} /><h3>حدود المكتبة</h3><p>الموسوعة دليل عملي وتعليمي. لا تستبدل العقد أو الرأي القانوني أو التحقق من شروط المشروع الخاصة.</p></article>
       </div>
+
+      <section className="claim-training-scenarios" aria-label="سيناريوهات تدريب المطالبات">
+        <div className="reference-library-heading"><BookOpenCheck size={20} /><div><p className="eyebrow">دليل تدريبي مستخرج من المصدر</p><h3>خمسة سيناريوهات لتدريب عين المخطط</h3><p>أسئلة تطبيقية من الدليل العربي المرفوع تساعد على فهم المسار الحرج والـ Float والسببية والتزامن؛ لا تضيف وقائع إلى مشروعك ولا تستبدل فحص البرنامج الفعلي.</p></div></div>
+        <div className="claim-scenario-grid">
+          {claimTrainingScenarios.map((scenario, index) => <article key={scenario.id}><span>سيناريو {index + 1}</span><h4>{scenario.title}</h4><p>{scenario.content}</p><small>المصدر: {scenario.source}</small></article>)}
+        </div>
+      </section>
 
       <section className="text-training-guides" aria-label="إرشادات رفع P6 وإدخال Excel">
         <div className="text-training-guides-heading"><FileText size={20} /><div><p className="eyebrow">تدريب عملي مكتوب</p><h3>دليل سريع حتى يتاح الفيديوان المستقلان</h3></div></div>

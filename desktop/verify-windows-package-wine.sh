@@ -3,6 +3,7 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXE_PATH="${1:-}"
+VERSION="$(node -p "require('$PROJECT_ROOT/package.json').version")"
 
 if ! command -v wine >/dev/null 2>&1 || ! command -v xvfb-run >/dev/null 2>&1; then
   echo "يلزم توفر wine وxvfb-run لاختبار حزمة Windows المعزولة." >&2
@@ -10,11 +11,11 @@ if ! command -v wine >/dev/null 2>&1 || ! command -v xvfb-run >/dev/null 2>&1; t
 fi
 
 if [[ -z "$EXE_PATH" ]]; then
-  EXE_PATH="$(find "$PROJECT_ROOT/release" "$PROJECT_ROOT/../webdev-static-assets" -maxdepth 2 -type f -name 'TIA-Studio-1.0.3-Windows-x64*.exe' -print -quit 2>/dev/null || true)"
+  EXE_PATH="$(find "$PROJECT_ROOT/release" "$PROJECT_ROOT/../webdev-static-assets" -maxdepth 2 -type f -name "TIA-Studio-${VERSION}-Windows-x64*.exe" -print -quit 2>/dev/null || true)"
 fi
 
 if [[ -z "$EXE_PATH" || ! -f "$EXE_PATH" ]]; then
-  echo "لم يُعثر على ملف EXE الخاص بالإصدار 1.0.3. مرّر مساره كوسيط أول." >&2
+  echo "لم يُعثر على ملف EXE الخاص بالإصدار ${VERSION}. مرّر مساره كوسيط أول." >&2
   exit 2
 fi
 

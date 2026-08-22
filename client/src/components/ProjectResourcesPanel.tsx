@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import { BookOpenCheck, Boxes, Download, FileArchive, FileCode2, FileText, GitBranch, HardDriveDownload, Info, ListChecks, Network, ShieldCheck, WifiOff, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { resolveResourceDownloadHref } from "@/lib/download-links";
 import { engineGuide, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
 import "./project-resources.css";
 
@@ -16,10 +17,10 @@ const resources = [
   { title: "مرجع المنهجيات", description: "ارتباط واجهات التطبيق بمنهجية TIA وبروتوكول SCL وحدود النتيجة المهنية.", href: "/manus-storage/TIA_STUDIO_METHODOLOGY_AR_f914a14f.md", icon: FileText, kind: "Markdown" },
   { title: "الذكاء الاصطناعي والتشغيل المحلي", description: "توضيح ما يُحسب محلياً، وما يحتاج حساباً وخدمات تخزين، وما لا يستخدم نموذجاً ذكياً إطلاقاً.", href: "/manus-storage/TIA_STUDIO_AI_AND_LOCAL_USE_AR_edf36f0d.md", icon: Info, kind: "Markdown" },
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
-  { title: "حزمة المصدر والاستمرارية — 1.0.3", description: "نسخة ZIP من المصدر والأدلة والأمثلة وملفيّ التسليم. فكّها، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/TIA-Studio-1.0.3-Source-and-Handoff_2492ace5.zip", icon: HardDriveDownload, kind: "ZIP · Source + Handoff" },
+  { title: "حزمة المصدر والاستمرارية — 1.0.4", description: "أرشيف TAR.GZ نظيف من المصدر والأدلة والأمثلة وملفيّ التسليم. فكّه، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/TIA-Studio-1.0.4-Source-final.tar_6ca01026.gz", icon: HardDriveDownload, kind: "TAR.GZ · Source + Handoff" },
   { title: "دليل استمرارية المشروع وتسليمه", description: "خطوات حفظ المصدر، استعادة العمل، متابعة التطوير عبر GitHub أو من حزمة المصدر، وحدود ما يلزم اختباره قبل أي إصدار جديد.", href: "/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md", icon: GitBranch, kind: "Markdown · Continuity" },
-  { title: "نسخة سطح المكتب — Windows 1.0.3", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64؛ يحتوي إصلاح بدء الخادم المضمّن. لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.3-Windows-x64_b812f3a0.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
-  { title: "نسخة سطح المكتب — Linux 1.0.3", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.3-Linux-x64_9684b12c.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
+  { title: "نسخة سطح المكتب — Windows 1.0.4", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64؛ يحتوي إصلاح بدء الخادم المضمّن ومراجع FIDIC والسيناريوهات التعليمية الجديدة. لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_2c7d9ad8.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
+  { title: "نسخة سطح المكتب — Linux 1.0.4", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64، ويشمل مراجع FIDIC والسيناريوهات التعليمية الجديدة. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_dc3ac3f8.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
 const examples = [
@@ -77,8 +78,8 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="desktop-download-quick" aria-label="تنزيل نسخة الكمبيوتر">
       <div><HardDriveDownload size={24} /><div><b>حمّل نسخة الكمبيوتر الآن</b><p>اختر نظامك ثم افتح ملفاً واحداً فقط: لا تحتاج إلى Node.js أو أوامر أو فك ملف ZIP.</p></div></div>
       <div className="desktop-download-quick__actions">
-        <a className="desktop-download-quick__primary" href={resources[7].href} download><Download size={17} />Windows 1.0.3 — تنزيل ملف EXE</a>
-        <a className="desktop-download-quick__secondary" href={resources[8].href} download><Download size={17} />Linux 1.0.3 — تنزيل AppImage</a>
+        <a className="desktop-download-quick__primary" href={resolveResourceDownloadHref(resources[7].href)} download><Download size={17} />Windows 1.0.4 — تنزيل ملف EXE</a>
+        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} download><Download size={17} />Linux 1.0.4 — تنزيل AppImage</a>
       </div>
     </section>
 
@@ -100,12 +101,12 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     </section>
 
     <section className="resources-grid" aria-label="ملفات التوثيق والتنزيل">
-      {resources.map((resource) => { const Icon = resource.icon; return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{resource.title}</h2><p>{resource.description}</p></div><a className="resource-download" href={resource.href} download><Download size={16} />تنزيل</a></article>; })}
+      {resources.map((resource) => { const Icon = resource.icon; return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{resource.title}</h2><p>{resource.description}</p></div><a className="resource-download" href={resolveResourceDownloadHref(resource.href)} download><Download size={16} />تنزيل</a></article>; })}
     </section>
 
     <section className="panel examples-panel">
       <div className="panel-heading"><div><p className="eyebrow">SANDBOX PROJECTS</p><h2>ملفات تدريب قابلة للتجربة</h2><p>حمّل برنامج الأساس أولاً، ثم استخدم التحديث في تبويب مقارنة التحديثات، وجرّب ملف XER في تبويب البرنامج والتقويم.</p></div></div>
-      <div className="example-downloads">{examples.map((example) => <a key={example.href} href={example.href} download><FileArchive size={16} /><span>{example.name}</span><small>{example.type}</small><Download size={15} /></a>)}</div>
+      <div className="example-downloads">{examples.map((example) => <a key={example.href} href={resolveResourceDownloadHref(example.href)} download><FileArchive size={16} /><span>{example.name}</span><small>{example.type}</small><Download size={15} /></a>)}</div>
     </section>
 
     <section className="panel resources-boundary">

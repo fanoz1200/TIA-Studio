@@ -124,4 +124,22 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     expect(screen.getAllByRole("link", { name: "Baseline JSON" }).some(link => link.getAttribute("href") === "/manus-storage/05-training-tia-baseline_65e0778b.json")).toBe(true);
     expect(screen.getAllByRole("link", { name: "بطاقتا الحدث JSON" }).at(-1)?.getAttribute("href")).toBe("/manus-storage/08-training-concurrency-events_8b000149.json");
   });
+
+  it("يعرض مرجع FIDIC المستخرج مستقلاً عن حالات D مع سجلاته وإجراءاته العملية", () => {
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    expect(screen.getAllByRole("heading", { name: "مرجع بنود FIDIC 2017 للمخطط والمطالبة" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/27 بنداً موثقاً من ملفك/).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: /FIDIC 1.9/ }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("شرح البند للمخطط").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("السجلات والأدلة").length).toBeGreaterThan(0);
+  });
+
+  it("يعرض السيناريوهات الخمسة المستخرجة كتمارين تدريب مستقلة", () => {
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    expect(screen.getAllByRole("heading", { name: "خمسة سيناريوهات لتدريب عين المخطط" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("سيناريو 1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/الحالة \(1\): نشاط حرج/).length).toBeGreaterThan(0);
+  });
 });
