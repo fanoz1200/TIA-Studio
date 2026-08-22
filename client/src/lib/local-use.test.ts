@@ -15,6 +15,9 @@ describe("عقد التشغيل المحلي", () => {
     expect(manifest.start_url).toBe("/");
     expect(serviceWorker).toContain("addEventListener(\"install\"");
     expect(serviceWorker).toContain("addEventListener(\"fetch\"");
+    expect(serviceWorker).toContain('CACHE_NAME = "tia-studio-shell-v2"');
+    expect(serviceWorker).toContain('request.mode === "navigate"');
+    expect(readProjectFile("client/src/main.tsx")).toContain("registration.update()");
   });
 
   it("يعرض مركز الموارد حزمة المصدر ويصرح بحدود العمل دون اتصال", () => {
@@ -22,7 +25,7 @@ describe("عقد التشغيل المحلي", () => {
     const localUseGuide = readProjectFile("docs/TIA_STUDIO_AI_AND_LOCAL_USE_AR.md");
 
     expect(resourcesPanel).toContain("حزمة المصدر والاستمرارية — 1.0.4");
-    expect(resourcesPanel).toContain("TIA-Studio-1.0.4-Source-final.tar_6ca01026.gz");
+    expect(resourcesPanel).toContain("TIA-Studio-1.0.4-Source-final.tar_9b33e332.gz");
     expect(localUseGuide).toContain("دون اتصال");
     expect(localUseGuide).toContain("PWA");
   });

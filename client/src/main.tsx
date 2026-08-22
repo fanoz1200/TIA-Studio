@@ -74,7 +74,10 @@ const trpcClient = trpc.createClient({
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js").catch((error) => console.warn("تعذر تفعيل وضع الاستخدام المحلي.", error));
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then((registration) => registration.update())
+      .catch((error) => console.warn("تعذر تفعيل وضع الاستخدام المحلي.", error));
   });
 }
 

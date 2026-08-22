@@ -25,9 +25,9 @@
 
 | نظام التشغيل | رابط التنزيل الرسمي | الملف الذي يفتحه المستخدم |
 |---|---|---|
-| Windows x64 | [`/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_2c7d9ad8.exe`](/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_2c7d9ad8.exe) | `TIA-Studio-1.0.4-Windows-x64-Complete.exe` |
-| Linux x64 | [`/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_dc3ac3f8.AppImage`](/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_dc3ac3f8.AppImage) | `TIA-Studio-1.0.4-Linux-x64-Complete.AppImage` |
-| المصدر والتسليم | [`/manus-storage/TIA-Studio-1.0.4-Source-final.tar_6ca01026.gz`](/manus-storage/TIA-Studio-1.0.4-Source-final.tar_6ca01026.gz) | أرشيف TAR.GZ للمصدر والأدلة وملفيّ التسليم لتسهيل الاستمرارية. |
+| Windows x64 | [`/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_cdfb8335.exe`](/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_cdfb8335.exe) | `TIA-Studio-1.0.4-Windows-x64-Complete.exe` |
+| Linux x64 | [`/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_5e0f37b6.AppImage`](/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_5e0f37b6.AppImage) | `TIA-Studio-1.0.4-Linux-x64-Complete.AppImage` |
+| المصدر والتسليم | [`/manus-storage/TIA-Studio-1.0.4-Source-final.tar_9b33e332.gz`](/manus-storage/TIA-Studio-1.0.4-Source-final.tar_9b33e332.gz) | أرشيف TAR.GZ للمصدر والأدلة وملفيّ التسليم لتسهيل الاستمرارية. |
 
 > تبقى هذه الروابط جزءاً من الإصدار ولا تستبدل ملف P6 الأصلي أو حكم المخطط والمختص التعاقدي. عند إصدار نسخة لاحقة، يُحدّث هذا الجدول والدليل الحيّ ومركز الموارد معاً قبل إتاحة التنزيل.
 
