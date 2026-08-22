@@ -1,0 +1,1453 @@
+{
+  "generatedAt": "2026-08-22T14:29:45.882Z",
+  "scope": {
+    "sourceRoots": [
+      "/home/ubuntu/upload",
+      "/home/ubuntu/webdev-static-assets"
+    ],
+    "fileCount": 12
+  },
+  "files": [
+    {
+      "path": "/home/ubuntu/upload/تجميعحالاتالواتسابوالقراراتبناءعليها.html",
+      "filename": "تجميعحالاتالواتسابوالقراراتبناءعليها.html",
+      "kind": "html",
+      "sizeBytes": 11866,
+      "sha256": "c579d88252c2ed719385dbdb89f83adb36ba16f5dd9e490256e2ad7e68ef2543",
+      "caseIds": [],
+      "structuredCaseIds": [],
+      "d056ToD088Evidence": {
+        "D-056": [],
+        "D-057": [],
+        "D-058": [],
+        "D-059": [],
+        "D-060": [],
+        "D-061": [],
+        "D-062": [],
+        "D-063": [],
+        "D-064": [],
+        "D-065": [],
+        "D-066": [],
+        "D-067": [],
+        "D-068": [],
+        "D-069": [],
+        "D-070": [],
+        "D-071": [],
+        "D-072": [],
+        "D-073": [],
+        "D-074": [],
+        "D-075": [],
+        "D-076": [],
+        "D-077": [],
+        "D-078": [],
+        "D-079": [],
+        "D-080": [],
+        "D-081": [],
+        "D-082": [],
+        "D-083": [],
+        "D-084": [],
+        "D-085": [],
+        "D-086": [],
+        "D-087": [],
+        "D-088": []
+      },
+      "headingCount": 13,
+      "headingSamples": [
+        "📚 المرجع المتكامل لتحليل التأخيرات والمطالبات الإنشائية Delay Analysis &amp; Construction Claims — Study &amp; Reference Manual",
+        "الفهرس",
+        "1) الدستور الذهبي",
+        "أ. الركائز الثلاث للمطالبة الناجحة (Three Pillars)",
+        "ب. قاعدة \"حلّل الأثر مش السبب\" (Cause vs Delay Event)",
+        "2) أساسيات المسار الحرج والـ Float",
+        "الحالة (1): نشاط حرج +10 يوم vs نشاط غير حرج +30 يوم — مين يؤخر المشروع؟",
+        "الحالة (2): إيه اللي ملوش علاقة بتحديد المسار الحرج؟",
+        "الحالة (3): أنواع التأخير من حيث المسؤولية",
+        "الحالة (4): التأخير المتزامن Concurrent Delay",
+        "3) ملكية الـ Float — تحدي #17",
+        "4) السببية والـ Quantum — بالأرقام"
+      ]
+    },
+    {
+      "path": "/home/ubuntu/upload/DalayAnalysisTimeline.xlsx",
+      "filename": "DalayAnalysisTimeline.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 21233,
+      "sha256": "39d71f2485d1176db18bed37159446d71970a5b27a0d6e17c8758dda02f924b1",
+      "sheetDetails": [
+        {
+          "sheetName": "Sheet1",
+          "range": "A1:CD53",
+          "nonEmptyCellCount": 120
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/FIDIC_2017_Claims_Reference.xlsx.xlsx",
+      "filename": "FIDIC_2017_Claims_Reference.xlsx.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 12741,
+      "sha256": "b22c64dc305889ccfde78537aba279533c1fa9c1b4f8d59a5b724606fb37eca4",
+      "sheetDetails": [
+        {
+          "sheetName": "FIDIC_2017_Claims_Reference",
+          "range": "A1:H28",
+          "nonEmptyCellCount": 197
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/Master_Claim_Intelligence_HTML.html",
+      "filename": "Master_Claim_Intelligence_HTML.html",
+      "kind": "html",
+      "sizeBytes": 1687581,
+      "sha256": "66097aa0cfac250df266cb1292b9bd302452f85136624a5600ba29054fb8230d",
+      "caseIds": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-007",
+        "D-008",
+        "D-009",
+        "D-010",
+        "D-011",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-015",
+        "D-016",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026",
+        "D-027",
+        "D-028",
+        "D-029",
+        "D-030",
+        "D-031",
+        "D-032",
+        "D-033",
+        "D-034",
+        "D-035",
+        "D-036",
+        "D-037",
+        "D-038",
+        "D-039",
+        "D-040",
+        "D-041",
+        "D-042",
+        "D-043",
+        "D-044",
+        "D-045",
+        "D-046",
+        "D-047",
+        "D-048",
+        "D-049",
+        "D-050",
+        "D-051",
+        "D-052",
+        "D-053",
+        "D-054",
+        "D-055"
+      ],
+      "structuredCaseIds": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-007",
+        "D-008",
+        "D-009",
+        "D-010",
+        "D-011",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-015",
+        "D-016",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026",
+        "D-027",
+        "D-028",
+        "D-029",
+        "D-030",
+        "D-031",
+        "D-032",
+        "D-033",
+        "D-034",
+        "D-035",
+        "D-036",
+        "D-037",
+        "D-038",
+        "D-039",
+        "D-040",
+        "D-041",
+        "D-042",
+        "D-043",
+        "D-044",
+        "D-045",
+        "D-046",
+        "D-047",
+        "D-048",
+        "D-049",
+        "D-050",
+        "D-051",
+        "D-052",
+        "D-053",
+        "D-054",
+        "D-055"
+      ],
+      "d056ToD088Evidence": {
+        "D-056": [],
+        "D-057": [],
+        "D-058": [],
+        "D-059": [],
+        "D-060": [],
+        "D-061": [],
+        "D-062": [],
+        "D-063": [],
+        "D-064": [],
+        "D-065": [],
+        "D-066": [],
+        "D-067": [],
+        "D-068": [],
+        "D-069": [],
+        "D-070": [],
+        "D-071": [],
+        "D-072": [],
+        "D-073": [],
+        "D-074": [],
+        "D-075": [],
+        "D-076": [],
+        "D-077": [],
+        "D-078": [],
+        "D-079": [],
+        "D-080": [],
+        "D-081": [],
+        "D-082": [],
+        "D-083": [],
+        "D-084": [],
+        "D-085": [],
+        "D-086": [],
+        "D-087": [],
+        "D-088": []
+      },
+      "headingCount": 0,
+      "headingSamples": []
+    },
+    {
+      "path": "/home/ubuntu/upload/Master_Claim_Intelligence.xlsx",
+      "filename": "Master_Claim_Intelligence.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 219406,
+      "sha256": "3af8b62e3987298d8b6f14421add0cd9cdb74d2d87723e822c3abff3bc4b86fc",
+      "sheetDetails": [
+        {
+          "sheetName": "00_How_to_Use",
+          "range": "B1:F19",
+          "nonEmptyCellCount": 59
+        },
+        {
+          "sheetName": "00_Decision_Tree",
+          "range": "B1:G41",
+          "nonEmptyCellCount": 71
+        },
+        {
+          "sheetName": "00_Dashboard",
+          "range": "B1:O126",
+          "nonEmptyCellCount": 468
+        },
+        {
+          "sheetName": "01_Forensic_Audit",
+          "range": "B1:J46",
+          "nonEmptyCellCount": 287
+        },
+        {
+          "sheetName": "02_Case_Library",
+          "range": "B1:W77",
+          "nonEmptyCellCount": 1525
+        },
+        {
+          "sheetName": "03_Objections_Rebuttals",
+          "range": "B1:J29",
+          "nonEmptyCellCount": 173
+        },
+        {
+          "sheetName": "04_Templates",
+          "range": "B1:G70",
+          "nonEmptyCellCount": 310
+        },
+        {
+          "sheetName": "05_Quantum_Calculations",
+          "range": "B1:H64",
+          "nonEmptyCellCount": 333
+        },
+        {
+          "sheetName": "06_Final_Checklist",
+          "range": "B1:G29",
+          "nonEmptyCellCount": 130
+        }
+      ],
+      "caseIds": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-007",
+        "D-008",
+        "D-009",
+        "D-010",
+        "D-011",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-015",
+        "D-016",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026",
+        "D-027",
+        "D-028",
+        "D-029",
+        "D-030",
+        "D-031",
+        "D-032",
+        "D-033",
+        "D-034",
+        "D-035",
+        "D-036",
+        "D-037",
+        "D-038",
+        "D-039",
+        "D-040",
+        "D-041",
+        "D-042",
+        "D-043",
+        "D-044",
+        "D-045",
+        "D-046",
+        "D-047",
+        "D-048",
+        "D-049",
+        "D-050",
+        "D-051",
+        "D-052",
+        "D-053",
+        "D-054",
+        "D-055"
+      ],
+      "caseLocations": {
+        "D-036": [
+          "00_Dashboard!B41: D-036",
+          "02_Case_Library!B43: D-036"
+        ],
+        "D-037": [
+          "00_Dashboard!B42: D-037",
+          "02_Case_Library!B44: D-037"
+        ],
+        "D-038": [
+          "00_Dashboard!B43: D-038",
+          "02_Case_Library!B45: D-038"
+        ],
+        "D-039": [
+          "00_Dashboard!B44: D-039",
+          "02_Case_Library!B46: D-039"
+        ],
+        "D-040": [
+          "00_Dashboard!B45: D-040",
+          "02_Case_Library!B47: D-040"
+        ],
+        "D-041": [
+          "00_Dashboard!B46: D-041",
+          "02_Case_Library!B48: D-041"
+        ],
+        "D-042": [
+          "00_Dashboard!B47: D-042",
+          "02_Case_Library!B49: D-042"
+        ],
+        "D-043": [
+          "00_Dashboard!B48: D-043",
+          "02_Case_Library!B50: D-043"
+        ],
+        "D-044": [
+          "00_Dashboard!B49: D-044",
+          "02_Case_Library!B51: D-044"
+        ],
+        "D-045": [
+          "00_Dashboard!B50: D-045",
+          "02_Case_Library!B52: D-045"
+        ],
+        "D-010": [
+          "00_Dashboard!B62: D-010",
+          "02_Case_Library!B17: D-010"
+        ],
+        "D-011": [
+          "00_Dashboard!B63: D-011",
+          "02_Case_Library!B18: D-011"
+        ],
+        "D-012": [
+          "00_Dashboard!B64: D-012",
+          "02_Case_Library!B19: D-012"
+        ],
+        "D-013": [
+          "00_Dashboard!B65: D-013",
+          "02_Case_Library!B20: D-013"
+        ],
+        "D-014": [
+          "00_Dashboard!B66: D-014",
+          "02_Case_Library!B21: D-014"
+        ],
+        "D-001": [
+          "00_Dashboard!B70: D-001",
+          "02_Case_Library!B8: D-001"
+        ],
+        "D-002": [
+          "00_Dashboard!B71: D-002",
+          "02_Case_Library!B9: D-002"
+        ],
+        "D-003": [
+          "00_Dashboard!B72: D-003",
+          "02_Case_Library!B10: D-003"
+        ],
+        "D-004": [
+          "00_Dashboard!B73: D-004",
+          "02_Case_Library!B11: D-004"
+        ],
+        "D-005": [
+          "00_Dashboard!B74: D-005",
+          "02_Case_Library!B12: D-005"
+        ],
+        "D-006": [
+          "00_Dashboard!B76: D-006",
+          "02_Case_Library!B13: D-006"
+        ],
+        "D-007": [
+          "00_Dashboard!B77: D-007",
+          "02_Case_Library!B14: D-007"
+        ],
+        "D-008": [
+          "00_Dashboard!B78: D-008",
+          "02_Case_Library!B15: D-008"
+        ],
+        "D-009": [
+          "00_Dashboard!B79: D-009",
+          "02_Case_Library!B16: D-009"
+        ],
+        "D-015": [
+          "00_Dashboard!B80: D-015",
+          "02_Case_Library!B22: D-015"
+        ],
+        "D-046": [
+          "00_Dashboard!B82: D-046",
+          "02_Case_Library!B53: D-046"
+        ],
+        "D-047": [
+          "00_Dashboard!B83: D-047",
+          "02_Case_Library!B54: D-047"
+        ],
+        "D-048": [
+          "00_Dashboard!B84: D-048",
+          "02_Case_Library!B55: D-048"
+        ],
+        "D-049": [
+          "00_Dashboard!B85: D-049",
+          "02_Case_Library!B56: D-049"
+        ],
+        "D-050": [
+          "00_Dashboard!B86: D-050",
+          "02_Case_Library!B57: D-050"
+        ],
+        "D-051": [
+          "00_Dashboard!B88: D-051",
+          "02_Case_Library!B58: D-051"
+        ],
+        "D-052": [
+          "00_Dashboard!B89: D-052",
+          "02_Case_Library!B59: D-052"
+        ],
+        "D-053": [
+          "00_Dashboard!B90: D-053",
+          "02_Case_Library!B60: D-053"
+        ],
+        "D-054": [
+          "00_Dashboard!B91: D-054",
+          "02_Case_Library!B61: D-054"
+        ],
+        "D-055": [
+          "00_Dashboard!B92: D-055",
+          "02_Case_Library!B62: D-055"
+        ],
+        "D-019": [
+          "00_Dashboard!B94: D-019",
+          "02_Case_Library!B26: D-019"
+        ],
+        "D-020": [
+          "00_Dashboard!B95: D-020",
+          "02_Case_Library!B27: D-020"
+        ],
+        "D-021": [
+          "00_Dashboard!B96: D-021",
+          "02_Case_Library!B28: D-021"
+        ],
+        "D-022": [
+          "00_Dashboard!B97: D-022",
+          "02_Case_Library!B29: D-022"
+        ],
+        "D-016": [
+          "00_Dashboard!B104: D-016",
+          "02_Case_Library!B23: D-016"
+        ],
+        "D-017": [
+          "00_Dashboard!B105: D-017",
+          "02_Case_Library!B24: D-017"
+        ],
+        "D-018": [
+          "00_Dashboard!B106: D-018",
+          "02_Case_Library!B25: D-018"
+        ],
+        "D-023": [
+          "00_Dashboard!B108: D-023",
+          "02_Case_Library!B30: D-023"
+        ],
+        "D-024": [
+          "00_Dashboard!B109: D-024",
+          "02_Case_Library!B31: D-024"
+        ],
+        "D-025": [
+          "00_Dashboard!B110: D-025",
+          "02_Case_Library!B32: D-025"
+        ],
+        "D-026": [
+          "00_Dashboard!B112: D-026",
+          "02_Case_Library!B33: D-026"
+        ],
+        "D-027": [
+          "00_Dashboard!B113: D-027",
+          "02_Case_Library!B34: D-027"
+        ],
+        "D-028": [
+          "00_Dashboard!B114: D-028",
+          "02_Case_Library!B35: D-028"
+        ],
+        "D-029": [
+          "00_Dashboard!B116: D-029",
+          "02_Case_Library!B36: D-029"
+        ],
+        "D-030": [
+          "00_Dashboard!B117: D-030",
+          "02_Case_Library!B37: D-030"
+        ],
+        "D-031": [
+          "00_Dashboard!B118: D-031",
+          "02_Case_Library!B38: D-031"
+        ],
+        "D-032": [
+          "00_Dashboard!B120: D-032",
+          "02_Case_Library!B39: D-032"
+        ],
+        "D-033": [
+          "00_Dashboard!B121: D-033",
+          "02_Case_Library!B40: D-033"
+        ],
+        "D-034": [
+          "00_Dashboard!B123: D-034",
+          "02_Case_Library!B41: D-034"
+        ],
+        "D-035": [
+          "00_Dashboard!B124: D-035",
+          "02_Case_Library!B42: D-035"
+        ]
+      }
+    },
+    {
+      "path": "/home/ubuntu/upload/MasterClaimIntelligence—نظامذكاءالمطالباتالإنشائيةV3.0.html",
+      "filename": "MasterClaimIntelligence—نظامذكاءالمطالباتالإنشائيةV3.0.html",
+      "kind": "html",
+      "sizeBytes": 1687047,
+      "sha256": "6673084b9ab8bffcc03443d04ea62fb8b722a6b189b0df4e748797cb83d1c2a4",
+      "caseIds": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-007",
+        "D-008",
+        "D-009",
+        "D-010",
+        "D-011",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-015",
+        "D-016",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026",
+        "D-027",
+        "D-028",
+        "D-029",
+        "D-030",
+        "D-031",
+        "D-032",
+        "D-033",
+        "D-034",
+        "D-035",
+        "D-036",
+        "D-037",
+        "D-038",
+        "D-039",
+        "D-040",
+        "D-041",
+        "D-042",
+        "D-043",
+        "D-044",
+        "D-045",
+        "D-046",
+        "D-047",
+        "D-048",
+        "D-049",
+        "D-050",
+        "D-051",
+        "D-052",
+        "D-053",
+        "D-054",
+        "D-055"
+      ],
+      "structuredCaseIds": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-007",
+        "D-008",
+        "D-009",
+        "D-010",
+        "D-011",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-015",
+        "D-016",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026",
+        "D-027",
+        "D-028",
+        "D-029",
+        "D-030",
+        "D-031",
+        "D-032",
+        "D-033",
+        "D-034",
+        "D-035",
+        "D-036",
+        "D-037",
+        "D-038",
+        "D-039",
+        "D-040",
+        "D-041",
+        "D-042",
+        "D-043",
+        "D-044",
+        "D-045",
+        "D-046",
+        "D-047",
+        "D-048",
+        "D-049",
+        "D-050",
+        "D-051",
+        "D-052",
+        "D-053",
+        "D-054",
+        "D-055"
+      ],
+      "d056ToD088Evidence": {
+        "D-056": [],
+        "D-057": [],
+        "D-058": [],
+        "D-059": [],
+        "D-060": [],
+        "D-061": [],
+        "D-062": [],
+        "D-063": [],
+        "D-064": [],
+        "D-065": [],
+        "D-066": [],
+        "D-067": [],
+        "D-068": [],
+        "D-069": [],
+        "D-070": [],
+        "D-071": [],
+        "D-072": [],
+        "D-073": [],
+        "D-074": [],
+        "D-075": [],
+        "D-076": [],
+        "D-077": [],
+        "D-078": [],
+        "D-079": [],
+        "D-080": [],
+        "D-081": [],
+        "D-082": [],
+        "D-083": [],
+        "D-084": [],
+        "D-085": [],
+        "D-086": [],
+        "D-087": [],
+        "D-088": []
+      },
+      "headingCount": 0,
+      "headingSamples": []
+    },
+    {
+      "path": "/home/ubuntu/upload/pasted_file_33xNWZ_Workshop-NO8TimeImpactAnalysis.xlsx",
+      "filename": "pasted_file_33xNWZ_Workshop-NO8TimeImpactAnalysis.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 25435,
+      "sha256": "1974eafc38ba56ecf984a8ef33183dd93a7b3e10efce4162242954868223b993",
+      "sheetDetails": [
+        {
+          "sheetName": "Workshop TIA",
+          "range": "A1:H21",
+          "nonEmptyCellCount": 96
+        },
+        {
+          "sheetName": "TIA Delay Analysis Table",
+          "range": "A1:AI39",
+          "nonEmptyCellCount": 174
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/pasted_file_e2BhvF_Qwen_html_20260809_kc6odu9f7.html",
+      "filename": "pasted_file_e2BhvF_Qwen_html_20260809_kc6odu9f7.html",
+      "kind": "html",
+      "sizeBytes": 45127,
+      "sha256": "250eda498cbc7c52ec7ee277430b84a2a485e8cf35310f6bacc45b192eb48eb9",
+      "caseIds": [],
+      "structuredCaseIds": [],
+      "d056ToD088Evidence": {
+        "D-056": [],
+        "D-057": [],
+        "D-058": [],
+        "D-059": [],
+        "D-060": [],
+        "D-061": [],
+        "D-062": [],
+        "D-063": [],
+        "D-064": [],
+        "D-065": [],
+        "D-066": [],
+        "D-067": [],
+        "D-068": [],
+        "D-069": [],
+        "D-070": [],
+        "D-071": [],
+        "D-072": [],
+        "D-073": [],
+        "D-074": [],
+        "D-075": [],
+        "D-076": [],
+        "D-077": [],
+        "D-078": [],
+        "D-079": [],
+        "D-080": [],
+        "D-081": [],
+        "D-082": [],
+        "D-083": [],
+        "D-084": [],
+        "D-085": [],
+        "D-086": [],
+        "D-087": [],
+        "D-088": []
+      },
+      "headingCount": 59,
+      "headingSamples": [
+        "المرجع المتكامل في تحليل التأخيرات وإدارة المطالبات الإنشائية",
+        "صفحة المقدمة",
+        "منهجية العرض في كل حالة",
+        "لمن هذا الكتاب؟",
+        "كيف تذاكر بهذا الكتاب؟",
+        "الفهرس التفصيلي",
+        "الباب الأول: الدستور الذهبي والمفاهيم الأساسية",
+        "الحالة (1): الركائز الثلاث للمطالبة الناجحة (Three Pillars)",
+        "💬 الآراء المتداولة",
+        "⚖️ المناقشة و✅ الحكم",
+        "🔢 مثال تفصيلي",
+        "الحالة (2): حلّل الأثر مش السبب (Cause vs Delay Event)"
+      ]
+    },
+    {
+      "path": "/home/ubuntu/upload/pasted_file_gHGBOL_FIDIC_2017_Claims_Reference.xlsx.xlsx",
+      "filename": "pasted_file_gHGBOL_FIDIC_2017_Claims_Reference.xlsx.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 12741,
+      "sha256": "b22c64dc305889ccfde78537aba279533c1fa9c1b4f8d59a5b724606fb37eca4",
+      "sheetDetails": [
+        {
+          "sheetName": "FIDIC_2017_Claims_Reference",
+          "range": "A1:H28",
+          "nonEmptyCellCount": 197
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/PMC_Level_Integrated_Claims_System_FIDIC2017-final.v01.xlsx",
+      "filename": "PMC_Level_Integrated_Claims_System_FIDIC2017-final.v01.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 30565,
+      "sha256": "a8a87aaf948380a659a1b51f9254dd1eb1afb06a83e01fc0ea45ba3a4be136fb",
+      "sheetDetails": [
+        {
+          "sheetName": "Risk Register",
+          "range": "A1:Q5",
+          "nonEmptyCellCount": 65
+        },
+        {
+          "sheetName": "Issue Log",
+          "range": "A1:P5",
+          "nonEmptyCellCount": 73
+        },
+        {
+          "sheetName": "Claim Register Smart",
+          "range": "A1:V27",
+          "nonEmptyCellCount": 316
+        },
+        {
+          "sheetName": "FIDIC_2017_Claims_Reference",
+          "range": "A1:H28",
+          "nonEmptyCellCount": 197
+        },
+        {
+          "sheetName": "Dashboard",
+          "range": "A1:B8",
+          "nonEmptyCellCount": 13
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/Table.xlsx",
+      "filename": "Table.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 12469,
+      "sha256": "2d706b5a1db96155266e79b4316f2c247183ca2dc0ef32a5469bdb1855046de5",
+      "sheetDetails": [
+        {
+          "sheetName": "Sheet1",
+          "range": "A1:R12",
+          "nonEmptyCellCount": 102
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/webdev-static-assets/Master_Claim_Intelligence.xlsx",
+      "filename": "Master_Claim_Intelligence.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 219406,
+      "sha256": "3af8b62e3987298d8b6f14421add0cd9cdb74d2d87723e822c3abff3bc4b86fc",
+      "sheetDetails": [
+        {
+          "sheetName": "00_How_to_Use",
+          "range": "B1:F19",
+          "nonEmptyCellCount": 59
+        },
+        {
+          "sheetName": "00_Decision_Tree",
+          "range": "B1:G41",
+          "nonEmptyCellCount": 71
+        },
+        {
+          "sheetName": "00_Dashboard",
+          "range": "B1:O126",
+          "nonEmptyCellCount": 468
+        },
+        {
+          "sheetName": "01_Forensic_Audit",
+          "range": "B1:J46",
+          "nonEmptyCellCount": 287
+        },
+        {
+          "sheetName": "02_Case_Library",
+          "range": "B1:W77",
+          "nonEmptyCellCount": 1525
+        },
+        {
+          "sheetName": "03_Objections_Rebuttals",
+          "range": "B1:J29",
+          "nonEmptyCellCount": 173
+        },
+        {
+          "sheetName": "04_Templates",
+          "range": "B1:G70",
+          "nonEmptyCellCount": 310
+        },
+        {
+          "sheetName": "05_Quantum_Calculations",
+          "range": "B1:H64",
+          "nonEmptyCellCount": 333
+        },
+        {
+          "sheetName": "06_Final_Checklist",
+          "range": "B1:G29",
+          "nonEmptyCellCount": 130
+        }
+      ],
+      "caseIds": [
+        "D-001",
+        "D-002",
+        "D-003",
+        "D-004",
+        "D-005",
+        "D-006",
+        "D-007",
+        "D-008",
+        "D-009",
+        "D-010",
+        "D-011",
+        "D-012",
+        "D-013",
+        "D-014",
+        "D-015",
+        "D-016",
+        "D-017",
+        "D-018",
+        "D-019",
+        "D-020",
+        "D-021",
+        "D-022",
+        "D-023",
+        "D-024",
+        "D-025",
+        "D-026",
+        "D-027",
+        "D-028",
+        "D-029",
+        "D-030",
+        "D-031",
+        "D-032",
+        "D-033",
+        "D-034",
+        "D-035",
+        "D-036",
+        "D-037",
+        "D-038",
+        "D-039",
+        "D-040",
+        "D-041",
+        "D-042",
+        "D-043",
+        "D-044",
+        "D-045",
+        "D-046",
+        "D-047",
+        "D-048",
+        "D-049",
+        "D-050",
+        "D-051",
+        "D-052",
+        "D-053",
+        "D-054",
+        "D-055"
+      ],
+      "caseLocations": {
+        "D-036": [
+          "00_Dashboard!B41: D-036",
+          "02_Case_Library!B43: D-036"
+        ],
+        "D-037": [
+          "00_Dashboard!B42: D-037",
+          "02_Case_Library!B44: D-037"
+        ],
+        "D-038": [
+          "00_Dashboard!B43: D-038",
+          "02_Case_Library!B45: D-038"
+        ],
+        "D-039": [
+          "00_Dashboard!B44: D-039",
+          "02_Case_Library!B46: D-039"
+        ],
+        "D-040": [
+          "00_Dashboard!B45: D-040",
+          "02_Case_Library!B47: D-040"
+        ],
+        "D-041": [
+          "00_Dashboard!B46: D-041",
+          "02_Case_Library!B48: D-041"
+        ],
+        "D-042": [
+          "00_Dashboard!B47: D-042",
+          "02_Case_Library!B49: D-042"
+        ],
+        "D-043": [
+          "00_Dashboard!B48: D-043",
+          "02_Case_Library!B50: D-043"
+        ],
+        "D-044": [
+          "00_Dashboard!B49: D-044",
+          "02_Case_Library!B51: D-044"
+        ],
+        "D-045": [
+          "00_Dashboard!B50: D-045",
+          "02_Case_Library!B52: D-045"
+        ],
+        "D-010": [
+          "00_Dashboard!B62: D-010",
+          "02_Case_Library!B17: D-010"
+        ],
+        "D-011": [
+          "00_Dashboard!B63: D-011",
+          "02_Case_Library!B18: D-011"
+        ],
+        "D-012": [
+          "00_Dashboard!B64: D-012",
+          "02_Case_Library!B19: D-012"
+        ],
+        "D-013": [
+          "00_Dashboard!B65: D-013",
+          "02_Case_Library!B20: D-013"
+        ],
+        "D-014": [
+          "00_Dashboard!B66: D-014",
+          "02_Case_Library!B21: D-014"
+        ],
+        "D-001": [
+          "00_Dashboard!B70: D-001",
+          "02_Case_Library!B8: D-001"
+        ],
+        "D-002": [
+          "00_Dashboard!B71: D-002",
+          "02_Case_Library!B9: D-002"
+        ],
+        "D-003": [
+          "00_Dashboard!B72: D-003",
+          "02_Case_Library!B10: D-003"
+        ],
+        "D-004": [
+          "00_Dashboard!B73: D-004",
+          "02_Case_Library!B11: D-004"
+        ],
+        "D-005": [
+          "00_Dashboard!B74: D-005",
+          "02_Case_Library!B12: D-005"
+        ],
+        "D-006": [
+          "00_Dashboard!B76: D-006",
+          "02_Case_Library!B13: D-006"
+        ],
+        "D-007": [
+          "00_Dashboard!B77: D-007",
+          "02_Case_Library!B14: D-007"
+        ],
+        "D-008": [
+          "00_Dashboard!B78: D-008",
+          "02_Case_Library!B15: D-008"
+        ],
+        "D-009": [
+          "00_Dashboard!B79: D-009",
+          "02_Case_Library!B16: D-009"
+        ],
+        "D-015": [
+          "00_Dashboard!B80: D-015",
+          "02_Case_Library!B22: D-015"
+        ],
+        "D-046": [
+          "00_Dashboard!B82: D-046",
+          "02_Case_Library!B53: D-046"
+        ],
+        "D-047": [
+          "00_Dashboard!B83: D-047",
+          "02_Case_Library!B54: D-047"
+        ],
+        "D-048": [
+          "00_Dashboard!B84: D-048",
+          "02_Case_Library!B55: D-048"
+        ],
+        "D-049": [
+          "00_Dashboard!B85: D-049",
+          "02_Case_Library!B56: D-049"
+        ],
+        "D-050": [
+          "00_Dashboard!B86: D-050",
+          "02_Case_Library!B57: D-050"
+        ],
+        "D-051": [
+          "00_Dashboard!B88: D-051",
+          "02_Case_Library!B58: D-051"
+        ],
+        "D-052": [
+          "00_Dashboard!B89: D-052",
+          "02_Case_Library!B59: D-052"
+        ],
+        "D-053": [
+          "00_Dashboard!B90: D-053",
+          "02_Case_Library!B60: D-053"
+        ],
+        "D-054": [
+          "00_Dashboard!B91: D-054",
+          "02_Case_Library!B61: D-054"
+        ],
+        "D-055": [
+          "00_Dashboard!B92: D-055",
+          "02_Case_Library!B62: D-055"
+        ],
+        "D-019": [
+          "00_Dashboard!B94: D-019",
+          "02_Case_Library!B26: D-019"
+        ],
+        "D-020": [
+          "00_Dashboard!B95: D-020",
+          "02_Case_Library!B27: D-020"
+        ],
+        "D-021": [
+          "00_Dashboard!B96: D-021",
+          "02_Case_Library!B28: D-021"
+        ],
+        "D-022": [
+          "00_Dashboard!B97: D-022",
+          "02_Case_Library!B29: D-022"
+        ],
+        "D-016": [
+          "00_Dashboard!B104: D-016",
+          "02_Case_Library!B23: D-016"
+        ],
+        "D-017": [
+          "00_Dashboard!B105: D-017",
+          "02_Case_Library!B24: D-017"
+        ],
+        "D-018": [
+          "00_Dashboard!B106: D-018",
+          "02_Case_Library!B25: D-018"
+        ],
+        "D-023": [
+          "00_Dashboard!B108: D-023",
+          "02_Case_Library!B30: D-023"
+        ],
+        "D-024": [
+          "00_Dashboard!B109: D-024",
+          "02_Case_Library!B31: D-024"
+        ],
+        "D-025": [
+          "00_Dashboard!B110: D-025",
+          "02_Case_Library!B32: D-025"
+        ],
+        "D-026": [
+          "00_Dashboard!B112: D-026",
+          "02_Case_Library!B33: D-026"
+        ],
+        "D-027": [
+          "00_Dashboard!B113: D-027",
+          "02_Case_Library!B34: D-027"
+        ],
+        "D-028": [
+          "00_Dashboard!B114: D-028",
+          "02_Case_Library!B35: D-028"
+        ],
+        "D-029": [
+          "00_Dashboard!B116: D-029",
+          "02_Case_Library!B36: D-029"
+        ],
+        "D-030": [
+          "00_Dashboard!B117: D-030",
+          "02_Case_Library!B37: D-030"
+        ],
+        "D-031": [
+          "00_Dashboard!B118: D-031",
+          "02_Case_Library!B38: D-031"
+        ],
+        "D-032": [
+          "00_Dashboard!B120: D-032",
+          "02_Case_Library!B39: D-032"
+        ],
+        "D-033": [
+          "00_Dashboard!B121: D-033",
+          "02_Case_Library!B40: D-033"
+        ],
+        "D-034": [
+          "00_Dashboard!B123: D-034",
+          "02_Case_Library!B41: D-034"
+        ],
+        "D-035": [
+          "00_Dashboard!B124: D-035",
+          "02_Case_Library!B42: D-035"
+        ]
+      }
+    }
+  ],
+  "exactDuplicateGroups": [
+    {
+      "sha256": "b22c64dc305889ccfde78537aba279533c1fa9c1b4f8d59a5b724606fb37eca4",
+      "files": [
+        {
+          "path": "/home/ubuntu/upload/FIDIC_2017_Claims_Reference.xlsx.xlsx",
+          "filename": "FIDIC_2017_Claims_Reference.xlsx.xlsx",
+          "sizeBytes": 12741
+        },
+        {
+          "path": "/home/ubuntu/upload/pasted_file_gHGBOL_FIDIC_2017_Claims_Reference.xlsx.xlsx",
+          "filename": "pasted_file_gHGBOL_FIDIC_2017_Claims_Reference.xlsx.xlsx",
+          "sizeBytes": 12741
+        }
+      ]
+    },
+    {
+      "sha256": "3af8b62e3987298d8b6f14421add0cd9cdb74d2d87723e822c3abff3bc4b86fc",
+      "files": [
+        {
+          "path": "/home/ubuntu/upload/Master_Claim_Intelligence.xlsx",
+          "filename": "Master_Claim_Intelligence.xlsx",
+          "sizeBytes": 219406
+        },
+        {
+          "path": "/home/ubuntu/webdev-static-assets/Master_Claim_Intelligence.xlsx",
+          "filename": "Master_Claim_Intelligence.xlsx",
+          "sizeBytes": 219406
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "requestedRange": {
+      "first": "D-001",
+      "last": "D-088",
+      "total": 88
+    },
+    "structuredCaseIds": [
+      "D-001",
+      "D-002",
+      "D-003",
+      "D-004",
+      "D-005",
+      "D-006",
+      "D-007",
+      "D-008",
+      "D-009",
+      "D-010",
+      "D-011",
+      "D-012",
+      "D-013",
+      "D-014",
+      "D-015",
+      "D-016",
+      "D-017",
+      "D-018",
+      "D-019",
+      "D-020",
+      "D-021",
+      "D-022",
+      "D-023",
+      "D-024",
+      "D-025",
+      "D-026",
+      "D-027",
+      "D-028",
+      "D-029",
+      "D-030",
+      "D-031",
+      "D-032",
+      "D-033",
+      "D-034",
+      "D-035",
+      "D-036",
+      "D-037",
+      "D-038",
+      "D-039",
+      "D-040",
+      "D-041",
+      "D-042",
+      "D-043",
+      "D-044",
+      "D-045",
+      "D-046",
+      "D-047",
+      "D-048",
+      "D-049",
+      "D-050",
+      "D-051",
+      "D-052",
+      "D-053",
+      "D-054",
+      "D-055"
+    ],
+    "structuredCaseCount": 55,
+    "allMentionedCaseIds": [
+      "D-001",
+      "D-002",
+      "D-003",
+      "D-004",
+      "D-005",
+      "D-006",
+      "D-007",
+      "D-008",
+      "D-009",
+      "D-010",
+      "D-011",
+      "D-012",
+      "D-013",
+      "D-014",
+      "D-015",
+      "D-016",
+      "D-017",
+      "D-018",
+      "D-019",
+      "D-020",
+      "D-021",
+      "D-022",
+      "D-023",
+      "D-024",
+      "D-025",
+      "D-026",
+      "D-027",
+      "D-028",
+      "D-029",
+      "D-030",
+      "D-031",
+      "D-032",
+      "D-033",
+      "D-034",
+      "D-035",
+      "D-036",
+      "D-037",
+      "D-038",
+      "D-039",
+      "D-040",
+      "D-041",
+      "D-042",
+      "D-043",
+      "D-044",
+      "D-045",
+      "D-046",
+      "D-047",
+      "D-048",
+      "D-049",
+      "D-050",
+      "D-051",
+      "D-052",
+      "D-053",
+      "D-054",
+      "D-055"
+    ],
+    "d056ToD088Mentioned": [],
+    "d056ToD088MentionedCount": 0
+  },
+  "applicationLibraryMatch": {
+    "applicationCaseLibrary": "/home/ubuntu/tia-delay-analysis/client/src/lib/master-claim-cases.ts",
+    "applicationCaseIds": [
+      "D-001",
+      "D-002",
+      "D-003",
+      "D-004",
+      "D-005",
+      "D-006",
+      "D-007",
+      "D-008",
+      "D-009",
+      "D-010",
+      "D-011",
+      "D-012",
+      "D-013",
+      "D-014",
+      "D-015",
+      "D-016",
+      "D-017",
+      "D-018",
+      "D-019",
+      "D-020",
+      "D-021",
+      "D-022",
+      "D-023",
+      "D-024",
+      "D-025",
+      "D-026",
+      "D-027",
+      "D-028",
+      "D-029",
+      "D-030",
+      "D-031",
+      "D-032",
+      "D-033",
+      "D-034",
+      "D-035",
+      "D-036",
+      "D-037",
+      "D-038",
+      "D-039",
+      "D-040",
+      "D-041",
+      "D-042",
+      "D-043",
+      "D-044",
+      "D-045",
+      "D-046",
+      "D-047",
+      "D-048",
+      "D-049",
+      "D-050",
+      "D-051",
+      "D-052",
+      "D-053",
+      "D-054",
+      "D-055"
+    ],
+    "applicationCaseCount": 55,
+    "sourceCasesMissingFromLibrary": [],
+    "libraryCasesAbsentFromSources": [],
+    "exactMatch": true
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "generatedAt": "2026-08-22T14:29:46.290Z",
+  "sourceFiles": {
+    "olderHtml": "/home/ubuntu/upload/Master_Claim_Intelligence_HTML.html",
+    "laterHtml": "/home/ubuntu/upload/MasterClaimIntelligence—نظامذكاءالمطالباتالإنشائيةV3.0.html",
+    "workbook": "/home/ubuntu/upload/Master_Claim_Intelligence.xlsx"
+  },
+  "html": {
+    "older": {
+      "caseCount": 55,
+      "sha256": "66097aa0cfac250df266cb1292b9bd302452f85136624a5600ba29054fb8230d"
+    },
+    "later": {
+      "caseCount": 55,
+      "sha256": "6673084b9ab8bffcc03443d04ea62fb8b722a6b189b0df4e748797cb83d1c2a4"
+    },
+    "onlyInOlder": [],
+    "onlyInLater": [],
+    "changedIds": [],
+    "unchangedCaseCount": 55
+  },
+  "workbook": {
+    "caseCount": 55,
+    "caseIds": [
+      "D-001",
+      "D-002",
+      "D-003",
+      "D-004",
+      "D-005",
+      "D-006",
+      "D-007",
+      "D-008",
+      "D-009",
+      "D-010",
+      "D-011",
+      "D-012",
+      "D-013",
+      "D-014",
+      "D-015",
+      "D-016",
+      "D-017",
+      "D-018",
+      "D-019",
+      "D-020",
+      "D-021",
+      "D-022",
+      "D-023",
+      "D-024",
+      "D-025",
+      "D-026",
+      "D-027",
+      "D-028",
+      "D-029",
+      "D-030",
+      "D-031",
+      "D-032",
+      "D-033",
+      "D-034",
+      "D-035",
+      "D-036",
+      "D-037",
+      "D-038",
+      "D-039",
+      "D-040",
+      "D-041",
+      "D-042",
+      "D-043",
+      "D-044",
+      "D-045",
+      "D-046",
+      "D-047",
+      "D-048",
+      "D-049",
+      "D-050",
+      "D-051",
+      "D-052",
+      "D-053",
+      "D-054",
+      "D-055"
+    ],
+    "rowsWithCaseId": 110
+  }
+}
