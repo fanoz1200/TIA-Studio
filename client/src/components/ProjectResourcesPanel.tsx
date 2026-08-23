@@ -4,6 +4,7 @@ import { BookOpenCheck, Boxes, Download, FileArchive, FileCode2, FileText, GitBr
 import { Button } from "@/components/ui/button";
 import { resolveResourceDownloadHref } from "@/lib/download-links";
 import { engineGuide, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
+import { WORKSHOP_NO8_TRAINING_REFERENCE } from "@/lib/workshop-training-reference";
 import "./project-resources.css";
 
 type DeferredInstallPrompt = Event & {
@@ -107,6 +108,17 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="panel examples-panel">
       <div className="panel-heading"><div><p className="eyebrow">SANDBOX PROJECTS</p><h2>ملفات تدريب قابلة للتجربة</h2><p>حمّل برنامج الأساس أولاً، ثم استخدم التحديث في تبويب مقارنة التحديثات، وجرّب ملف XER في تبويب البرنامج والتقويم.</p></div></div>
       <div className="example-downloads">{examples.map((example) => <a key={example.href} href={resolveResourceDownloadHref(example.href)} download><FileArchive size={16} /><span>{example.name}</span><small>{example.type}</small><Download size={15} /></a>)}</div>
+    </section>
+
+    <section className="panel workshop-training-reference" aria-labelledby="workshop-training-title">
+      <div className="panel-heading"><div><p className="eyebrow">PRIVATE TRAINING REFERENCE · P6 23.12</p><h2 id="workshop-training-title">{WORKSHOP_NO8_TRAINING_REFERENCE.title}</h2><p>سُجل المثال في قاعدة البيانات كـ metadata خاصة بالمالك. يعرض هذا القسم حقائق مهيأة للتدريب فقط؛ لا ينشر أو يحمّل ملفات P6 أو Excel الأصلية.</p></div><ShieldCheck size={24} /></div>
+      <div className="workshop-training-reference__facts" aria-label="ملخص مثال Workshop">
+        <div><span>برنامج الأساس</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.activities} نشاط / {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.relationships} علاقة</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.calendars} تقويم</small></div>
+        <div><span>بعد TIA</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.activities} نشاط / {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.relationships} علاقة</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.calendars} تقويم</small></div>
+        <div><span>فرق CPM المحلي</span><b>+{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.durationDeltaDays} يوم عمل</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.baselineDurationDays} → {WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.postTiaDurationDays} يوم</small></div>
+      </div>
+      <p className="workshop-training-reference__boundary"><b>حد التحقق:</b> {WORKSHOP_NO8_TRAINING_REFERENCE.status} ملف Excel يبيّن اكتمالاً مخططاً في {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.asPlannedCompletion} واكتمالاً في {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.completion} وأثراً تراكمياً معلناً قدره {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.cumulativeImpactDays} يوماً؛ لا يستبدل ذلك نتيجة الجدولة داخل Primavera.</p>
+      <p className="workflow-subtle">{WORKSHOP_NO8_TRAINING_REFERENCE.sourceScope}</p>
     </section>
 
     <section className="panel resources-boundary">

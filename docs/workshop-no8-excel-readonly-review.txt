@@ -1,0 +1,42 @@
+
+=== Workshop TIA (A1:H21) ===
+A1="WORKSHOP 8 Time Impact Analysis"
+A4="ID" | B4="Name" | C4="Start" | D4="Finish" | E4="Duration" | F4="Calendar" | G4="Logic Link" | H4="Successor"
+B5="Mobilization"
+A6="1" | B6="Handing Over - Project Start" | C6="20/May/21" | E6="0" | F6="7d * 8hrs" | G6="FS" | H6="Mobilization Work"
+A7="2" | B7="Mobilization Work" | C7="20/May/21" | D7="24/May/21" [formula: E7+C7-1] | E7="5" | F7="7d * 8hrs" | G7="FS" | H7="Surveying Work"
+B8="Construction Work"
+A9="3" | B9="Surveying Work" | C9="25/May/21" | D9="3/Jun/21" [formula: E9+C9-1] | E9="10" | F9="7d * 8hrs" | G9="FS" | H9="Excavation Works"
+A10="4" | B10="Excavation Works" | C10="4/Jun/21" [formula: D9+1] | D10="23/Jun/21" [formula: E10+C10-1] | E10="20" | F10="7d * 8hrs" | G10="FS" | H10="Drainage & Sewerage Work"
+A11="5" | B11="Drainage & Sewerage Work" | C11="24/Jun/21" [formula: D10+1] | D11="18/Jul/21" [formula: E11+C11-1] | E11="25" | F11="7d * 8hrs" | G11="FS" | H11="Backfilling"
+A12="6" | B12="Backfilling" | C12="19/Jul/21" [formula: D11+1] | D12="2/Aug/21" [formula: E12+C12-1] | E12="15" | F12="7d * 8hrs" | G12="FS" | H12="Inspection & Closeout"
+A13="7" | B13="Inespection & Closeout" | C13="3/Aug/21" [formula: D12+1] | D13="7/Aug/21" [formula: E13+C13-1] | E13="5" | F13="7d * 8hrs" | G13="FS" | H13="Project Finish"
+A14="8" | B14="Project Finish" | D14="7/Aug/21" [formula: D13] | E14="0" | F14="7d * 8hrs"
+A18="Delay Events" | C18="Item" | D18="Description" | E18="Start" | F18="Finish" | G18="Duration" | H18="Affected Activity"
+C19="Delay Event 1" | D19="Delayed Handing over" | E19="20-May-21" | F19="25-May-21" | G19="5" | H19="Handing Over - Project Start"
+C20="Delay Event 2" | D20="Unforeseen Ground Conditions" | E20="19-Jun-21" | F20="24-Jun-21" | G20="6" [formula: F20-E20+1] | H20="Excavation Works"
+C21="Delay Event 3" | D21="Bad Weather" | E21="5-Aug-21" | F21="10-Aug-21" | G21="6" [formula: F21-E21+1] | H21="Backfilling"
+
+=== TIA Delay Analysis Table (A1:AI39) ===
+A1="PROJECT PROGRAMME - DELAY ANALYSIS"
+A3="TIA - TIME IMPACT ANALYSIS"
+A5="DEFINITIONS:" | H5="PROJECT PARTICULARS FOR ORIGINAL BASELINE PROGRAMME "
+H6="Start Date" | I6="20 May 2021"
+A7="1" | B7="NND" | C7="Non-Excusable, Non-Compensable  (also referred to as Inexcusable)" | H7="Finish Date" | I7="07 Aug 2021"
+A8="2" | B8="END" | C8="Excusable, Non-Compensable  (also referred to as Excusable)" | H8="Original Duration" | I8="80" | J8="Days"
+A9="3" | B9="ECD" | C9="Excusable, Compensable (also referred to as Compensable)"
+P11="CRITICAL DELAYS" | Z11="NON-CRITICAL DELAYS"
+P12="Programme Delay (Critical) - Days" | V12="Acceleration - Days" | X12="Overall Impact" | Z12="Programme Delay (Non-Critical) - Days" | AF12="Acceleration - Days" | AH12="Overall Impact"
+E14="Analysis Period " | H14="This information should be taken from Primavera - Excel may calculate dates differently if certain calendars are used by P6" | P14="NND" | Q14="ECD" | R14="END" | S14="Concurrent Delay " | T14="Total Delays - Days" | V14="Total Saving -  Days" | X14="Difference Between Delays & Acceleration" | Z14="NND" | AA14="ECD" | AB14="END" | AC14="Concurrent Delay " | AD14="Total Delays - Days" | AF14="Total Saving -  Days" | AH14="Difference Between Delays & Acceleration"
+A15="Sl.No" | B15="Act. Ids" | C15="Description" | D15="Programme Reference" | E15="Date: From" | F15="Date: To" | G15="Type Of Delay" | H15="Delay Start\r\n(Event Start)" | I15="Delay Finish\r\n(Event Finish)" | J15="Duration" | K15="Pre-TIA Project Completion Date" | L15="Post-TIA Project Completion Date" | M15="Post-TIA Delay" | N15="Cumulative Delay" | O15="Critical Activity (Y/N)" | P15="Contractor  or Sub-Contractor Delay" | Q15="Employer Delay" | R15="Neutral Delay (Weather, Riot etc)" | S15="Concurrent Delay " | T15="Period" | U15="Total -Cumulative" | V15="Period" | W15="Total -Cumulative" | X15="Net Result: -ve = Delay; +ve = Acceleration" | Z15="Contractor  or Sub-Contractor Delay" | AA15="Employer Delay" | AB15="Neutral Delay (Weather, Riot etc)" | AC15="Concurrent Delay " | AD15="Period" | AE15="Total -Cumulative" | AF15="Period" | AG15="Total -Cumulative" | AH15="Net Result: -ve = Delay; +ve = Acceleration" | AI15="Reasons for Delay (Documentation Required to Backup Delays)"
+A17="1" | C17="As Planned Programme" | D17="001 As Planned Programme" | K17="7/Aug/21"
+A18="2" | C18="Delay Event 01 Delayed Handing Over" | D18="002 Pre TIA 20-May-21" | H18="20/May/21" | I18="20/May/21" | J18="0.00" | K18="7/Aug/21"
+A19="3" | C19="Delay Event 01 Delayed Handing Over" | D19="003 Post TIA 20-May-21" | G19="ECD" | H19="20/May/21" | I19="24/May/21" | J19="5.00" | L19="12/Aug/21" | M19="5.00" | N19="5.00" | O19="Y" | Q19="5.00" | U19="5.00" | X19="-5.00" [formula: W19-Q19]
+A21="4" | C21="Delay Event 02 Unforseen Ground Conditions" | D21="004 Pre TIA 19-Jun-21" | H21="19/Jun/21" | I21="19/Jun/21" | J21="0.00" | K21="12/Aug/21"
+A22="5" | C22="Delay Event 02 Unforseen Ground Conditions" | D22="005 Post TIA 19-Jun-21" | G22="ECD" | H22="19/Jun/21" | I22="24/Jun/21" | J22="6.00" | L22="18/Aug/21" | M22="6.00" | N22="11.00" | O22="Y" | Q22="6.00" | U22="11.00" | X22="-11.00" [formula: W22-U22]
+A24="6" | C24="Delay Event 03 Bad Weather" | D24="006 Pre TIA 5-Aug-21" | H24="5/Aug/21" | I24="5/Aug/21" | J24="0.00" | K24="18/Aug/21"
+A25="7" | C25="Delay Event 03 Bad Weather" | D25="007 Post TIA 5-Aug-21 " | G25="END" | H25="5/Aug/21" | I25="10/Aug/21" | J25="6.00" | L25="24/Aug/21" | M25="6.00" | N25="17.00" | O25="Y" | R25="6.00" | U25="17.00" | X25="-17.00" [formula: W25-U25]
+J29="17.00" [formula: SUM(J17:J28)] | M29="17.00" [formula: SUM(M17:M28)] | O29="Total" | P29="0.00" [formula: SUM(P16:P28)] | Q29="11.00" [formula: SUM(Q16:Q28)] | R29="6.00" [formula: SUM(R16:R28)] | S29="0.00" [formula: SUM(S16:S28)] | T29="0.00" [formula: SUM(T16:T28)] | U29="17.00" [formula: U25] | V29="0.00" [formula: SUM(V16:V28)] | W29="0.00" [formula: SUM(W16:W28)] | X29="-17.00" [formula: X25] | Y29="0.00" [formula: SUM(Y16:Y28)] | Z29="0.00" [formula: SUM(Z16:Z28)] | AA29="0.00" [formula: SUM(AA16:AA28)] | AB29="0.00" [formula: SUM(AB16:AB28)] | AC29="0.00" [formula: SUM(AC16:AC28)] | AD29="0.00" [formula: SUM(AD16:AD28)] | AE29="0.00" [formula: SUM(AE16:AE28)] | AF29="0.00" [formula: SUM(AF16:AF28)] | AG29="0.00" [formula: SUM(AG16:AG28)] | AH29="0.00" [formula: SUM(AH16:AH28)]
+J31="As-Planned Project Completion Date" | L31="7/Aug/21" [formula: +I7]
+J32="Actual Project Completion Date" | L32="24/Aug/21" [formula: MAX(L16:L28)]
+J33="Variance (-ve = Delay, +ve = Ahead of Programme)" | L33="-17.00" [formula: +L31-L32] | M33="Days"

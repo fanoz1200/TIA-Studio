@@ -1,0 +1,1333 @@
+{
+  "generatedAt": "2026-08-23T09:05:34.593Z",
+  "readOnly": true,
+  "baseline": {
+    "source": {
+      "filename": "Workshop-NO8TimeImpactAnalysisBaseline.xer",
+      "bytes": 12287,
+      "sha256": "d67b88bd459e5a99b64b3a2a2dd89251ac5c7156b076f3cd80326a37b3efc41a"
+    },
+    "tables": {
+      "CURRTYPE": 18,
+      "FINTMPL": 1,
+      "OBS": 1,
+      "PROJECT": 1,
+      "CALENDAR": 1,
+      "PROJWBS": 3,
+      "TASK": 9,
+      "TASKPRED": 9
+    },
+    "project": {
+      "id": "561",
+      "code": "TIA1 - B1",
+      "plannedStart": "2021-05-20 00:00",
+      "plannedEnd": "",
+      "scheduledEnd": "2021-08-07 16:00",
+      "defaultCalendarId": "767",
+      "criticalPathType": "CT_TotFloat"
+    },
+    "activityCount": 9,
+    "relationshipCount": 9,
+    "calendarCount": 1,
+    "wbsCount": 3,
+    "activities": [
+      {
+        "id": "62468",
+        "code": "A1000",
+        "name": "Handing Over - Project Start",
+        "wbsId": "12683",
+        "calendarId": "767",
+        "type": "TT_Mile",
+        "status": "TK_NotStart",
+        "durationHours": "0",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-05-20 08:00",
+        "earlyEnd": "2021-05-20 08:00",
+        "lateStart": "2021-05-19 16:00",
+        "lateEnd": "2021-05-19 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62469",
+        "code": "A1010",
+        "name": "Mobilization Work",
+        "wbsId": "12683",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "40",
+        "remainingDurationHours": "40",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-05-20 08:00",
+        "earlyEnd": "2021-05-24 16:00",
+        "lateStart": "2021-05-20 08:00",
+        "lateEnd": "2021-05-24 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62470",
+        "code": "A1020",
+        "name": "Surveying Work",
+        "wbsId": "12684",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "80",
+        "remainingDurationHours": "80",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-05-25 08:00",
+        "earlyEnd": "2021-06-03 16:00",
+        "lateStart": "2021-05-25 08:00",
+        "lateEnd": "2021-06-03 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62471",
+        "code": "A1030",
+        "name": "Excavation Works",
+        "wbsId": "12684",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "160",
+        "remainingDurationHours": "160",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-06-04 08:00",
+        "earlyEnd": "2021-06-23 16:00",
+        "lateStart": "2021-06-04 08:00",
+        "lateEnd": "2021-06-23 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62472",
+        "code": "A1040",
+        "name": "Drainage & Sewerage Work",
+        "wbsId": "12684",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "200",
+        "remainingDurationHours": "200",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-06-24 08:00",
+        "earlyEnd": "2021-07-18 16:00",
+        "lateStart": "2021-06-24 08:00",
+        "lateEnd": "2021-07-18 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62473",
+        "code": "A1050",
+        "name": "Backfilling",
+        "wbsId": "12684",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "120",
+        "remainingDurationHours": "120",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-07-19 08:00",
+        "earlyEnd": "2021-08-02 16:00",
+        "lateStart": "2021-07-19 08:00",
+        "lateEnd": "2021-08-02 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62474",
+        "code": "A1060",
+        "name": "Inespection & Closeout",
+        "wbsId": "12684",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "40",
+        "remainingDurationHours": "40",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-08-03 08:00",
+        "earlyEnd": "2021-08-07 16:00",
+        "lateStart": "2021-08-03 08:00",
+        "lateEnd": "2021-08-07 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62475",
+        "code": "A1070",
+        "name": "Project Finish",
+        "wbsId": "12684",
+        "calendarId": "767",
+        "type": "TT_FinMile",
+        "status": "TK_NotStart",
+        "durationHours": "0",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-08-07 16:00",
+        "earlyEnd": "2021-08-07 16:00",
+        "lateStart": "2021-08-07 16:00",
+        "lateEnd": "2021-08-07 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62476",
+        "code": "A1005",
+        "name": "Delay Event 01 Delayed Handing Over",
+        "wbsId": "12683",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "0",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-05-20 08:00",
+        "earlyEnd": "2021-05-20 08:00",
+        "lateStart": "2021-05-19 16:00",
+        "lateEnd": "2021-05-19 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      }
+    ],
+    "relationships": [
+      {
+        "id": "48461",
+        "successorId": "62469",
+        "successorCode": "A1010",
+        "predecessorId": "62468",
+        "predecessorCode": "A1000",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48462",
+        "successorId": "62470",
+        "successorCode": "A1020",
+        "predecessorId": "62469",
+        "predecessorCode": "A1010",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48463",
+        "successorId": "62471",
+        "successorCode": "A1030",
+        "predecessorId": "62470",
+        "predecessorCode": "A1020",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48464",
+        "successorId": "62472",
+        "successorCode": "A1040",
+        "predecessorId": "62471",
+        "predecessorCode": "A1030",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48465",
+        "successorId": "62473",
+        "successorCode": "A1050",
+        "predecessorId": "62472",
+        "predecessorCode": "A1040",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48466",
+        "successorId": "62474",
+        "successorCode": "A1060",
+        "predecessorId": "62473",
+        "predecessorCode": "A1050",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48467",
+        "successorId": "62475",
+        "successorCode": "A1070",
+        "predecessorId": "62474",
+        "predecessorCode": "A1060",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48468",
+        "successorId": "62476",
+        "successorCode": "A1005",
+        "predecessorId": "62468",
+        "predecessorCode": "A1000",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48469",
+        "successorId": "62469",
+        "successorCode": "A1010",
+        "predecessorId": "62476",
+        "predecessorCode": "A1005",
+        "type": "PR_FS",
+        "lagHours": "0"
+      }
+    ],
+    "calendars": [
+      {
+        "id": "767",
+        "name": "7Working Day Per Week 8 Hrs",
+        "type": "CA_Base",
+        "dayHours": "8",
+        "weekHours": "56",
+        "monthHours": "240",
+        "yearHours": "2920"
+      }
+    ]
+  },
+  "postTia": {
+    "source": {
+      "filename": "Workshop-NO8TimeImpactAnalysisPostTIA.xer",
+      "bytes": 14868,
+      "sha256": "bc6774d92cb2c17082b31582107bfd07fa964c7ae614cbc5c4581aafe5a3a2a1"
+    },
+    "tables": {
+      "CURRTYPE": 18,
+      "FINTMPL": 1,
+      "OBS": 1,
+      "PROJECT": 1,
+      "CALENDAR": 1,
+      "SCHEDOPTIONS": 1,
+      "PROJWBS": 3,
+      "TASK": 13,
+      "TASKPRED": 15
+    },
+    "project": {
+      "id": "554",
+      "code": "TIA1",
+      "plannedStart": "2021-05-20 00:00",
+      "plannedEnd": "",
+      "scheduledEnd": "2021-08-24 16:00",
+      "defaultCalendarId": "767",
+      "criticalPathType": "CT_TotFloat"
+    },
+    "activityCount": 13,
+    "relationshipCount": 15,
+    "calendarCount": 1,
+    "wbsCount": 3,
+    "activities": [
+      {
+        "id": "62386",
+        "code": "A1000",
+        "name": "Handing Over - Project Start",
+        "wbsId": "12662",
+        "calendarId": "767",
+        "type": "TT_Mile",
+        "status": "TK_Complete",
+        "durationHours": "0",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62387",
+        "code": "A1010",
+        "name": "Mobilization Work",
+        "wbsId": "12662",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_Complete",
+        "durationHours": "40",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62388",
+        "code": "A1020",
+        "name": "Surveying Work",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_Complete",
+        "durationHours": "80",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62389",
+        "code": "A1030",
+        "name": "Excavation Works Pre Delay",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_Complete",
+        "durationHours": "80",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62390",
+        "code": "A1040",
+        "name": "Drainage & Sewerage Work",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_Complete",
+        "durationHours": "200",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62391",
+        "code": "A1050",
+        "name": "Backfilling Pre Delay",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_Complete",
+        "durationHours": "48",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62392",
+        "code": "A1060",
+        "name": "Inespection & Closeout",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "40",
+        "remainingDurationHours": "40",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-08-20 08:00",
+        "earlyEnd": "2021-08-24 16:00",
+        "lateStart": "2021-08-20 08:00",
+        "lateEnd": "2021-08-24 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62393",
+        "code": "A1070",
+        "name": "Project Finish",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_FinMile",
+        "status": "TK_NotStart",
+        "durationHours": "0",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-08-24 16:00",
+        "earlyEnd": "2021-08-24 16:00",
+        "lateStart": "2021-08-24 16:00",
+        "lateEnd": "2021-08-24 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62486",
+        "code": "A1005",
+        "name": "Delay Event 01 Delayed Handing Over",
+        "wbsId": "12662",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_Complete",
+        "durationHours": "40",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62505",
+        "code": "A1035",
+        "name": "Delay Event 02 Unforseen Ground Conditions",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_Complete",
+        "durationHours": "48",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62506",
+        "code": "A1036",
+        "name": "Excavation Works Post Delay",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_Complete",
+        "durationHours": "80",
+        "remainingDurationHours": "0",
+        "totalFloatHours": "",
+        "earlyStart": "2021-08-05 00:00",
+        "earlyEnd": "2021-08-05 00:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-05 08:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62529",
+        "code": "A1055",
+        "name": "Delay Event 03 Bad Weather",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "48",
+        "remainingDurationHours": "48",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-08-05 08:00",
+        "earlyEnd": "2021-08-10 16:00",
+        "lateStart": "2021-08-05 08:00",
+        "lateEnd": "2021-08-10 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      },
+      {
+        "id": "62530",
+        "code": "A1056",
+        "name": "Backfilling Post Delay",
+        "wbsId": "12663",
+        "calendarId": "767",
+        "type": "TT_Task",
+        "status": "TK_NotStart",
+        "durationHours": "72",
+        "remainingDurationHours": "72",
+        "totalFloatHours": "0",
+        "earlyStart": "2021-08-11 08:00",
+        "earlyEnd": "2021-08-19 16:00",
+        "lateStart": "2021-08-11 08:00",
+        "lateEnd": "2021-08-19 16:00",
+        "constraintType": "",
+        "constraintDate": ""
+      }
+    ],
+    "relationships": [
+      {
+        "id": "48372",
+        "successorId": "62387",
+        "successorCode": "A1010",
+        "predecessorId": "62386",
+        "predecessorCode": "A1000",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48373",
+        "successorId": "62388",
+        "successorCode": "A1020",
+        "predecessorId": "62387",
+        "predecessorCode": "A1010",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48374",
+        "successorId": "62389",
+        "successorCode": "A1030",
+        "predecessorId": "62388",
+        "predecessorCode": "A1020",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48375",
+        "successorId": "62390",
+        "successorCode": "A1040",
+        "predecessorId": "62389",
+        "predecessorCode": "A1030",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48376",
+        "successorId": "62391",
+        "successorCode": "A1050",
+        "predecessorId": "62390",
+        "predecessorCode": "A1040",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48377",
+        "successorId": "62392",
+        "successorCode": "A1060",
+        "predecessorId": "62391",
+        "predecessorCode": "A1050",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48378",
+        "successorId": "62393",
+        "successorCode": "A1070",
+        "predecessorId": "62392",
+        "predecessorCode": "A1060",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48479",
+        "successorId": "62486",
+        "successorCode": "A1005",
+        "predecessorId": "62386",
+        "predecessorCode": "A1000",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48480",
+        "successorId": "62387",
+        "successorCode": "A1010",
+        "predecessorId": "62486",
+        "predecessorCode": "A1005",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48499",
+        "successorId": "62505",
+        "successorCode": "A1035",
+        "predecessorId": "62389",
+        "predecessorCode": "A1030",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48500",
+        "successorId": "62506",
+        "successorCode": "A1036",
+        "predecessorId": "62505",
+        "predecessorCode": "A1035",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48501",
+        "successorId": "62390",
+        "successorCode": "A1040",
+        "predecessorId": "62506",
+        "predecessorCode": "A1036",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48526",
+        "successorId": "62529",
+        "successorCode": "A1055",
+        "predecessorId": "62391",
+        "predecessorCode": "A1050",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48527",
+        "successorId": "62530",
+        "successorCode": "A1056",
+        "predecessorId": "62529",
+        "predecessorCode": "A1055",
+        "type": "PR_FS",
+        "lagHours": "0"
+      },
+      {
+        "id": "48528",
+        "successorId": "62392",
+        "successorCode": "A1060",
+        "predecessorId": "62530",
+        "predecessorCode": "A1056",
+        "type": "PR_FS",
+        "lagHours": "0"
+      }
+    ],
+    "calendars": [
+      {
+        "id": "767",
+        "name": "7Working Day Per Week 8 Hrs",
+        "type": "CA_Base",
+        "dayHours": "8",
+        "weekHours": "56",
+        "monthHours": "240",
+        "yearHours": "2920"
+      }
+    ]
+  },
+  "workbook": {
+    "source": {
+      "filename": "Workshop-NO8TimeImpactAnalysis.xlsx",
+      "bytes": 25435,
+      "sha256": "1974eafc38ba56ecf984a8ef33183dd93a7b3e10efce4162242954868223b993"
+    },
+    "sheetCount": 2,
+    "sheets": [
+      {
+        "name": "Workshop TIA",
+        "populatedRows": 16,
+        "headers": [
+          "WORKSHOP 8 Time Impact Analysis"
+        ],
+        "formulaCount": 13,
+        "preview": [
+          [
+            "WORKSHOP 8 Time Impact Analysis"
+          ],
+          [
+            "ID",
+            "Name",
+            "Start",
+            "Finish",
+            "Duration",
+            "Calendar",
+            "Logic Link",
+            "Successor"
+          ],
+          [
+            "Mobilization"
+          ],
+          [
+            "1",
+            "Handing Over - Project Start",
+            "20/May/21",
+            "0",
+            "7d * 8hrs",
+            "FS",
+            "Mobilization Work"
+          ],
+          [
+            "2",
+            "Mobilization Work",
+            "20/May/21",
+            "24/May/21",
+            "5",
+            "7d * 8hrs",
+            "FS",
+            "Surveying Work"
+          ]
+        ]
+      },
+      {
+        "name": "TIA Delay Analysis Table",
+        "populatedRows": 22,
+        "headers": [
+          "PROJECT PROGRAMME - DELAY ANALYSIS"
+        ],
+        "formulaCount": 27,
+        "preview": [
+          [
+            "PROJECT PROGRAMME - DELAY ANALYSIS"
+          ],
+          [
+            "TIA - TIME IMPACT ANALYSIS"
+          ],
+          [
+            "DEFINITIONS:",
+            "PROJECT PARTICULARS FOR ORIGINAL BASELINE PROGRAMME"
+          ],
+          [
+            "Start Date",
+            "20 May 2021"
+          ],
+          [
+            "1",
+            "NND",
+            "Non-Excusable, Non-Compensable (also referred to as Inexcusable)",
+            "Finish Date",
+            "07 Aug 2021"
+          ]
+        ]
+      }
+    ]
+  },
+  "workbookFacts": {
+    "baseline": {
+      "startDate": "20 May 2021",
+      "finishDate": "07 Aug 2021",
+      "durationDays": "80",
+      "calendar": "7d * 8hrs"
+    },
+    "delayEvents": [
+      {
+        "reference": "Delay Event 1",
+        "description": "Delayed Handing over",
+        "start": "20-May-21",
+        "finish": "25-May-21",
+        "durationDays": "5",
+        "affectedActivity": "Handing Over - Project Start",
+        "classification": "ECD"
+      },
+      {
+        "reference": "Delay Event 2",
+        "description": "Unforeseen Ground Conditions",
+        "start": "19-Jun-21",
+        "finish": "24-Jun-21",
+        "durationDays": "6",
+        "affectedActivity": "Excavation Works",
+        "classification": "ECD"
+      },
+      {
+        "reference": "Delay Event 3",
+        "description": "Bad Weather",
+        "start": "5-Aug-21",
+        "finish": "10-Aug-21",
+        "durationDays": "6",
+        "affectedActivity": "Backfilling",
+        "classification": "END"
+      }
+    ],
+    "declaredOutcome": {
+      "asPlannedCompletion": "7/Aug/21",
+      "workshopCompletion": "24/Aug/21",
+      "cumulativeImpactDays": "17.00",
+      "varianceDays": "-17.00",
+      "employerDelayDays": "11.00",
+      "neutralDelayDays": "6.00",
+      "concurrentDelayDays": "0.00"
+    }
+  },
+  "comparison": {
+    "activity": {
+      "added": [
+        {
+          "id": "62505",
+          "code": "A1035",
+          "name": "Delay Event 02 Unforseen Ground Conditions",
+          "wbsId": "12663",
+          "calendarId": "767",
+          "type": "TT_Task",
+          "status": "TK_Complete",
+          "durationHours": "48",
+          "remainingDurationHours": "0",
+          "totalFloatHours": "",
+          "earlyStart": "2021-08-05 00:00",
+          "earlyEnd": "2021-08-05 00:00",
+          "lateStart": "2021-08-05 08:00",
+          "lateEnd": "2021-08-05 08:00",
+          "constraintType": "",
+          "constraintDate": ""
+        },
+        {
+          "id": "62506",
+          "code": "A1036",
+          "name": "Excavation Works Post Delay",
+          "wbsId": "12663",
+          "calendarId": "767",
+          "type": "TT_Task",
+          "status": "TK_Complete",
+          "durationHours": "80",
+          "remainingDurationHours": "0",
+          "totalFloatHours": "",
+          "earlyStart": "2021-08-05 00:00",
+          "earlyEnd": "2021-08-05 00:00",
+          "lateStart": "2021-08-05 08:00",
+          "lateEnd": "2021-08-05 08:00",
+          "constraintType": "",
+          "constraintDate": ""
+        },
+        {
+          "id": "62529",
+          "code": "A1055",
+          "name": "Delay Event 03 Bad Weather",
+          "wbsId": "12663",
+          "calendarId": "767",
+          "type": "TT_Task",
+          "status": "TK_NotStart",
+          "durationHours": "48",
+          "remainingDurationHours": "48",
+          "totalFloatHours": "0",
+          "earlyStart": "2021-08-05 08:00",
+          "earlyEnd": "2021-08-10 16:00",
+          "lateStart": "2021-08-05 08:00",
+          "lateEnd": "2021-08-10 16:00",
+          "constraintType": "",
+          "constraintDate": ""
+        },
+        {
+          "id": "62530",
+          "code": "A1056",
+          "name": "Backfilling Post Delay",
+          "wbsId": "12663",
+          "calendarId": "767",
+          "type": "TT_Task",
+          "status": "TK_NotStart",
+          "durationHours": "72",
+          "remainingDurationHours": "72",
+          "totalFloatHours": "0",
+          "earlyStart": "2021-08-11 08:00",
+          "earlyEnd": "2021-08-19 16:00",
+          "lateStart": "2021-08-11 08:00",
+          "lateEnd": "2021-08-19 16:00",
+          "constraintType": "",
+          "constraintDate": ""
+        }
+      ],
+      "removed": [],
+      "changed": [
+        {
+          "code": "A1000",
+          "name": "Handing Over - Project Start",
+          "changes": [
+            {
+              "field": "status",
+              "before": "TK_NotStart",
+              "after": "TK_Complete"
+            },
+            {
+              "field": "totalFloatHours",
+              "before": "0",
+              "after": ""
+            },
+            {
+              "field": "earlyStart",
+              "before": "2021-05-20 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-05-20 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-05-19 16:00",
+              "after": "2021-08-05 08:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-05-19 16:00",
+              "after": "2021-08-05 08:00"
+            }
+          ]
+        },
+        {
+          "code": "A1010",
+          "name": "Mobilization Work",
+          "changes": [
+            {
+              "field": "status",
+              "before": "TK_NotStart",
+              "after": "TK_Complete"
+            },
+            {
+              "field": "remainingDurationHours",
+              "before": "40",
+              "after": "0"
+            },
+            {
+              "field": "totalFloatHours",
+              "before": "0",
+              "after": ""
+            },
+            {
+              "field": "earlyStart",
+              "before": "2021-05-20 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-05-24 16:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-05-20 08:00",
+              "after": "2021-08-05 08:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-05-24 16:00",
+              "after": "2021-08-05 08:00"
+            }
+          ]
+        },
+        {
+          "code": "A1020",
+          "name": "Surveying Work",
+          "changes": [
+            {
+              "field": "status",
+              "before": "TK_NotStart",
+              "after": "TK_Complete"
+            },
+            {
+              "field": "remainingDurationHours",
+              "before": "80",
+              "after": "0"
+            },
+            {
+              "field": "totalFloatHours",
+              "before": "0",
+              "after": ""
+            },
+            {
+              "field": "earlyStart",
+              "before": "2021-05-25 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-06-03 16:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-05-25 08:00",
+              "after": "2021-08-05 08:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-06-03 16:00",
+              "after": "2021-08-05 08:00"
+            }
+          ]
+        },
+        {
+          "code": "A1030",
+          "name": "Excavation Works Pre Delay",
+          "changes": [
+            {
+              "field": "name",
+              "before": "Excavation Works",
+              "after": "Excavation Works Pre Delay"
+            },
+            {
+              "field": "status",
+              "before": "TK_NotStart",
+              "after": "TK_Complete"
+            },
+            {
+              "field": "durationHours",
+              "before": "160",
+              "after": "80"
+            },
+            {
+              "field": "remainingDurationHours",
+              "before": "160",
+              "after": "0"
+            },
+            {
+              "field": "totalFloatHours",
+              "before": "0",
+              "after": ""
+            },
+            {
+              "field": "earlyStart",
+              "before": "2021-06-04 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-06-23 16:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-06-04 08:00",
+              "after": "2021-08-05 08:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-06-23 16:00",
+              "after": "2021-08-05 08:00"
+            }
+          ]
+        },
+        {
+          "code": "A1040",
+          "name": "Drainage & Sewerage Work",
+          "changes": [
+            {
+              "field": "status",
+              "before": "TK_NotStart",
+              "after": "TK_Complete"
+            },
+            {
+              "field": "remainingDurationHours",
+              "before": "200",
+              "after": "0"
+            },
+            {
+              "field": "totalFloatHours",
+              "before": "0",
+              "after": ""
+            },
+            {
+              "field": "earlyStart",
+              "before": "2021-06-24 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-07-18 16:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-06-24 08:00",
+              "after": "2021-08-05 08:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-07-18 16:00",
+              "after": "2021-08-05 08:00"
+            }
+          ]
+        },
+        {
+          "code": "A1050",
+          "name": "Backfilling Pre Delay",
+          "changes": [
+            {
+              "field": "name",
+              "before": "Backfilling",
+              "after": "Backfilling Pre Delay"
+            },
+            {
+              "field": "status",
+              "before": "TK_NotStart",
+              "after": "TK_Complete"
+            },
+            {
+              "field": "durationHours",
+              "before": "120",
+              "after": "48"
+            },
+            {
+              "field": "remainingDurationHours",
+              "before": "120",
+              "after": "0"
+            },
+            {
+              "field": "totalFloatHours",
+              "before": "0",
+              "after": ""
+            },
+            {
+              "field": "earlyStart",
+              "before": "2021-07-19 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-08-02 16:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-07-19 08:00",
+              "after": "2021-08-05 08:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-08-02 16:00",
+              "after": "2021-08-05 08:00"
+            }
+          ]
+        },
+        {
+          "code": "A1060",
+          "name": "Inespection & Closeout",
+          "changes": [
+            {
+              "field": "earlyStart",
+              "before": "2021-08-03 08:00",
+              "after": "2021-08-20 08:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-08-07 16:00",
+              "after": "2021-08-24 16:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-08-03 08:00",
+              "after": "2021-08-20 08:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-08-07 16:00",
+              "after": "2021-08-24 16:00"
+            }
+          ]
+        },
+        {
+          "code": "A1070",
+          "name": "Project Finish",
+          "changes": [
+            {
+              "field": "earlyStart",
+              "before": "2021-08-07 16:00",
+              "after": "2021-08-24 16:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-08-07 16:00",
+              "after": "2021-08-24 16:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-08-07 16:00",
+              "after": "2021-08-24 16:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-08-07 16:00",
+              "after": "2021-08-24 16:00"
+            }
+          ]
+        },
+        {
+          "code": "A1005",
+          "name": "Delay Event 01 Delayed Handing Over",
+          "changes": [
+            {
+              "field": "status",
+              "before": "TK_NotStart",
+              "after": "TK_Complete"
+            },
+            {
+              "field": "durationHours",
+              "before": "0",
+              "after": "40"
+            },
+            {
+              "field": "totalFloatHours",
+              "before": "0",
+              "after": ""
+            },
+            {
+              "field": "earlyStart",
+              "before": "2021-05-20 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "earlyEnd",
+              "before": "2021-05-20 08:00",
+              "after": "2021-08-05 00:00"
+            },
+            {
+              "field": "lateStart",
+              "before": "2021-05-19 16:00",
+              "after": "2021-08-05 08:00"
+            },
+            {
+              "field": "lateEnd",
+              "before": "2021-05-19 16:00",
+              "after": "2021-08-05 08:00"
+            }
+          ]
+        }
+      ]
+    },
+    "relationship": {
+      "added": [
+        {
+          "id": "48499",
+          "successorId": "62505",
+          "successorCode": "A1035",
+          "predecessorId": "62389",
+          "predecessorCode": "A1030",
+          "type": "PR_FS",
+          "lagHours": "0"
+        },
+        {
+          "id": "48500",
+          "successorId": "62506",
+          "successorCode": "A1036",
+          "predecessorId": "62505",
+          "predecessorCode": "A1035",
+          "type": "PR_FS",
+          "lagHours": "0"
+        },
+        {
+          "id": "48501",
+          "successorId": "62390",
+          "successorCode": "A1040",
+          "predecessorId": "62506",
+          "predecessorCode": "A1036",
+          "type": "PR_FS",
+          "lagHours": "0"
+        },
+        {
+          "id": "48526",
+          "successorId": "62529",
+          "successorCode": "A1055",
+          "predecessorId": "62391",
+          "predecessorCode": "A1050",
+          "type": "PR_FS",
+          "lagHours": "0"
+        },
+        {
+          "id": "48527",
+          "successorId": "62530",
+          "successorCode": "A1056",
+          "predecessorId": "62529",
+          "predecessorCode": "A1055",
+          "type": "PR_FS",
+          "lagHours": "0"
+        },
+        {
+          "id": "48528",
+          "successorId": "62392",
+          "successorCode": "A1060",
+          "predecessorId": "62530",
+          "predecessorCode": "A1056",
+          "type": "PR_FS",
+          "lagHours": "0"
+        }
+      ],
+      "removed": []
+    }
+  }
+}

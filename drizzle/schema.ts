@@ -92,6 +92,36 @@ export const methodologyLibraryDocuments = mysqlTable("methodology_library_docum
   index("methodology_library_docs_user_project_created_idx").on(table.userId, table.projectKey, table.createdAt),
 ]);
 
+/**
+ * Private, metadata-only reference to a user-provided training case.
+ * Raw P6/XER and Excel source files must remain outside the database and are
+ * deliberately not represented by a storage key or URL in this table.
+ */
+export const trainingReferences = mysqlTable("training_references", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  referenceKey: varchar("referenceKey", { length: 128 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  sourceKind: mysqlEnum("sourceKind", ["user_provided_private"]).notNull().default("user_provided_private"),
+  baselineSha256: varchar("baselineSha256", { length: 64 }).notNull(),
+  postTiaSha256: varchar("postTiaSha256", { length: 64 }).notNull(),
+  workbookSha256: varchar("workbookSha256", { length: 64 }).notNull(),
+  baselineActivityCount: int("baselineActivityCount").notNull(),
+  postTiaActivityCount: int("postTiaActivityCount").notNull(),
+  baselineRelationshipCount: int("baselineRelationshipCount").notNull(),
+  postTiaRelationshipCount: int("postTiaRelationshipCount").notNull(),
+  localCpmDurationDeltaDays: int("localCpmDurationDeltaDays").notNull(),
+  status: mysqlEnum("status", ["locally_verified", "manual_p6_review_required"]).notNull().default("manual_p6_review_required"),
+  limitations: text("limitations").notNull(),
+  sourceFactsJson: text("sourceFactsJson").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("training_references_owner_project_key_uq").on(table.ownerUserId, table.projectKey, table.referenceKey),
+  index("training_references_owner_project_created_idx").on(table.ownerUserId, table.projectKey, table.createdAt),
+]);
+
 /** سلسلة مطالبات مستمرة لكل برنامج؛ يتحقق الخادم من الأبوة وملكية السلسلة قبل أي كتابة. */
 export const claimChains = mysqlTable("claim_chains", {
   id: int("id").autoincrement().primaryKey(),

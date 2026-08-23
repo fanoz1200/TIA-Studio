@@ -7,6 +7,7 @@ import { claimReviewRouter, noticeRouter, projectInvitationRouter, projectMember
 import { knowledgeCentreRouter } from "./knowledgeCentreRouter";
 import { claimContinuityRouter } from "./claimContinuityRouter";
 import { issueLogRouter } from "./issueLogRouter";
+import { trainingReferenceRouter } from "./trainingReferenceRouter";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -31,6 +32,7 @@ export const appRouter = router({
   knowledgeCentre: knowledgeCentreRouter,
   claimContinuity: claimContinuityRouter,
   issueLog: issueLogRouter,
+  trainingReference: trainingReferenceRouter,
 });
 
 export type AppRouter = typeof appRouter;

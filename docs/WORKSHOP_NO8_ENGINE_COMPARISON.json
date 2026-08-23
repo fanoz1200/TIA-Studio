@@ -1,0 +1,128 @@
+{
+  "baseline": {
+    "label": "Baseline",
+    "import": {
+      "projectName": "TIA1 - B1",
+      "activitiesRead": 9,
+      "relationshipsRead": 9,
+      "relationshipsSkipped": 0,
+      "wbsRead": 3,
+      "resourcesRead": 0,
+      "resourceAssignmentsRead": 0,
+      "resourceAssignmentsSkipped": 0,
+      "activitiesWithProgress": 0,
+      "calendarName": "7Working Day Per Week 8 Hrs",
+      "warnings": [
+        "تم التعرف على سجل التقويم في XER، لكن نمط العمل المشفر في P6 لا يُفك تلقائياً؛ راجع التقويم واختر أيام العمل والعطل من التطبيق.",
+        "حُولت مدد P6 من ساعات إلى أيام عمل على أساس 8 ساعات/يوم؛ راجع الإعداد إذا كان المشروع يستخدم يوماً مختلفاً.",
+        "لم يعثر المستورد على جدول TASKRSRC؛ ستبقى شاشة الأثر المالي بلا إسنادات موارد حتى تُستورد نسخة P6 تتضمن الموارد."
+      ],
+      "relationshipTypes": {
+        "FS": 9
+      }
+    },
+    "cpm": {
+      "startDate": "2021-05-20",
+      "dataDate": "2021-05-20",
+      "projectDurationWorkingDays": 80,
+      "completionDate": "2021-08-08",
+      "criticalActivityIds": [
+        "62468",
+        "62469",
+        "62470",
+        "62471",
+        "62472",
+        "62473",
+        "62474",
+        "62475",
+        "62476"
+      ],
+      "warnings": [
+        "تاريخ الإكمال محول وفق تقويم «7Working Day Per Week 8 Hrs — راجع النمط»؛ بينما تُعرض ES/EF وTF بوحدة أيام العمل."
+      ]
+    }
+  },
+  "postTia": {
+    "label": "Post-TIA",
+    "import": {
+      "projectName": "TIA1",
+      "activitiesRead": 13,
+      "relationshipsRead": 15,
+      "relationshipsSkipped": 0,
+      "wbsRead": 3,
+      "resourcesRead": 0,
+      "resourceAssignmentsRead": 0,
+      "resourceAssignmentsSkipped": 0,
+      "activitiesWithProgress": 9,
+      "calendarName": "7Working Day Per Week 8 Hrs",
+      "warnings": [
+        "تم التعرف على سجل التقويم في XER، لكن نمط العمل المشفر في P6 لا يُفك تلقائياً؛ راجع التقويم واختر أيام العمل والعطل من التطبيق.",
+        "حُولت مدد P6 من ساعات إلى أيام عمل على أساس 8 ساعات/يوم؛ راجع الإعداد إذا كان المشروع يستخدم يوماً مختلفاً.",
+        "لم يعثر المستورد على جدول TASKRSRC؛ ستبقى شاشة الأثر المالي بلا إسنادات موارد حتى تُستورد نسخة P6 تتضمن الموارد."
+      ],
+      "relationshipTypes": {
+        "FS": 15
+      }
+    },
+    "cpm": {
+      "startDate": "2021-05-20",
+      "dataDate": "2021-08-05",
+      "projectDurationWorkingDays": 97,
+      "completionDate": "2021-08-25",
+      "criticalActivityIds": [
+        "62386",
+        "62387",
+        "62388",
+        "62389",
+        "62390",
+        "62391",
+        "62392",
+        "62393",
+        "62486",
+        "62505",
+        "62506",
+        "62529",
+        "62530"
+      ],
+      "warnings": [
+        "تاريخ الإكمال محول وفق تقويم «7Working Day Per Week 8 Hrs — راجع النمط»؛ بينما تُعرض ES/EF وTF بوحدة أيام العمل."
+      ]
+    }
+  },
+  "delta": {
+    "activities": 4,
+    "relationships": 6,
+    "projectDurationWorkingDays": 17,
+    "criticalActivitiesAdded": [
+      "62386",
+      "62387",
+      "62388",
+      "62389",
+      "62390",
+      "62391",
+      "62392",
+      "62393",
+      "62486",
+      "62505",
+      "62506",
+      "62529",
+      "62530"
+    ],
+    "criticalActivitiesRemoved": [
+      "62468",
+      "62469",
+      "62470",
+      "62471",
+      "62472",
+      "62473",
+      "62474",
+      "62475",
+      "62476"
+    ]
+  },
+  "interpretation": [
+    "هذه مقارنة محلية بين قارئ XER ومحرك CPM في TIA Studio، وليست دليلاً على تطابق Primavera P6.",
+    "يطبق المستورد تقويماً للمراجعة ويحول ساعات P6 إلى أيام على أساس 8 ساعات/يوم؛ يجب مقارنة التقويم وإعدادات P6 قبل الاعتماد.",
+    "لا يكتب هذا التحقق على ملفَي XER ولا يرسلهما لأي خدمة خارجية."
+  ]
+}

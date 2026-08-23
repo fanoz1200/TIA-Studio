@@ -22,6 +22,9 @@ describe("ProjectResourcesPanel", () => {
     expect(screen.getByText("تشغيل محلي بنقرة واحدة")).toBeTruthy();
     expect(screen.getByText("محرك CPM الحتمي")).toBeTruthy();
     expect(screen.getByText("سجل تغييرات هذا الإصدار")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Workshop NO8 — مرجع TIA مرفوع من المستخدم" })).toBeTruthy();
+    expect(screen.getByText("+17 يوم عمل")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /Workshop NO8/i })).toBeNull();
   });
 
   it("لا يعرض محتوى المركز عندما يكون التبويب مختلفاً", () => {
