@@ -118,6 +118,11 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
         <div><span>فرق CPM المحلي</span><b>+{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.durationDeltaDays} يوم عمل</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.baselineDurationDays} → {WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.postTiaDurationDays} يوم</small></div>
       </div>
       <p className="workshop-training-reference__boundary"><b>حد التحقق:</b> {WORKSHOP_NO8_TRAINING_REFERENCE.status} ملف Excel يبيّن اكتمالاً مخططاً في {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.asPlannedCompletion} واكتمالاً في {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.completion} وأثراً تراكمياً معلناً قدره {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.cumulativeImpactDays} يوماً؛ لا يستبدل ذلك نتيجة الجدولة داخل Primavera.</p>
+      <div className="workshop-training-reference__review" aria-labelledby="workshop-review-title">
+        <div><ListChecks size={18} /><h3 id="workshop-review-title">قائمة مراجعة P6 قبل الاعتماد</h3></div>
+        <p>{WORKSHOP_NO8_TRAINING_REFERENCE.calendarScope}</p>
+        <ol>{WORKSHOP_NO8_TRAINING_REFERENCE.manualP6Checks.map((check) => <li key={check}>{check}</li>)}</ol>
+      </div>
       <p className="workflow-subtle">{WORKSHOP_NO8_TRAINING_REFERENCE.sourceScope}</p>
     </section>
 

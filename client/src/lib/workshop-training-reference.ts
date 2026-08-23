@@ -11,4 +11,12 @@ export const WORKSHOP_NO8_TRAINING_REFERENCE = {
   localEngine: { baselineDurationDays: 80, postTiaDurationDays: 97, durationDeltaDays: 17 },
   excelDeclared: { asPlannedCompletion: "07 Aug 2021", completion: "24 Aug 2021", cumulativeImpactDays: 17 },
   status: "يلزم فحص يدوي داخل P6 23.12 قبل أي اعتماد مهني أو استيراد عكسي.",
+  calendarScope: "المستورد يراجع اسم التقويم ويحسب 8 ساعات كيوم عمل، لكنه لا يفك ترميز نمط تقويم P6 أو الاستثناءات تلقائياً.",
+  manualP6Checks: [
+    "استورد Baseline وPost-TIA كمشروعين منفصلين داخل نسخة P6 غير إنتاجية.",
+    "راجع Project Calendars: أيام العمل، الساعات، والعطل أو الاستثناءات قبل تفسير تواريخ النهاية.",
+    "نفّذ Schedule (F9) بإعدادات P6 الأصلية وسجل تاريخ النهاية والمسار الحرج والـfloat.",
+    "طابق العدادات: 9/9/3 في Baseline و13/15/3 في Post-TIA، ثم راجع الأنشطة والعلاقات المضافة.",
+    "دوّن أي فرق مع النتيجة المحلية (+17 يوم عمل) في Manifest أو محضر مراجعة؛ لا تُخفِ الفرق بتعديل البيانات.",
+  ],
 } as const;

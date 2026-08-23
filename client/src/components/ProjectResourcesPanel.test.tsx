@@ -24,6 +24,9 @@ describe("ProjectResourcesPanel", () => {
     expect(screen.getByText("سجل تغييرات هذا الإصدار")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Workshop NO8 — مرجع TIA مرفوع من المستخدم" })).toBeTruthy();
     expect(screen.getByText("+17 يوم عمل")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "قائمة مراجعة P6 قبل الاعتماد" })).toBeTruthy();
+    expect(screen.getByText(/لا يفك ترميز نمط تقويم P6 أو الاستثناءات تلقائياً/)).toBeTruthy();
+    expect(screen.getByText(/نفّذ Schedule \(F9\)/)).toBeTruthy();
     expect(screen.queryByRole("link", { name: /Workshop NO8/i })).toBeNull();
   });
 
