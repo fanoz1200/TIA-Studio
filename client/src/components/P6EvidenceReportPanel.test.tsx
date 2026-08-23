@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   importXml: vi.fn(),
   exportDocx: vi.fn(),
   exportPdf: vi.fn(),
+  exportExcel: vi.fn(),
   toastSuccess: vi.fn(),
   toastError: vi.fn(),
   query: { data: [], isLoading: false, refetch: vi.fn() },
@@ -17,6 +18,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("sonner", () => ({ toast: { success: mocks.toastSuccess, error: mocks.toastError } }));
 vi.mock("@/lib/p6-xml", () => ({ importP6XmlSchedule: mocks.importXml }));
 vi.mock("@/lib/claim-export", () => ({ exportClaimDocx: mocks.exportDocx, exportClaimPdf: mocks.exportPdf }));
+vi.mock("@/lib/analysis-excel", () => ({ exportAnalysisExcel: mocks.exportExcel }));
 vi.mock("@/lib/trpc", () => ({
   trpc: {
     evidence: {
@@ -87,12 +89,17 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  it("يعرض حالة تجهيز Word ويعطل PDF حتى يكتمل التصدير", async () => {
+  it("يصدر ملف التقرير النهائي Excel ويعرض حالة تجهيز Word ويعطل PDF حتى يكتمل التصدير", async () => {
     let completeExport: (() => void) | undefined;
     mocks.exportDocx.mockImplementation(() => new Promise<void>((resolve) => { completeExport = resolve; }));
     renderPanel("report");
 
     expect((screen.getByRole("button", { name: "ملف مطابقة P6 (JSON)" }) as HTMLButtonElement).disabled).toBe(true);
+    const excelButton = screen.getByRole("button", { name: "تصدير التقرير النهائي Excel" }) as HTMLButtonElement;
+    expect(excelButton.disabled).toBe(false);
+    fireEvent.click(excelButton);
+    expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ schedule, analysis: activeResult, events: [event], narrative: "سرد اختبار" }));
+    expect(mocks.toastSuccess).toHaveBeenCalledWith("تم إنشاء التقرير النهائي Excel متعدد الأوراق.");
     fireEvent.click(screen.getByRole("button", { name: "تصدير Word" }));
     await waitFor(() => expect(screen.getByRole("status")).toBeTruthy());
     expect(screen.getByText(/ملف المطابقة ليس بديلاً عن Primavera/)).toBeTruthy();

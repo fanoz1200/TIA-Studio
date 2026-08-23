@@ -13,11 +13,13 @@ describe("حزمة سطح المكتب المحلية", () => {
     expect(packageJson.scripts["desktop:verify:windows-sandbox"]).toBe("bash desktop/verify-windows-package-wine.sh");
   });
 
-  it("يشغّل الخادم من app.asar ويحتفظ بسجل خطأ قابل للإرسال", () => {
+  it("يشغّل الخادم المضمّن من app.asar ويحتفظ بسجل خطأ قابل للإرسال", () => {
     const main = fs.readFileSync(path.join(projectRoot, "desktop", "main.cjs"), "utf8");
     expect(main).toContain('path.join(app.getAppPath(), "dist", "index.js")');
     expect(main).toContain("tia-studio-local-server.log");
-    expect(main).toContain('stdio: ["ignore", "pipe", "pipe"]');
+    expect(main).toContain("pathToFileURL(serverEntry).href");
+    expect(main).toContain("serverModule.startServer()");
+    expect(main).not.toContain("spawn(process.execPath");
   });
 
   it("يلتزم الخادم بالمنفذ الذي يختاره تطبيق سطح المكتب", () => {
@@ -30,7 +32,8 @@ describe("حزمة سطح المكتب المحلية", () => {
 
   it("يطلب من الخادم المضمّن البقاء على حلقة الجهاز المحلية فقط", () => {
     const main = fs.readFileSync(path.join(projectRoot, "desktop", "main.cjs"), "utf8");
-    expect(main).toContain('TIA_DESKTOP_LOCAL: "1"');
+    expect(main).toContain('process.env.TIA_DESKTOP_LOCAL = "1"');
+    expect(main).toContain('process.env.TIA_DESKTOP_EMBEDDED = "1"');
   });
 
   it("يوفر تحققاً معزولاً من ملف Windows واستجابة خادمه المحلي", () => {

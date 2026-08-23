@@ -1,10 +1,10 @@
 const { app, BrowserWindow, dialog } = require("electron");
-const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const net = require("node:net");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 
-let serverProcess;
+let localServer;
 let serverFailure = "";
 
 function getLocalServerLogPath() {
@@ -53,7 +53,8 @@ function waitForLocalServer(url, timeoutMs = 20000) {
 
 async function createWindow() {
   const port = await findAvailablePort();
-  // يبقى dist بجوار node_modules داخل app.asar، حتى يستطيع خادم ESM العثور على اعتماداته.
+  // يبدأ الخادم داخل عملية Electron نفسها. الحزمة المحمولة تُفك في Temp على Windows؛
+  // لذلك لا نعتمد على إعادة تشغيل process.execPath من المسار المؤقت كعملية Node مستقلة.
   const serverEntry = path.join(app.getAppPath(), "dist", "index.js");
 
   if (!fs.existsSync(serverEntry)) {
@@ -61,25 +62,24 @@ async function createWindow() {
   }
 
   fs.writeFileSync(getLocalServerLogPath(), "بدء سجل خادم TIA Studio المحلي\n", "utf8");
-  serverProcess = spawn(process.execPath, [serverEntry], {
-    cwd: path.dirname(serverEntry),
-    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", NODE_ENV: "production", PORT: String(port), TIA_DESKTOP_LOCAL: "1" },
-    stdio: ["ignore", "pipe", "pipe"],
-    windowsHide: true,
-  });
-  serverProcess.stdout.on("data", chunk => appendServerLog(chunk.toString().trim()));
-  serverProcess.stderr.on("data", chunk => {
-    serverFailure = chunk.toString().trim();
-    appendServerLog(serverFailure);
-  });
-  serverProcess.on("error", error => {
-    serverFailure = error.message;
-    appendServerLog(`تعذر تشغيل الخادم: ${serverFailure}`);
-  });
-  serverProcess.on("exit", (code, signal) => {
-    if (code && !serverFailure) serverFailure = `انتهت عملية الخادم برمز ${code}${signal ? ` وإشارة ${signal}` : ""}.`;
-    appendServerLog(`انتهت عملية الخادم: code=${code ?? "null"}, signal=${signal ?? "null"}`);
-  });
+  process.env.NODE_ENV = "production";
+  process.env.PORT = String(port);
+  process.env.TIA_DESKTOP_LOCAL = "1";
+  process.env.TIA_DESKTOP_EMBEDDED = "1";
+
+  try {
+    const serverModule = await import(pathToFileURL(serverEntry).href);
+    localServer = await serverModule.startServer();
+    localServer.on("error", error => {
+      serverFailure = error.message;
+      appendServerLog(`خطأ في الخادم المضمّن: ${serverFailure}`);
+    });
+    appendServerLog(`بدأ الخادم المضمّن على المنفذ ${port}.`);
+  } catch (error) {
+    serverFailure = error instanceof Error ? error.message : String(error);
+    appendServerLog(`تعذر بدء الخادم المضمّن: ${serverFailure}`);
+    throw error;
+  }
 
   const localUrl = `http://127.0.0.1:${port}/`;
   await waitForLocalServer(localUrl);
@@ -106,5 +106,5 @@ app.whenReady().then(createWindow).catch(error => {
 
 app.on("window-all-closed", () => app.quit());
 app.on("before-quit", () => {
-  if (serverProcess && !serverProcess.killed) serverProcess.kill();
+  if (localServer) localServer.close();
 });

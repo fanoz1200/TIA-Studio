@@ -6,9 +6,11 @@ const root = process.cwd();
 const readProjectFile = (relativePath: string) => readFileSync(resolve(root, relativePath), "utf8");
 
 describe("عقد نسخة سطح المكتب", () => {
-  it("يوفر غلاف Electron محلياً دون تشغيل Node داخل واجهة المستخدم", () => {
+  it("يوفر غلاف Electron محلياً مع خادم مضمّن لا يعيد تشغيل EXE المحمول", () => {
     const main = readProjectFile("desktop/main.cjs");
-    expect(main).toContain("ELECTRON_RUN_AS_NODE");
+    expect(main).toContain("TIA_DESKTOP_EMBEDDED");
+    expect(main).toContain("serverModule.startServer()");
+    expect(main).not.toContain("spawn(process.execPath");
     expect(main).toContain("nodeIntegration: false");
     expect(main).toContain("contextIsolation: true");
     expect(main).toContain("127.0.0.1");
