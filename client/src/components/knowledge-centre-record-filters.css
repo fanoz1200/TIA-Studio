@@ -1,0 +1,4 @@
+.case-catalog-toolbar{grid-template-columns:repeat(3,minmax(0,1fr)) auto}
+.catalog-record-legend{margin:0;padding:.62rem .7rem;border:1px solid #d9e7e3;border-radius:11px;background:rgba(255,255,255,.74);color:#526e75;font-size:.75rem;line-height:1.7}.catalog-record-legend b{color:#235d66}.catalog-record-legend code{padding:.08rem .25rem;border-radius:5px;background:#e6f1f1;color:#125c68;font:800 .7rem/1 "IBM Plex Mono",monospace}
+@media (max-width:900px){.case-catalog-toolbar{grid-template-columns:1fr 1fr}.case-catalog-toolbar p{grid-column:1/-1;padding:0}}
+@media (max-width:560px){.case-catalog-toolbar{grid-template-columns:1fr}.case-catalog-toolbar p{grid-column:auto}}

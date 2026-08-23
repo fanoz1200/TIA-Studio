@@ -92,9 +92,10 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     mocks.exportDocx.mockImplementation(() => new Promise<void>((resolve) => { completeExport = resolve; }));
     renderPanel("report");
 
+    expect((screen.getByRole("button", { name: "ملف مطابقة P6 (JSON)" }) as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "تصدير Word" }));
     await waitFor(() => expect(screen.getByRole("status")).toBeTruthy());
-    expect(screen.getByText("شغّل TIA أولاً، ثم راجع الأثر الزمني والمالي وحالة الاعتماد؛ يحفظ التصدير لقطة من هذه البيانات في لحظة الإنشاء.")).toBeTruthy();
+    expect(screen.getByText(/ملف المطابقة ليس بديلاً عن Primavera/)).toBeTruthy();
     expect((screen.getByRole("button", { name: /جارِ تجهيز Word/ }) as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByRole("button", { name: "تصدير PDF" }) as HTMLButtonElement).disabled).toBe(true);
 

@@ -107,6 +107,18 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     expect(screen.getAllByText("WBS و Fragnet وقواعد TIA").length).toBeGreaterThan(0);
   });
 
+  it("يفصل حالات D عن السجلات الداعمة ويتيح عرض سجلات DIS/CON/VAR/RES الفعلية", () => {
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    expect(screen.getAllByText("70 سجلاً فعلياً من ملفك").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/15 سجلاً مرتبطاً فعلياً/).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByLabelText("نوع السجل"));
+    fireEvent.click(screen.getByRole("option", { name: "سجلات داعمة DIS/CON/VAR/RES: 15" }));
+    expect(screen.getByLabelText("نوع السجل").textContent).toContain("سجلات داعمة DIS/CON/VAR/RES: 15");
+    expect(screen.getAllByText("DIS-001").length).toBeGreaterThan(0);
+  });
+
   it("يعرض أوراق الدعم الثمانية والروابط الداخلية المنسوخة من ملف Excel", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
 

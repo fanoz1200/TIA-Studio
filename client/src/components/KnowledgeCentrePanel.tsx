@@ -10,9 +10,11 @@ import type { DetailedMasterClaimCase } from "@/lib/master-claim-excel";
 import { masterClaimIntelligenceCases, masterClaimIntelligenceSource, masterClaimSupportSheets } from "@/lib/master-claim-intelligence-data";
 import { claimTrainingScenarios, fidicClaimReferences } from "@/lib/user-claim-references";
 import "./knowledge-centre.css";
+import "./knowledge-centre-record-filters.css";
 import "./training-video.css";
 
 export type AnalysisMethod = "tia" | "windows" | "disruption" | "quantity";
+type WorkbookRecordFamily = "all" | "delay" | "support";
 export type KnowledgeRoute = {
   method: AnalysisMethod;
   journeyPath: "issue" | "direct";
@@ -60,6 +62,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const [query, setQuery] = useState("");
   const [methodFilter, setMethodFilter] = useState<AnalysisMethod | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [recordFamilyFilter, setRecordFamilyFilter] = useState<WorkbookRecordFamily>("all");
   const [selectedId, setSelectedId] = useState(workbookCases[0]?.id ?? "");
   const [methodOverride, setMethodOverride] = useState<AnalysisMethod | null>(null);
   const [isApplying, setIsApplying] = useState(false);
@@ -109,9 +112,10 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
       ].join(" "));
       return (methodFilter === "all" || sourceMethod === methodFilter)
         && (categoryFilter === "all" || item.category === categoryFilter)
+        && (recordFamilyFilter === "all" || (recordFamilyFilter === "delay" ? item.id.startsWith("D-") : !item.id.startsWith("D-")))
         && terms.every(term => haystack.includes(term));
     });
-  }, [categoryFilter, libraryCases, methodFilter, query]);
+  }, [categoryFilter, libraryCases, methodFilter, query, recordFamilyFilter]);
 
   const chooseCase = (caseItem: DetailedMasterClaimCase) => {
     setSelectedId(caseItem.id);
@@ -177,14 +181,16 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
       <article className="case-search-gate master-case-catalog">
         <div className="case-search-header">
           <span><Search size={18} />ابحث في العناوين والوصف والأدلة والمساندات</span>
-          <b>الموسوعة الفعلية</b>
+          <b>70 سجلاً فعلياً من ملفك</b>
         </div>
         <Input value={query} onChange={event => setQuery(event.target.value)} placeholder="مثال: اعتماد، RFI، زيادة كميات، FIDIC، تعليق، توريد، تزامن…" />
         <div className="case-catalog-toolbar">
           <div><Label><SlidersHorizontal size={14} />المنهج المرجح</Label><Select value={methodFilter} onValueChange={value => setMethodFilter(value as AnalysisMethod | "all")}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل المناهج</SelectItem>{methods.map(method => <SelectItem key={method.id} value={method.id}>{method.label}</SelectItem>)}</SelectContent></Select></div>
           <div><Label><FileText size={14} />تصنيف الواقعة</Label><Select value={categoryFilter} onValueChange={setCategoryFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل التصنيفات</SelectItem>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select></div>
+          <div><Label><LibraryBig size={14} />نوع السجل</Label><Select value={recordFamilyFilter} onValueChange={value => setRecordFamilyFilter(value as WorkbookRecordFamily)}><SelectTrigger aria-label="نوع السجل"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل السجلات: 70</SelectItem><SelectItem value="delay">حالات التأخير D: 55</SelectItem><SelectItem value="support">سجلات داعمة DIS/CON/VAR/RES: 15</SelectItem></SelectContent></Select></div>
           <p><b>{matchingCases.length}</b> نتيجة من أصل {libraryCases.length} سجل مفهرس</p>
         </div>
+        <p className="catalog-record-legend"><b>كيف تقرأ القائمة:</b> سجلات <code>D</code> هي حالات التأخير المنظمة في المصدر؛ أما <code>DIS</code> و<code>CON</code> و<code>VAR</code> و<code>RES</code> فهي سجلات داعمة مرتبطة بالتعطيل أو التزامن أو التغيير أو الموارد، ولا تتحول تلقائياً إلى حالة TIA.</p>
 
         <div className="case-result-grid rich-case-grid">
           {matchingCases.length ? matchingCases.map(caseItem => {
