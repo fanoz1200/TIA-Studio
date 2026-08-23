@@ -70,7 +70,7 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
 
     expect(screen.getByRole("heading", { name: "مكتبة المنهجيات والحالات العملية" })).toBeTruthy();
-    expect(screen.getByText(/حالة مفهرسة/)).toBeTruthy();
+    expect(screen.getByText(/سجل مفهرس/)).toBeTruthy();
     expect(screen.getByText(/ابحث في العناوين والوصف والأدلة والمساندات/)).toBeTruthy();
     expect(screen.getByText(/نتيجة من أصل/)).toBeTruthy();
     expect(screen.getAllByText(/المصدر المرجعي محمّل للقراءة فقط/).length).toBeGreaterThan(0);
@@ -96,16 +96,23 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     expect(screen.getAllByRole("heading", { name: "رحلة TIA في ثماني ثوانٍ" }).at(-1)).toBeTruthy();
   });
 
-  it("يقرأ الحالات التفصيلية من ملف Excel المرجعي ويعرض قوانينها وأدلتها وحلولها", async () => {
+  it("يقرأ السجلات التفصيلية من ملف Excel الجديد ويعرض قوانينها وأدلتها وحلولها", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
 
-    expect((await screen.findAllByText("55 حالة Excel تفصيلية")).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/تنتظر 33 حالة إضافية ملف المصدر/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("حالة Excel تفصيلية").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("70 سجل Excel تفصيلي").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/55 حالة من سلسلة D/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("المساند التعاقدي والقوانين المذكورة في المصدر").length).toBeGreaterThan(0);
     expect(screen.getAllByText("الأدلة والمستندات المقترحة").length).toBeGreaterThan(0);
     expect(screen.getAllByText("الحل المقترح").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("قواعد TIA وFragnet").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("WBS و Fragnet وقواعد TIA").length).toBeGreaterThan(0);
+  });
+
+  it("يعرض أوراق الدعم الثمانية والروابط الداخلية المنسوخة من ملف Excel", () => {
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    expect(screen.getAllByRole("heading", { name: "إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("tab").length).toBe(8);
+    expect(screen.getAllByText("الروابط الداخلية الواردة في المصدر").length).toBeGreaterThan(0);
   });
 
   it("يعرض دليلي التدريب النصيين لرفع P6 وإدخال Excel إلى حين توفر الفيديوهين المستقلين", () => {

@@ -1,0 +1,328 @@
+# جرد ملف Master Claim Intelligence الجديد
+
+> **مبدأ القراءة:** هذا التقرير يصف الملف المرفوع كما هو قبل دمج أي نص أو قاعدة في تطبيق TIA Studio. لا يحول رقم بند أو رابطاً أو مثالاً إلى استحقاق قانوني تلقائي.
+
+| الخاصية | النتيجة |
+|---|---|
+| الملف | `pasted_file_pJ8TCu_Master_Claim_Intelligence.xlsx` |
+| الحجم | 219,406 بايت |
+| عدد الأوراق | 9 |
+| الصيغ المكتشفة | 0 |
+| الارتباطات التشعبية | 99 |
+| معرفات D الظاهرة | D-001، D-002، D-003، D-004، D-005، D-006، D-007، D-008، D-009، D-010، D-011، D-012، D-013، D-014، D-015، D-016، D-017، D-018، D-019، D-020، D-021، D-022، D-023، D-024، D-025، D-026، D-027، D-028، D-029، D-030، D-031، D-032، D-033، D-034، D-035، D-036، D-037، D-038، D-039، D-040، D-041، D-042، D-043، D-044، D-045، D-046، D-047، D-048، D-049، D-050، D-051، D-052، D-053، D-054، D-055، D-101، D-401 |
+
+## بنية الأوراق
+
+### 00_How_to_Use
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:F19 | 15 | 5 | 0 | 20 |
+
+**رؤوس أو أول صف محتوى:** `A`: 00 — How to Use This Workbook | دليل الاستخدام التفاعلي.
+
+**معرفات D الظاهرة:** لا يوجد.
+
+**معاينة أولية للصفوف:**
+
+- 00 — How to Use This Workbook | دليل الاستخدام التفاعلي
+- Scenario-based routing guide · Find the right tab for your situation
+- هذا الدليل يوجّهك إلى التبويب الصحيح بناءً على سيناريو عملك. ابحث عن السيناريو الأقرب في العمود الثاني، ثم انتقل إلى التبويب المذكور في العمود الأخير. كل تبويب يحتوي على أدوات تفاعلية وروابط داخلية.
+- # | Scenario | السيناريو | Action Required | الإجراء المطلوب | Target Tab | التبويب الهدف | Open
+- 1 | Understand my delay type | فهم نوع التأخير | Read Categories & Types in the Case Library. Filter by Category or Delay Type column. | 02_Case_Library | → Open
+- 2 | Submit a new EOT Claim | تقديم مطالبة EOT جديدة | Find the most similar case in Case Library, then copy the corresponding template from Templates tab. | 02_Case_Library + 04_Templates | → Open
+- 3 | Consultant rejected my claim | رفض الاستشاري المطالبة | Find the matching objection in Objections Library and use the technical/legal rebuttal. | 03_Objections_Rebuttals | → Open
+- 4 | Audit the P6 Schedule | تدقيق الجدول الزمني | Use the DCMA 14-Point Checklist. Apply Logic Check and Progress Check. | 01_Forensic_Audit | → Open
+
+**الروابط:**
+
+- `E8`: 02_Case_Library → #'02_Case_Library'!A1
+- `F8`: → Open → #'02_Case_Library'!A1
+- `E9`: 02_Case_Library + 04_Templates → #'02_Case_Library'!A1
+- `F9`: → Open → #'02_Case_Library'!A1
+- `E10`: 03_Objections_Rebuttals → #'03_Objections_Rebuttals'!A1
+- `F10`: → Open → #'03_Objections_Rebuttals'!A1
+- `E11`: 01_Forensic_Audit → #'01_Forensic_Audit'!A1
+- `F11`: → Open → #'01_Forensic_Audit'!A1
+- `E12`: 01_Forensic_Audit → #'01_Forensic_Audit'!A1
+- `F12`: → Open → #'01_Forensic_Audit'!A1
+- `E13`: 05_Quantum_Calculations → #'05_Quantum_Calculations'!A1
+- `F13`: → Open → #'05_Quantum_Calculations'!A1
+- `E14`: 02_Case_Library → #'02_Case_Library'!A1
+- `F14`: → Open → #'02_Case_Library'!A1
+- `E15`: 02_Case_Library → #'02_Case_Library'!A1
+- `F15`: → Open → #'02_Case_Library'!A1
+- `E16`: 00_Decision_Tree → #'00_Decision_Tree'!A1
+- `F16`: → Open → #'00_Decision_Tree'!A1
+- `E17`: 06_Final_Checklist → #'06_Final_Checklist'!A1
+- `F17`: → Open → #'06_Final_Checklist'!A1
+
+### 00_Decision_Tree
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:G41 | 36 | 6 | 0 | 5 |
+
+**رؤوس أو أول صف محتوى:** `A`: 00 — Decision Tree | شجرة القرارات لاختيار المنهجية.
+
+**معرفات D الظاهرة:** لا يوجد.
+
+**معاينة أولية للصفوف:**
+
+- 00 — Decision Tree | شجرة القرارات لاختيار المنهجية
+- Strict Logic · Q1 → Q2 → Q3 · Do not invent new logic
+- هذه شجرة قرارات صارمة لاختيار منهجية تحليل التأخير المناسبة. اتبع الأسئلة بالترتيب: Q1 → Q2 → Q3. لا تخترع منطقاً جديداً. كل سؤال له إجابات محددة تؤدي إلى منهجية واضحة.
+- Step | Question | السؤال | Answer Option | خيار الإجابة | Decision | القرار | Methodology | المنهجية | Tab Reference
+- Q1 | Is the project finished? هل المشروع منتهٍ؟ | Yes — Project completed | نعم، المشروع منتهٍ | Retrospective Analysis | تحليل بأثر رجعي | Windows Analysis | 02_Case_Library
+- Q1 | Is the project finished? | No — Project is Ongoing | لا، المشروع جارٍ | Go to Q2 | انتقل إلى Q2 | (Continue) | → Q2
+- Q2 | Is the impact on the Critical Path clear now? هل الأثر على المسار الحرج واضح الآن؟ | Yes — CP impact is clear | نعم، الأثر واضح | Prospective Analysis | تحليل استشرافي | TIA (Time Impact Analysis) | 02_Case_Library
+- Q2 | Is the impact on the Critical Path clear now? | No — Impact not yet materialized | لا، الأثر لم يتجسد بعد | Use Periodic Updates | تحديثات دورية | Periodic TIA (Monthly Updates) | 02_Case_Library
+
+**الروابط:**
+
+- `G8`: 02_Case_Library → #'02_Case_Library'!A1
+- `G10`: 02_Case_Library → #'02_Case_Library'!A1
+- `G11`: 02_Case_Library → #'02_Case_Library'!A1
+- `G12`: 05_Quantum_Calculations → #'05_Quantum_Calculations'!A1
+- `G13`: 02_Case_Library → #'02_Case_Library'!A1
+
+### 00_Dashboard
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:O126 | 115 | 14 | 0 | 74 |
+
+**رؤوس أو أول صف محتوى:** `A`: Master Claim Intelligence — لوحة التحكم الرئيسية.
+
+**معرفات D الظاهرة:** D-001، D-002، D-003، D-004، D-005، D-006، D-007، D-008، D-009، D-010، D-011، D-012، D-013، D-014، D-015، D-016، D-017، D-018، D-019، D-020، D-021، D-022، D-023، D-024، D-025، D-026، D-027، D-028، D-029، D-030، D-031، D-032، D-033، D-034، D-035، D-036، D-037، D-038، D-039، D-040، D-041، D-042، D-043، D-044، D-045، D-046، D-047، D-048، D-049، D-050، D-051، D-052، D-053، D-054، D-055.
+
+**معاينة أولية للصفوف:**
+
+- Master Claim Intelligence — لوحة التحكم الرئيسية
+- Forensic Delay Analysis Academy for Planners | FIDIC Arbitration Reference
+- 70 | 40 | 14 | 9 | 4 | 6 | 5
+- Total Cases | Owner/Consultant | Contractor | Disruption | Concurrent | Force Majeure | Supplier
+- ▌ شجرة القرارات | Decision Tree — Methodology Selection
+- # | السؤال / الفرع (AR) | Question / Branch (EN)
+- Q1 | متى وقع الحدث المؤثر؟ | When did the delaying event occur? | —
+- → | حدث مستقبلي قادم (لم يقع بعد) | Future event (prospective) | Use TIA
+
+**الروابط:**
+
+- `B33`: 01_Forensic_Audit → #'01_Forensic_Audit'!A1
+- `B34`: 02_Case_Library → #'02_Case_Library'!A1
+- `B35`: 03_Objections_Rebuttals → #'03_Objections_Rebuttals'!A1
+- `B36`: 04_Templates → #'04_Templates'!A1
+- `B41`: D-036 → #'02_Case_Library'!A1
+- `B42`: D-037 → #'02_Case_Library'!A1
+- `B43`: D-038 → #'02_Case_Library'!A1
+- `B44`: D-039 → #'02_Case_Library'!A1
+- `B45`: D-040 → #'02_Case_Library'!A1
+- `B46`: D-041 → #'02_Case_Library'!A1
+- `B47`: D-042 → #'02_Case_Library'!A1
+- `B48`: D-043 → #'02_Case_Library'!A1
+- `B49`: D-044 → #'02_Case_Library'!A1
+- `B50`: D-045 → #'02_Case_Library'!A1
+- `B52`: DIS-001 → #'02_Case_Library'!A1
+- `B53`: DIS-002 → #'02_Case_Library'!A1
+- `B54`: DIS-003 → #'02_Case_Library'!A1
+- `B55`: DIS-004 → #'02_Case_Library'!A1
+- `B56`: DIS-005 → #'02_Case_Library'!A1
+- `B57`: DIS-006 → #'02_Case_Library'!A1
+- `B58`: DIS-007 → #'02_Case_Library'!A1
+- `B59`: DIS-008 → #'02_Case_Library'!A1
+- `B60`: DIS-009 → #'02_Case_Library'!A1
+- `B62`: D-010 → #'02_Case_Library'!A1
+- `B63`: D-011 → #'02_Case_Library'!A1
+- `B64`: D-012 → #'02_Case_Library'!A1
+- `B65`: D-013 → #'02_Case_Library'!A1
+- `B66`: D-014 → #'02_Case_Library'!A1
+- `B67`: VAR-001 → #'02_Case_Library'!A1
+- `B68`: RES-001 → #'02_Case_Library'!A1
+- `B70`: D-001 → #'02_Case_Library'!A1
+- `B71`: D-002 → #'02_Case_Library'!A1
+- `B72`: D-003 → #'02_Case_Library'!A1
+- `B73`: D-004 → #'02_Case_Library'!A1
+- `B74`: D-005 → #'02_Case_Library'!A1
+- `B76`: D-006 → #'02_Case_Library'!A1
+- `B77`: D-007 → #'02_Case_Library'!A1
+- `B78`: D-008 → #'02_Case_Library'!A1
+- `B79`: D-009 → #'02_Case_Library'!A1
+- `B80`: D-015 → #'02_Case_Library'!A1
+- `B82`: D-046 → #'02_Case_Library'!A1
+- `B83`: D-047 → #'02_Case_Library'!A1
+- `B84`: D-048 → #'02_Case_Library'!A1
+- `B85`: D-049 → #'02_Case_Library'!A1
+- `B86`: D-050 → #'02_Case_Library'!A1
+- `B88`: D-051 → #'02_Case_Library'!A1
+- `B89`: D-052 → #'02_Case_Library'!A1
+- `B90`: D-053 → #'02_Case_Library'!A1
+- `B91`: D-054 → #'02_Case_Library'!A1
+- `B92`: D-055 → #'02_Case_Library'!A1
+- `B94`: D-019 → #'02_Case_Library'!A1
+- `B95`: D-020 → #'02_Case_Library'!A1
+- `B96`: D-021 → #'02_Case_Library'!A1
+- `B97`: D-022 → #'02_Case_Library'!A1
+- `B99`: CON-001 → #'02_Case_Library'!A1
+- `B100`: CON-002 → #'02_Case_Library'!A1
+- `B101`: CON-003 → #'02_Case_Library'!A1
+- `B102`: CON-004 → #'02_Case_Library'!A1
+- `B104`: D-016 → #'02_Case_Library'!A1
+- `B105`: D-017 → #'02_Case_Library'!A1
+- `B106`: D-018 → #'02_Case_Library'!A1
+- `B108`: D-023 → #'02_Case_Library'!A1
+- `B109`: D-024 → #'02_Case_Library'!A1
+- `B110`: D-025 → #'02_Case_Library'!A1
+- `B112`: D-026 → #'02_Case_Library'!A1
+- `B113`: D-027 → #'02_Case_Library'!A1
+- `B114`: D-028 → #'02_Case_Library'!A1
+- `B116`: D-029 → #'02_Case_Library'!A1
+- `B117`: D-030 → #'02_Case_Library'!A1
+- `B118`: D-031 → #'02_Case_Library'!A1
+- `B120`: D-032 → #'02_Case_Library'!A1
+- `B121`: D-033 → #'02_Case_Library'!A1
+- `B123`: D-034 → #'02_Case_Library'!A1
+- `B124`: D-035 → #'02_Case_Library'!A1
+
+### 01_Forensic_Audit
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:J46 | 39 | 9 | 0 | 0 |
+
+**رؤوس أو أول صف محتوى:** `A`: 01 — Forensic Schedule Audit v2.0 | قائمة تدقيق فحص الجدول الزمني.
+
+**معرفات D الظاهرة:** لا يوجد.
+
+**معاينة أولية للصفوف:**
+
+- 01 — Forensic Schedule Audit v2.0 | قائمة تدقيق فحص الجدول الزمني
+- DCMA 14-Point Check · Logic Check · Progress Check · P6 Remediation (Click-by-Click)
+- يجب إجراء هذه القائمة التدقيق (Schedule Audit) قبل أي تحليل تأخير. الهدف: التأكد من سلامة الجدول الزمني المحدث (Statused Program) وعدم وجود تلاعب في الـ Logic قبل إدخال الـ Fragnet. أي فشل في هذه النقاط يُضعف موقف المطالبة في التحكيم ويعرضها للاعتراض.
+- ▌ DCMA 14-Point Assessment with P6 Remediation Steps | قائمة فحص الـ 14 نقطة مع خطوات الإصلاح
+- # | Check Point | نقطة الفحص | Threshold | الحد | Description | الوصف | Status | Risk Level | Action | الإجراء | P6 Remediation Steps (Click-by-Click) | خطوات الإصلاح في P6 | Pass?
+- 1 | Logic | الفحص المنطقي | 100% Logic | كل الأنشطة (عدا Milestone) يجب أن لها Predecessor و Successor. لا توجد أنشطة معلقة (Dangling Activities). | Must | Critical | إضافة علاقات منطقية صحيحة. حذف الـ open ends. | P6 Fix for Open Ends: 1. Go to View > Filter > Open Ends (or Filter > New: Predecessors = 0 OR Successors = 0). 2. Select the open-end activity in the Activities list. 3. Go to Activity Details (bottom pane) > Relationships tab. 4. Click 'Add' in the Predecessors section → select the logical predecessor activity → Type: FS → Lag: 0. 5. Click 'Add' in the Successors section → select the logical successor activity → Type: FS → Lag: 0. 6. Repeat for each open-end activity. 7. Press F9 to re-schedule. 8. Re-run the Open Ends filter to confirm resolution. | Pass/Fail
+- 2 | Hard Constraints | القيود الصلبة | < 5% | نسبة الأنشطة ذات القيود الصلبة (MFO, MSO, FONL, SONL) يجب ألا تتجاوز 5% من إجمالي الأنشطة. | Should | High | استبدال القيود بعلاقات منطقية كلما أمكن. | P6 Fix for Hard Constraints: 1. Add 'Constraint Type' column (View > Columns > Constraint Type). 2. Click the column header > Filter > Custom > select 'Must Finish On', 'Must Start On', 'Finish On or Before', etc. 3. Select the constrained activity in the Activities list. 4. Go to Activity Details > Status tab. 5. In the Constraints section, change Primary Constraint to 'As Late As Possible' (ALAP) OR clear the constraint entirely. 6. If the constraint was protecting a contractual milestone, replace it with a Finish-to-Start relationship to a Milestone activity. 7. Press F9 to re-schedule. 8. Re-check the % of constrained activities. | Pass/Fail
+- 3 | Relationship Types | أنواع العلاقات | > 90% FS | نسبة علاقات Finish-to-Start يجب أن تتجاوز 90%. الإفراط في SS/FF/SF قد يدل على تلاعب. | Should | Medium | مراجعة العلاقات غير FS وتبريرها فنياً. | P6 Fix for Non-FS Relationships: 1. Go to View > Columns > add 'Relationship Type' or filter via Schedule Log (Tools > Schedule > View Log). 2. Identify all SS, FF, SF relationships. 3. For each non-FS relationship, right-click the activity > Activity Details > Relationships. 4. Review the relationship: change Type from SS/FF/SF to FS where logically correct. 5. Add appropriate Lag if needed (e.g., SS+5d may become FS with predecessor finishing 5 days before). 6. For justified SS (e.g., pipeline construction), document the rationale in the Activity Note. 7. Press F9 to re-schedule. 8. Verify FS ratio is now > 90%. | Pass/Fail
+
+
+
+### 02_Case_Library
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:W77 | 74 | 22 | 0 | 0 |
+
+**رؤوس أو أول صف محتوى:** `A`: 02 — Case Library v2.0 | مكتبة الحالات الموحدة.
+
+**معرفات D الظاهرة:** D-001، D-002، D-003، D-004، D-005، D-006، D-007، D-008، D-009، D-010، D-011، D-012، D-013، D-014، D-015، D-016، D-017، D-018، D-019، D-020، D-021، D-022، D-023، D-024، D-025، D-026، D-027، D-028، D-029، D-030، D-031، D-032، D-033، D-034، D-035، D-036، D-037، D-038، D-039، D-040، D-041، D-042، D-043، D-044، D-045، D-046، D-047، D-048، D-049، D-050، D-051، D-052، D-053، D-054، D-055، D-101، D-401.
+
+**معاينة أولية للصفوف:**
+
+- 02 — Case Library v2.0 | مكتبة الحالات الموحدة
+- 70 cases · Fragnet Protocol · TIA/Baseline · Calendars · Float · Burden of Proof · Ongoing Event Procedure
+- مكتبة موحدة لجميع حالات التأخير. كل حالة تحتوي على: (1) بروتوكول Fragnet كامل، (2) قواعد TIA/Baseline/Calendar/Float الإلزامية، (3) عمود Burden of Proof جديد يحدد 5-7 وثائق مطلوبة للإثبات، (4) إجراءات Ongoing Event Procedure موحدة. القواعد: استخدام آخر Statused Program وليس Baseline. Schedule Audit قبل التحليل. تقويم مناسب (5d/7d/24h). Fragnet يجب أن يثبت استهلاك Float وتحويل النشاط إلى Critical Path.
+- Case ID | العنوان (AR) | Title (EN) | Category | التصنيف | Delay Type | Methodology | Description | الوصف | Root Cause | الأسباب الجذرية | Schedule Impact | الأثر | Recommended Solution | الحل | Mitigation | الوقاية | Contractual Basis | الأساس التعاقدي | Fragnet ID | WBS Code | Fragnet Activities | أنشطة الـ Fragnet | Fragnet Protocol | بروتوكول Fragnet | TIA/Baseline Rule | قاعدة TIA | Calendar Rule | قاعدة التقويم | Float Rule | قاعدة الـ Float | Burden of Proof (Required Evidence) | عبء الإثبات 🆕 | Update Procedure | إجراء التحديث (with Ongoing Event Block) | Recovery Procedure | الاستدراك
+- D-001 | تأخير اعتماد اللوحات الإنشائية التنفيذية | Late Approval of Structural Shop Drawings | اعتماد اللوحات التنفيذية (Shop Drawings & Submittals Approval) | Owner/Consultant Delay | TIA | في المشروع الإنشائي النموذجي، يُقدّم المقاول Shop Drawings للعناصر الإنشائية كالأعمدة والبلاطات والجسور إلى الاستشاري للمراجعة والاعتماد قبل البدء في التنفيذ. المدة المتفق عليها في العقد عادةً 7-14 يوماً للمراجعة. في حالات كثيرة يتأخر الاستشاري في الاعتماد لأسباب تشمل ضغط العمل لدى الاستشاري، أو نقص في كادر المراجعة، أو طلب تعديلات متكررة. النتيجة: توقف أعمال النجارة والحديد وصب الخرسانة حتى صدور الاعتماد، مما يسبب تأخير تسلسلي في كل الأنشطة اللاحقة المعتمدة على الصب. | الأسباب الجذرية تشمل: (1) ضغط العمل لدى مكتب الاستشاري بسبب مشاريع متعددة في نفس الوقت، (2) غياب نظام تتبع تلقائي لمهل المراجعة، (3) عدم كفاءة فريق المراجعة في بعض التخصصات، (4) طلب تعديلات لا أساس لها من اللوحات التصميمية الأصلية، (5) عدم وجود Penalty Clause على الاستشاري لتأخير المراجعة. | تأخير اعتماد Shop Drawings لمدة 14 يوماً إضافية على الأعمدة النموذجية يسبب تأخيراً مباشراً في صب الأعمدة والبلاطات لكل دور. بافتراض دور واحد = 7 أيام صب، فإن تأخير 14 يوماً في اعتماد النموذج يعني تأخير مباشر في 12 دوراً نموذجياً بمقدار 14 يوماً (Total Float = 0 on critical path). كذلك، تأخير الاعتماد يسبب تسريح العمالة المتخصصة (نجارين/حديد) وإعادة استقدامها مما يزيد التكلفة. | الاستراتيجية الموصى بها: (1) تضمين بند في العقد يُلزم الاستشاري بالرد خلال مدة محددة (7 أيام)، وإلا اعتُبرت اللوحات معتمدة تلقائياً (Deemed Approved). (2) تقديم Shop Drawings على دفعات (Batch Submission) بدلاً من دفعة واحدة. (3) عقد اجتماع أسبوعي للمراجعة المشتركة (Joint Review Meeting). (4) إرسال تذكير تلقائي قبل انتهاء مهلة المراجعة بـ 48 ساعة. (5) توثيق كل تأخير في رسائل رسمية للحفاظ على حقوق الـ EOT (Extension of Time). | للوقاية: (1) إعداد Shop Drawings بدقة عالية من البداية لتقليل دورات المراجعة، (2) تعيين Coordinator مخصص لمتابعة الـ Submittals، (3) استخدام نظام إلكتروني (Aconex / Procore) لتتبع حالة كل Submittal، (4) بناء علاقة عمل احترافية مع فريق الاستشاري لتسهيل التواصل. | FIDIC Red Book 1999 — Sub-Clause 5.1 (General Design Responsibilities) و Sub-Clause 5.2 (Contractor's Documents). Sub-Clause 8.4 (Extension of Time) تمنح المقاول حق تمديد المدة في حال تأخير الاستشاري في اعتماد الوثائق. Sub-Clause 20.1 (Contractor's Claims) توجب إرسال إشعار خلال 28 يوماً من وقوع الحدث المسبّب للتأخير. | FR-001 | 1.4.1 | ▌بروتوكول الـ Fragnet: • يمنع استخدام نشاط تأخير واحد (DLY-XXX). • أكواد الـ Fragnet: FR-XXX_A, FR-XXX_B, FR-XXX_C ... • WBS مخصص: 1.4 Delay Fragnets تحت 1.4 Delay Fragnets. • كل Fragnet = سلسلة أنشطة متصلة (Submit → Review → Approve → Impact). | ▌قاعدة TIA والـ Baseline: يتم استخدام آخر برنامج زمني محدث ومعتمد (Statused/Updated Program) وليس الـ Baseline الأصلي. يجب إجراء Schedule Audit للتأكد من عدم تلاعب المقاول في الـ Logic قبل إدخال الـ Fragnet. تحقق من: عدم إضافة علاقات وهمية، عدم حذف علاقات حقيقية، عدم تغيير الم durations الأصلية للأنشطة المنفذة. | ▌قاعدة التقويم (Calendars): • 5 أيام/أسبوع (Standard) → للتأخيرات الإدارية (اعتماد لوحات، RFI، مستخلصات، تصاريح). • 7 أيام/أسبوع (24-Hour) → لتأخيرات الموقع (صب خرسانة، أعمال حرجة، تأخير المالك للموقع). • يجب أن يكون تقويم الـ Fragnet مطابقاً لتقويم النشاط المتأثر. | ▌قاعدة استهلاك الـ Float: الـ Fragnet يجب أن يثبت استهلاك الـ Total Float وتحويل النشاط إلى Critical Path للحصول على EOT. إذا استمر النشاط يحمل Float بعد إدخال الـ Fragnet، فلا يحق للنشاط المطالبة بـ EOT (وفقاً لـ SCL Protocol). Float ownership: وفقاً لـ SCL Protocol → الـ Float ملك للمشروع (Project Float). | 1. Submittal Log with submission/review/approval dates (Aconex/Procore export). 2. Consultant's Comment Sheets with codes (A=Approved, B=Approved with Comments, C=Resubmit, D=Rejected). 3. Site Diary noting work stoppage due to pending approval. 4. TIA Report showing Critical Path impact (Before/After comparison). 5. Correspondence bundle (Letters/Emails) chasing the approval. 6. Photographs of idle crews/equipment during wait period. 7. Re-submission records if revisions were requested. | عند وقوع التأخير: 1. افتح P6 > Activities > اختر النشاط SD-T02 (Consultant Review Period). 2. حدّث Actual Start = تاريخ الاستلام الفعلي، Actual Finish = تاريخ الاعتماد الفعلي. 3. سيلاحظ النظام أن Actual Duration = 21 (بدلاً من 7 المخططة). 4. أنشئ نشاطاً جديداً DLY-001 تحت WBS '1.3 Delay Events' بنوع Task Activity. 5. اربط DLY-001 بنشاط SD-T02 بعلاقة FS (هذا يُوثّق التأخير منفصلاً). 6. اربط DLY-001 بنشاط A3100 (بداية العمل) بعلاقة FS. 7. شغّل F9 لإعادة الجدولة (Schedule). 8. راجع تاريخ انتهاء المشروع - ستجده تأخر 14 يوماً. 9. اطبع تقرير Schedule Comparison (Baseline vs Current) لإرفاقه مع Claim. ▌إجراءات الحدث المستمر (Ongoing Event Procedure): إذا كان الحدث مستمراً (لم ينتهِ بعد): لا تقدم المطالبة النهائية الآن. 1. أرسل Initial Notice خلال 28 يوماً من بدء الحدث (FIDIC 20.1). 2. قدّم Periodic TIA updates شهرياً استناداً إلى آخر Statused Schedule معتمد (Data Date محدثة). 3. قدّم Final Claim مع تفاصيل Quantum الكاملة فقط بعد انتهاء الحدث وتأثيراته بالكامل. 4. احتفظ بسجلات دورية (Site Diary, Photos, Correspondence) لكل فترة تحديث. | استراتيجيات الاستدراك: 1. خفض مدة Formwork من 6 إلى 5 أيام (إضافة عمالة إضافية). 2. خفض مدة Slab Formwork من 10 إلى 8 أيام (نظام Table Form بدلاً من Conventional). 3. Crashing: إضافة فريق عمل ثانٍ للعمل على أدوار متعددة بالتوازي. 4. Fast Tracking: بدء Block Walls وMEP Rough-in قبل انتهاء Cast Slab (تحويل علاقات FS إلى SS+lag). 5. تطبيق Recovery في P6: أنشئ نسخة من الـ Project باسم 'Recovery Schedule' وطبّق التعديلات. 6. قارن As-Built vs Recovery للتأكد من إغلاق الفجوة. ← للعودة للفهرس | Back to Index
+- D-002 | تأخير اعتماد لوحات MEP التنفيذية | Late Approval of MEP Shop Drawings | اعتماد اللوحات التنفيذية (Shop Drawings & Submittals Approval) | Owner/Consultant Delay | TIA | لوحات MEP (Mechanical, Electrical, Plumbing) أعقد من اللوحات الإنشائية لأنها تتطلب Coordination بين التخصصات الثلاثة + Coordination مع الهيكل + الجماليات المعمارية. عادةً يطلب الاستشاري عدة دورات من المراجعة. الإشكالية الأكبر: التأخير في اعتماد MEP يؤدي إلى عدم قدرة المقاول على بدء أعمال Sleeves, Block-outs, Hangers، مما يسبب تأخيراً في كل أعمال MEP اللاحقة. | (1) تعقيد Coordination بين التخصصات (MEP Clash Detection). (2) تأخير توريد معلومات التصميم من المصمم الأصلي. (3) عدم وضوح مسؤوليات المراجعة بين الاستشاري والمصمم. (4) غياب BIM Model موحّد للمراجعة. (5) تغييرات المالك على Layout الذي يلغي shop drawings المعتمدة سابقاً. | تأخير اعتماد MEP Shop Drawings لمدة 21 يوماً يسبب تأخيراً في بدء MEP Rough-in. بما أن MEP Roughin يعمل بالتوازي مع الأعمال الإنشائية (SS relationship)، فإن التأخير في بدئه قد لا يظهر مباشرة على Critical Path، لكنه يسبب ضغطاً كبيراً في نهاية المشروع عند بدء Finishes التي تعتمد على MEP First Fix. قد يتحول MEP إلى Critical Path في 60-70% من المشاريع المتأخرة. | (1) عقد ورش Coordination أسبوعية تجمع المقاول + الاستشاري + المصمم. (2) استخدام BIM (Revit + Navisworks) للـ Clash Detection قبل التقديم للاستشاري. (3) تقسيم الـ Submittals حسب المناطق (Zone-wise) بدلاً من المشروع كاملاً. (4) الاتفاق على مهلة صارمة: 7 أيام للمراجعة الأولى، 3 أيام للمراجعة بعد التعديل. (5) في حالة عدم الرد خلال المهلة، إرسال إشعار Deemed Approved. | (1) توظيف MEP Coordinator مختص. (2) إعداد Shop Drawings على Revit مباشرة لتحسين الجودة. (3) إجراء Clash Detection داخلي قبل الإرسال للاستشاري. (4) توثيق كل دورة مراجعة لتسريع المراجعات اللاحقة. | FIDIC Red Book Sub-Clause 5.1 + Sub-Clause 8.4(a) — delay by the Engineer. Sub-Clause 1.9 (Delayed Drawings or Instructions) يمنح المقاول حق EOT + Cost + Reasonable Profit. | FR-002 | 1.4.2 | ▌بروتوكول الـ Fragnet: • يمنع استخدام نشاط تأخير واحد (DLY-XXX). • أكواد الـ Fragnet: FR-XXX_A, FR-XXX_B, FR-XXX_C ... • WBS مخصص: 1.4 Delay Fragnets تحت 1.4 Delay Fragnets. • كل Fragnet = سلسلة أنشطة متصلة (Submit → Review → Approve → Impact). | ▌قاعدة TIA والـ Baseline: يتم استخدام آخر برنامج زمني محدث ومعتمد (Statused/Updated Program) وليس الـ Baseline الأصلي. يجب إجراء Schedule Audit للتأكد من عدم تلاعب المقاول في الـ Logic قبل إدخال الـ Fragnet. تحقق من: عدم إضافة علاقات وهمية، عدم حذف علاقات حقيقية، عدم تغيير الم durations الأصلية للأنشطة المنفذة. | ▌قاعدة التقويم (Calendars): • 5 أيام/أسبوع (Standard) → للتأخيرات الإدارية (اعتماد لوحات، RFI، مستخلصات، تصاريح). • 7 أيام/أسبوع (24-Hour) → لتأخيرات الموقع (صب خرسانة، أعمال حرجة، تأخير المالك للموقع). • يجب أن يكون تقويم الـ Fragnet مطابقاً لتقويم النشاط المتأثر. | ▌قاعدة استهلاك الـ Float: الـ Fragnet يجب أن يثبت استهلاك الـ Total Float وتحويل النشاط إلى Critical Path للحصول على EOT. إذا استمر النشاط يحمل Float بعد إدخال الـ Fragnet، فلا يحق للنشاط المطالبة بـ EOT (وفقاً لـ SCL Protocol). Float ownership: وفقاً لـ SCL Protocol → الـ Float ملك للمشروع (Project Float). | 1. Submittal Log with submission/review/approval dates (Aconex/Procore export). 2. Consultant's Comment Sheets with codes (A=Approved, B=Approved with Comments, C=Resubmit, D=Rejected). 3. Site Diary noting work stoppage due to pending approval. 4. TIA Report showing Critical Path impact (Before/After comparison). 5. Correspondence bundle (Letters/Emails) chasing the approval. 6. Photographs of idle crews/equipment during wait period. 7. Re-submission records if revisions were requested. | 1. افتح نشاط MEP-SD-04 (المخطط للمراجعة). 2. سجّل Actual Duration = 28 بدلاً من 7. 3. أنشئ نشاط DLY-MEP-01 لتوثيق التأخير البالغ 21 يوماً. 4. اربطه بنشاط B2010 بعلاقة FS لتأجيل البدء. 5. أعد الجدولة (F9) وراقب تحوّل MEP إلى Critical Path. 6. اطبع Schedule Log للتحقق من Critical Path Length. ▌إجراءات الحدث المستمر (Ongoing Event Procedure): إذا كان الحدث مستمراً (لم ينتهِ بعد): لا تقدم المطالبة النهائية الآن. 1. أرسل Initial Notice خلال 28 يوماً من بدء الحدث (FIDIC 20.1). 2. قدّم Periodic TIA updates شهرياً استناداً إلى آخر Statused Schedule معتمد (Data Date محدثة). 3. قدّم Final Claim مع تفاصيل Quantum الكاملة فقط بعد انتهاء الحدث وتأثيراته بالكامل. 4. احتفظ بسجلات دورية (Site Diary, Photos, Correspondence) لكل فترة تحديث. | 1. Overlap: تحويل علاقة MEP Rough-in من FS إلى SS+lag مع Finishes. 2. تسريع Material Procurement: طلب مسبق للـ Ducts و Cables. 3. إضافة فرق عمل مسائية (Night Shift) لأعمال MEP. 4. تطبيق Zone-wise Handover: تسليم كل دور مكتملاً بدلاً من المشروع كاملاً. 5. في P6: أنشئ 活动 'Recovery - MEP Acceleration' واربطه بنهاية MEP FS=0 لتقليل التأخير. ← للعودة للفهرس | Back to Index
+- D-003 | رفض متكرر للوحات التنفيذية | Repeated Rejection of Shop Drawings | اعتماد اللوحات التنفيذية (Shop Drawings & Submittals Approval) | Owner/Consultant Delay | TIA | في حالات كثيرة يرفض الاستشاري Shop Drawings المقدمة لأسباب تتعلق بالتفاصيل الفنية أو التناقض مع اللوحات التصميمية. الرفض المتكرر (3+ مرات) يسبب تأخيراً تراكمياً قد يصل إلى 60 يوماً. الإشكالية: لا يوجد حد أقصى لعدد دورات المراجعة في معظم العقود، مما يفتح باباً للتأخير غير المبرر. | (1) غياب Pre-Submission Meeting قبل إرسال الـ Shop Drawings. (2) سوء فهم متطلبات الاستشاري من قبل المقاول. (3) نقص في معلومات التصميم الأصلي (incomplete IFC drawings). (4) تكرار أخطاء بسيطة (Dimensions, Levels, Symbols) تشير لضعف QA/QC لدى المقاول. (5) تغيير متطلبات الاستشاري بين دورات المراجعة. | كل دورة رفض = 7-14 يوماً ضائعة (3 أيام تعديل + 7 أيام مراجعة + 2 يوم إعادة تقديم). ثلاث دورات رفض = 21-42 يوماً. الصورة الكاملة: التأخير التراكمي قد يصبح Non-Recoverable حتى مع Recovery Schedule، خاصةً إذا كان النشاط على Critical Path. | (1) عقد Pre-Submission Meeting لمناقشة المتطلبات قبل الإرسال. (2) تخصيص QA/QC Engineer لمراجعة داخلية صارمة قبل الإرسال. (3) استخدام Checklists معتمدة من الاستشاري. (4) بعد الرفض الثاني، طلب اجتماع مشترك لتحديد الأسباب الجذرية. (5) إذا كان الرفض لاسباب هندسية حقيقية، تحمّل التكلفة من المقاول. (6) إذا كان الرفض لأسباب تعسفية، توثيق وتقديم Claim. | (1) بناء فريق Design Coordination قوي من بداية المشروع. (2) إنشاء Submittal Register يراقب عدد دورات كل Submittal. (3) عقد Kick-off Meeting مع الاستشاري للاتفاق على Checklists. (4) استخدام Building Information Modeling (BIM) لتقليل التناقضات. | FIDIC Red Book Sub-Clause 5.2 (Contractor's Documents) — لا يحدد حد أقصى لعدد دورات المراجعة. Sub-Clause 1.9 (Delayed Drawings) يحمي المقاول فقط في حال تأخير الـ Engineer، لا في حال الرفض المتكرر. ينصح بتضمين بند في Particular Conditions يحدد حد أقصى لدورات المراجعة (مثلاً 3 دورات) بعدها يتم اللجوء إلى Dispute Resolution. | FR-003 | 1.4.3 | ▌بروتوكول الـ Fragnet: • يمنع استخدام نشاط تأخير واحد (DLY-XXX). • أكواد الـ Fragnet: FR-XXX_A, FR-XXX_B, FR-XXX_C ... • WBS مخصص: 1.4 Delay Fragnets تحت 1.4 Delay Fragnets. • كل Fragnet = سلسلة أنشطة متصلة (Submit → Review → Approve → Impact). | ▌قاعدة TIA والـ Baseline: يتم استخدام آخر برنامج زمني محدث ومعتمد (Statused/Updated Program) وليس الـ Baseline الأصلي. يجب إجراء Schedule Audit للتأكد من عدم تلاعب المقاول في الـ Logic قبل إدخال الـ Fragnet. تحقق من: عدم إضافة علاقات وهمية، عدم حذف علاقات حقيقية، عدم تغيير الم durations الأصلية للأنشطة المنفذة. | ▌قاعدة التقويم (Calendars): • 5 أيام/أسبوع (Standard) → للتأخيرات الإدارية (اعتماد لوحات، RFI، مستخلصات، تصاريح). • 7 أيام/أسبوع (24-Hour) → لتأخيرات الموقع (صب خرسانة، أعمال حرجة، تأخير المالك للموقع). • يجب أن يكون تقويم الـ Fragnet مطابقاً لتقويم النشاط المتأثر. | ▌قاعدة استهلاك الـ Float: الـ Fragnet يجب أن يثبت استهلاك الـ Total Float وتحويل النشاط إلى Critical Path للحصول على EOT. إذا استمر النشاط يحمل Float بعد إدخال الـ Fragnet، فلا يحق للنشاط المطالبة بـ EOT (وفقاً لـ SCL Protocol). Float ownership: وفقاً لـ SCL Protocol → الـ Float ملك للمشروع (Project Float). | 1. Submittal Log with submission/review/approval dates (Aconex/Procore export). 2. Consultant's Comment Sheets with codes (A=Approved, B=Approved with Comments, C=Resubmit, D=Rejected). 3. Site Diary noting work stoppage due to pending approval. 4. TIA Report showing Critical Path impact (Before/After comparison). 5. Correspondence bundle (Letters/Emails) chasing the approval. 6. Photographs of idle crews/equipment during wait period. 7. Re-submission records if revisions were requested. | 1. في P6، أنشئ الأنشطة FAC-SD-1 إلى FAC-SD-7 لتوثيق كل دورة مراجعة. 2. عيّن Actual Duration لكل دورة = المدة الفعلية (7 أيام للمراجعة، 5 أيام للتعديل). 3. أنشئ نشاط DLY-003 بتأخير صافٍ = (Total Actual - Total Planned) = (42 - 14) = 28 يوماً. 4. اربط DLY-003 بـ FAC-001 بعلاقة FS لتأجيل بدء التنفيذ. 5. شغّل F9 لإعادة الجدولة. 6. استخرج تقرير 'Schedule Comparison' لإثبات التأخير. ▌إجراءات الحدث المستمر (Ongoing Event Procedure): إذا كان الحدث مستمراً (لم ينتهِ بعد): لا تقدم المطالبة النهائية الآن. 1. أرسل Initial Notice خلال 28 يوماً من بدء الحدث (FIDIC 20.1). 2. قدّم Periodic TIA updates شهرياً استناداً إلى آخر Statused Schedule معتمد (Data Date محدثة). 3. قدّم Final Claim مع تفاصيل Quantum الكاملة فقط بعد انتهاء الحدث وتأثيراته بالكامل. 4. احتفظ بسجلات دورية (Site Diary, Photos, Correspondence) لكل فترة تحديث. | 1. بعد الحصول على الاعتماد، استخدم Crashing: - زيادة ورديات العمل في Fabrication (16h/day بدلاً من 8h). - استيراد جاهز من Stock بدلاً من التصنيع (إن أمكن). 2. Fast Tracking: - بدء Installation على أدوار منخفضة أثناء التصنيع لأدوار عالية. 3. في P6: - أنشئ نشاط 'FAC-001-A' بديل بمدة 10 أيام بدلاً من 14. - اربطه بعلاقة SS مع FAC-002 بدلاً من FS. ← للعودة للفهرس | Back to Index
+- D-004 | تأخير اعتماد عينات المواد | Late Approval of Material Samples | اعتماد اللوحات التنفيذية (Shop Drawings & Submittals Approval) | Owner/Consultant Delay | TIA | العينات (Samples) من مواد التشطيب (Ceramic Tiles, Paint Colors, Wood Veneer, Sanitary Fixtures) تحتاج اعتماداً بصرياً وعملياً من الاستشاري/المالك. الإشكالية: الاعتماد قد يستغرق وقتاً طويلاً بسبب تعدد المستويات الإدارية في اتخاذ القرار. مثلاً: الاستشاري يعتمد، لكن المالك يطلب رؤية العينة أيضاً، أو العكس. | (1) عدم وضوح من يملك صلاحية الاعتماد النهائي (الاستشاري أم المالك). (2) تعدد أصحاب المصلحة (Stakeholders) في القرار. (3) الاعتماد على المعاينة الشخصية بدلاً من مواصفات قياسية. (4) تغيّر رأي المالك بعد الاعتماد الأولي. (5) عدم توفّر العينات الفعلية في موعدها (Bank Guarantee لفترة طويلة). | تأخير اعتماد عينات المواد يعني عدم إمكانية طلب الكميات (Procurement). الـ Lead Time لبعض المواد (مثل Imported Marble) قد يصل إلى 90-120 يوماً. تأخير 14 يوماً في اعتماد العينة = 14 يوماً إضافية على الـ Lead Time = تأخير كامل أنشطة Finishes المرتبطة. الخطر الأكبر: إذا تأخرت العينة لبعض المواد النادرة، قد لا يكون لها بديل محلي. | (1) إعداد Material Approval Submittal Register مع مواعيد محددة لكل عينة. (2) تنظيم Material Approval Workshop في بداية المشروع يحضره المالك + الاستشاري + المقاول. (3) الاتفاق على أن اعتماد الاستشاري يكفي (Owner approval only for premium finishes). (4) استخدام Mock-up Room لتسهيل اتخاذ القرار. (5) تقديم بدائل (Alternatives) لكل مادة أساسية لتقليل المخاطر. | (1) تقديم العينات قبل بدء المشروع بفترة كافية (Pre-Construction Phase). (2) استخدام بانات مواد قياسية معروفة (Standard Catalog Items) بدلاً من Custom. (3) الحصول على Letter of Intent لطلب المواد قبل الاعتماد النهائي (بتحمل المقاول للمخاطر). (4) إنشاء Sample Room في موقع المشروع لعرض جميع العينات. | FIDIC Red Book Sub-Clause 5.1 + Sub-Clause 7.7 (Ownership of Materials). Sub-Clause 8.4(a) for EOT if delay caused by Engineer/Owner. Sub-Clause 1.9 (Delayed Drawings or Instructions) applies to samples too. | FR-004 | 1.4.4 | ▌بروتوكول الـ Fragnet: • يمنع استخدام نشاط تأخير واحد (DLY-XXX). • أكواد الـ Fragnet: FR-XXX_A, FR-XXX_B, FR-XXX_C ... • WBS مخصص: 1.4 Delay Fragnets تحت 1.4 Delay Fragnets. • كل Fragnet = سلسلة أنشطة متصلة (Submit → Review → Approve → Impact). | ▌قاعدة TIA والـ Baseline: يتم استخدام آخر برنامج زمني محدث ومعتمد (Statused/Updated Program) وليس الـ Baseline الأصلي. يجب إجراء Schedule Audit للتأكد من عدم تلاعب المقاول في الـ Logic قبل إدخال الـ Fragnet. تحقق من: عدم إضافة علاقات وهمية، عدم حذف علاقات حقيقية، عدم تغيير الم durations الأصلية للأنشطة المنفذة. | ▌قاعدة التقويم (Calendars): • 5 أيام/أسبوع (Standard) → للتأخيرات الإدارية (اعتماد لوحات، RFI، مستخلصات، تصاريح). • 7 أيام/أسبوع (24-Hour) → لتأخيرات الموقع (صب خرسانة، أعمال حرجة، تأخير المالك للموقع). • يجب أن يكون تقويم الـ Fragnet مطابقاً لتقويم النشاط المتأثر. | ▌قاعدة استهلاك الـ Float: الـ Fragnet يجب أن يثبت استهلاك الـ Total Float وتحويل النشاط إلى Critical Path للحصول على EOT. إذا استمر النشاط يحمل Float بعد إدخال الـ Fragnet، فلا يحق للنشاط المطالبة بـ EOT (وفقاً لـ SCL Protocol). Float ownership: وفقاً لـ SCL Protocol → الـ Float ملك للمشروع (Project Float). | 1. Submittal Log with submission/review/approval dates (Aconex/Procore export). 2. Consultant's Comment Sheets with codes (A=Approved, B=Approved with Comments, C=Resubmit, D=Rejected). 3. Site Diary noting work stoppage due to pending approval. 4. TIA Report showing Critical Path impact (Before/After comparison). 5. Correspondence bundle (Letters/Emails) chasing the approval. 6. Photographs of idle crews/equipment during wait period. 7. Re-submission records if revisions were requested. | 1. افتح نشاط MAT-002 (Sample Review - Planned). 2. سجّل Actual Duration = 28 بدلاً من 7. 3. أنشئ نشاط DLY-004 بمدة 21 يوماً (الفرق). 4. اربط DLY-004 بنشاط PROC-001 (Place Order) لتأجيله. 5. شغّل F9 — سيظهر تأخير 21 يوماً على تاريخ تسليم المشروع. 6. احفظ Baseline قبل التعديل ومقارنة بعد التعديل للـ Claim. ▌إجراءات الحدث المستمر (Ongoing Event Procedure): إذا كان الحدث مستمراً (لم ينتهِ بعد): لا تقدم المطالبة النهائية الآن. 1. أرسل Initial Notice خلال 28 يوماً من بدء الحدث (FIDIC 20.1). 2. قدّم Periodic TIA updates شهرياً استناداً إلى آخر Statused Schedule معتمد (Data Date محدثة). 3. قدّم Final Claim مع تفاصيل Quantum الكاملة فقط بعد انتهاء الحدث وتأثيراته بالكامل. 4. احتفظ بسجلات دورية (Site Diary, Photos, Correspondence) لكل فترة تحديث. | 1. Air Freight بدلاً من Sea Freight (تكلفة أعلى لكن أسرع). 2. تقسيم الطلبية: كمية صغيرة جواً للبدء + كمية كبيرة بحراً. 3. استخدام رخام محلي مؤقت (Temporary) واستبداله لاحقاً. 4. في P6: - أنشئ نسخة PROC-001-FAST بمدة 30 يوماً بدلاً من 90. - أضف Cost Driver لتوثيق التكلفة الإضافية للـ Air Freight. ← للعودة للفهرس | Back to Index
+
+
+
+### 03_Objections_Rebuttals
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:J29 | 25 | 9 | 0 | 0 |
+
+**رؤوس أو أول صف محتوى:** `A`: 03 — Objections & Rebuttals | مكتبة اعتراضات الاستشاري والردود.
+
+**معرفات D الظاهرة:** لا يوجد.
+
+**معاينة أولية للصفوف:**
+
+- 03 — Objections & Rebuttals | مكتبة اعتراضات الاستشاري والردود
+- Consultant objections · Technical rebuttals · Legal & contractual basis (FIDIC + SCL Protocol)
+- مكتبة شاملة لأكثر الاعتراضات شيوعاً التي يبديها الاستشاري/المالك على مطالبات EOT و Disruption. كل اعتراض يرد عليه فنياً وقانونياً بالاستناد إلى FIDIC Red Book 1999/2017 و SCL Protocol 2nd Edition. استخدم هذه المكتبة كمرجع سريع لإعداد الردود في التحكيم.
+- # | Objection | الاعتراض | Technical Rebuttal | الرد الفني | Legal/Contractual Rebuttal | الرد القانوني | Reference | المرجع | Strength | Category | Type | Status
+- التأخير استهلك الـ Float، فلا يستحق المقاول EOT (Delay consumed Float, no EOT entitled) | الـ Float ليس ملكاً للمالك. وفقاً لـ SCL Protocol، الـ Float ملك للمشروع (Project Float). إذا كان التأخير على الـ Critical Path أو استهلك كامل الـ Float وحول النشاط إلى Critical، يستحق المقاول EOT كاملاً. إذا استهلك جزءاً من Float فقط، يستحق المقاول EOT بمقدار ما يتجاوز الـ Float المتاح. التحقق يتم بـ TIA Fragnet يربط بنهاية النشاط المتأثر. | SCL Protocol 2nd Ed. — Rule 11: 'Where float is owned by the project, the contractor is entitled to EOT for employer delay that reduces the project float below zero.' FIDIC Red Book 1999 Sub-Clause 8.4(a): EOT for delay in giving possession of site. FIDIC 2017 Sub-Clause 20.2.1: Notice within 28 days. | SCL Protocol Rule 11; FIDIC 8.4 | Strong | Float & EOT | EOT | Open
+- المقاول تأخر أصلاً، فلا يستحق EOT (Concurrent Delay) (Contractor also delayed, no EOT) | تطبيق قاعدة Concurrent Delay: إذا كان تأخير المالك وتأخير المقاول متزامنين في نفس الفترة، يستحق المقاول EOT (لتفادي غرامات LD) ولكن لا يستحق تعويضاً مالياً (No Cost). التطبيق العملي: Windows Analysis لتحديد فترات التأخير المتزامنة بدقة. لا يجوز للمالك رفض EOT كاملاً بحجة التأخير المتزامن. | SCL Protocol Rule 13-15: Apportionment approach. FIDIC Sub-Clause 8.4: EOT for employer events. English Law: Henry Boot v Malmaison (1995) — EOT granted for concurrent delay. Dubai Courts: similar precedent in Cassation 2018/2019. | SCL Rules 13-15; Henry Boot v Malmaison | Strong | Concurrent Delay | EOT | Open
+- لم يقدم المقاول إشعاراً ضمن المهلة (Notice not submitted on time) | FIDIC 2017 عدّلت القاعدة: عدم الإشعار خلال 28 يوماً لا يسقط الحق في EOT، بل قد يسقط الحق في Cost فقط (إذا أضر بعدم الإشعار بالتحقيق). المقاول يجب أن يثبت أنه قدم إشعاراً معذرةً (Notice of Delay) بأقرب وقت ممكن. إذا كان للمالك علم بالحدث من مراسلات أخرى (RFI, Site Diary)، يعتبر ذلك إشعاراً ضمنياً. | FIDIC 2017 Sub-Clause 20.2.1: 'If the Contractor fails to give notice... the Contractor shall not be entitled to an extension of time... BUT the Engineer may still grant EOT if reasonable.' مقارنة مع FIDIC 1999 Sub-Clause 20.1 الذي كان أكثر صرامة. SCL Protocol Rule 5: Notice not a condition precedent unless expressly stated. | FIDIC 2017 20.2.1; SCL Rule 5 | Strong | Notice | EOT | Open
+- منهجية TIA غير معتمدة لدينا (TIA methodology not accepted) | TIA هي المنهجية الموصى بها في SCL Protocol للـ Prospective Analysis. اعتراض الاستشاري غير مبرر فنياً. البديل (Impacted As-Planned) أقل دقة لأنه يتجاهل تقدم المشروع الفعلي. التأكيد على أن TIA تستخدم آخر Statused Program (وليس Baseline) مع Fragnet منفصل. تقديم تقرير TIA كامل مع Schedule Audit. | SCL Protocol Rule 17: 'Time Impact Analysis (TIA) is the preferred method for prospective delay analysis.' AACE International RP 29R-03: TIA Method 1 (single insertion) or Method 2 (multiple insertions). FIDIC Sub-Clause 8.4 doesn't mandate methodology but TIA is industry standard. | SCL Rule 17; AACE RP 29R-03 | Strong | Methodology | EOT | Open
+
+
+
+### 04_Templates
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:G70 | 63 | 6 | 0 | 0 |
+
+**رؤوس أو أول صف محتوى:** `A`: 04 — Templates | النماذج الجاهزة.
+
+**معرفات D الظاهرة:** لا يوجد.
+
+**معاينة أولية للصفوف:**
+
+- 04 — Templates | النماذج الجاهزة
+- Notice of Delay · TIA Report Template · Claim Letter · FIDIC-compliant formats
+- نماذج جاهزة للاستخدام الفوري في مطالبات التأخير. كل نموذج متوافق مع FIDIC Red Book 1999/2017 و SCL Protocol 2nd Edition. انسخ النص إلى Word وعدّل الحقول بين الأقواس [...].
+- ▌ Template 1 — Notice of Delay | إشعار تأخير
+- # | Field | الحقل | Content | المحتوى | Source | Action | Done?
+- 1 | Letter Reference | [Project Code]-NOD-[Seq]-[YYYY] | Internal | Generate
+- 2 | Date | [Date of submission — must be within 28 days of event] | FIDIC 20.1 | Verify
+- 3 | To (Engineer/Employer) | [Name and title of Engineer/Employer's Representative] | Contract | Address
+
+
+
+### 05_Quantum_Calculations
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:H64 | 57 | 7 | 0 | 0 |
+
+**رؤوس أو أول صف محتوى:** `A`: 05 — Quantum Calculations | حسابات الخسارة المالية.
+
+**معرفات D الظاهرة:** لا يوجد.
+
+**معاينة أولية للصفوف:**
+
+- 05 — Quantum Calculations | حسابات الخسارة المالية
+- Prolongation Costs · Hudson/Eichleay Formulas · Measured Mile Analysis (MCA)
+- هذا التبويب يحتوي على المعادلات الرياضية والتعاقدية لحساب الخسائر المالية في مطالبات التأخير. ثلاثة أقسام: (1) Direct Prolongation Costs (Site Overheads)، (2) Unabsorbed Head Office Overheads (Hudson / Eichleay Formulas)، (3) Loss of Productivity (Measured Mile Analysis). كل قسم يحتوي على المعادلة + مثال محلول بالأرقام + السند التعاقدي.
+- ▌ Section 1 — Direct Prolongation Costs (Site Overheads) | تكاليف الإطالة المباشرة
+- # | Item | البند | Formula / Description | المعادلة / الوصف | Value | القيمة | Unit | Source | Notes
+- 1.1 | Total Site Overheads (Monthly) | إجمالي مصاريف الموقع الشهرية: مكاتب، حراسة، كهرباء، مياه، إيجار، سكن مهندسين. | 120,000 | EGP/month | Contractor's Ledger | From monthly accounts
+- 1.2 | Contract Duration | المدة التعاقدية الأصلية بالأيام (Calendar Days or Working Days — must match contract). | 450 | days | Contract Clause 1.1 | Check Particular Conditions
+- 1.3 | Convert to Daily Rate | Daily Site OH Rate = Total Site OH per month × 12 / Contract Days = 120,000 × 12 / 450 = 1,440,000 / 450 = 3,200 EGP/day | 3,200 | EGP/day | Computed | Step 1: Monthly × 12 → Yearly. Step 2: Yearly / Days → Daily
+
+
+
+### 06_Final_Checklist
+
+| النطاق | صفوف ذات محتوى | الأعمدة | الصيغ | الروابط |
+|---|---:|---:|---:|---:|
+| B1:G29 | 25 | 6 | 0 | 0 |
+
+**رؤوس أو أول صف محتوى:** `A`: 06 — Final Checklist | قائمة الفحص النهائية قبل التقديم.
+
+**معرفات D الظاهرة:** لا يوجد.
+
+**معاينة أولية للصفوف:**
+
+- 06 — Final Checklist | قائمة الفحص النهائية قبل التقديم
+- 20-point Pre-Submission Checklist · FIDIC + SCL Protocol Compliance
+- قائمة فحص من 20 نقطة يجب إكمالها قبل تقديم أي مطالبة EOT أو Cost. كل نقطة لها مرجع تعاقدي/فني. لا تقدم المطالبة إلا بعد وضع علامة ✓ على جميع النقاط الحرجة (Critical).
+- # | Status | Check Item | بند الفحص | Reference | المرجع | Priority | الأولوية | Notes | ملاحظات
+- 1 | ☐ | Initial Notice sent within 28 days of event start? | FIDIC Sub-Clause 20.1 | Critical | Mandatory — non-compliance may bar claim
+- 2 | ☐ | Baseline Schedule approved & saved (no manipulation)? | FIDIC Sub-Clause 8.3 | Critical | Verify Engineer's acceptance or deemed approval
+- 3 | ☐ | Statused Schedule updated to current Data Date (Actuals entered correctly)? | P6 Best Practice | Critical | Data Date must be officially set
+- 4 | ☐ | Forensic Audit (DCMA 14-Point) passed > 80%? | DCMA 14-Point Assessment | Critical | No open ends, < 5% constraints, < 5% lags
+
+
+
+## القرار التالي
+
+سيُستخدم هذا الجرد لمقارنة حقول الملف ببيانات المكتبة الحالية، ثم لدمج النصوص والعلاقات الموثقة فقط في نموذج بيانات قابل للتجديد والاختبار. لا تُنقل مكتبات أو أكواد خارجية قبل فحص ترخيصها وأمنها وتوافقها مع محرك CPM/Fragnet المحلي.
+

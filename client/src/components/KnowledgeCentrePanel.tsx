@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ArrowLeft, BookOpenCheck, CheckCircle2, Download, FileText, LibraryBig, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { masterClaimCases, type MasterClaimCase } from "@/lib/master-claim-cases";
-import { enrichHtmlCase, loadMasterClaimExcelCases, type DetailedMasterClaimCase } from "@/lib/master-claim-excel";
+import type { MasterClaimCase } from "@/lib/master-claim-cases";
+import type { DetailedMasterClaimCase } from "@/lib/master-claim-excel";
+import { masterClaimIntelligenceCases, masterClaimIntelligenceSource, masterClaimSupportSheets } from "@/lib/master-claim-intelligence-data";
 import { claimTrainingScenarios, fidicClaimReferences } from "@/lib/user-claim-references";
 import "./knowledge-centre.css";
 import "./training-video.css";
@@ -38,8 +39,8 @@ function normalize(value: string) {
 
 function methodFromSource(value: string): AnalysisMethod {
   const source = value.toLowerCase();
-  if (source.includes("window") || source.includes("period")) return "windows";
-  if (source.includes("disruption") || source.includes("productivity")) return "disruption";
+  if (source.includes("window") || source.includes("period") || source.includes("concurrent")) return "windows";
+  if (source.includes("disruption") || source.includes("productivity") || source.includes("measured mile")) return "disruption";
   if (source.includes("quantity") || source.includes("measured")) return "quantity";
   return "tia";
 }
@@ -53,59 +54,30 @@ function journeyFor(method: AnalysisMethod): "issue" | "direct" {
 }
 
 const requestedCaseCount = 88;
+const workbookCases: DetailedMasterClaimCase[] = masterClaimIntelligenceCases.map(item => ({ ...item, source: "excel" }));
 
 export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: string; projectKey: string; isAuthenticated: boolean; onBeginGuidedAnalysis?: (route: KnowledgeRoute) => void }) {
   const [query, setQuery] = useState("");
   const [methodFilter, setMethodFilter] = useState<AnalysisMethod | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [selectedId, setSelectedId] = useState(masterClaimCases[0].id);
+  const [selectedId, setSelectedId] = useState(workbookCases[0]?.id ?? "");
   const [methodOverride, setMethodOverride] = useState<AnalysisMethod | null>(null);
-  const [excelCases, setExcelCases] = useState<DetailedMasterClaimCase[] | null>(null);
-  const [excelError, setExcelError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [selectedFidicClause, setSelectedFidicClause] = useState(fidicClaimReferences[0]?.clause ?? "");
+  const [selectedSupportSheetId, setSelectedSupportSheetId] = useState(masterClaimSupportSheets[0]?.id ?? "");
 
-  useEffect(() => {
-    let mounted = true;
-    loadMasterClaimExcelCases()
-      .then(rows => {
-        if (mounted) setExcelCases(rows);
-      })
-      .catch(() => {
-        if (mounted) setExcelError("تعذر تحميل التفاصيل الإضافية من ملف Excel المرجعي حالياً؛ يبقى فهرس HTML متاحاً للقراءة.");
-      });
-    return () => { mounted = false; };
-  }, []);
-
-  const libraryCases = useMemo(() => {
-    const combined = new Map<string, DetailedMasterClaimCase>();
-    masterClaimCases.forEach(item => combined.set(item.id, enrichHtmlCase(item)));
-    excelCases?.forEach(item => {
-      const previous = combined.get(item.id);
-      combined.set(item.id, {
-        ...previous,
-        ...item,
-        title_ar: item.title_ar || previous?.title_ar || item.id,
-        title_en: item.title_en || previous?.title_en || "",
-        category: item.category || previous?.category || "غير مصنف",
-        description: item.description || previous?.description || "",
-        root_cause: item.root_cause || previous?.root_cause || "",
-        schedule_impact: item.schedule_impact || previous?.schedule_impact || "",
-        contractual_basis: item.contractual_basis || previous?.contractual_basis || "",
-        burden_of_proof: item.burden_of_proof || previous?.burden_of_proof || "",
-      });
-    });
-    return Array.from(combined.values()).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
-  }, [excelCases]);
-
-  const verifiedExcelCount = excelCases?.length ?? 0;
-  const pendingCaseCount = Math.max(0, requestedCaseCount - verifiedExcelCount);
+  const libraryCases = workbookCases;
+  const verifiedWorkbookCaseCount = masterClaimIntelligenceSource.caseCount;
+  const verifiedDCaseCount = masterClaimIntelligenceSource.caseGroups.D;
+  const verifiedRelatedCaseCount = verifiedWorkbookCaseCount - verifiedDCaseCount;
+  const pendingDCaseCount = Math.max(0, requestedCaseCount - verifiedDCaseCount);
 
   const categories = useMemo(() => Array.from(new Set(libraryCases.map(item => item.category))).filter(Boolean).sort((a, b) => a.localeCompare(b, "ar")), [libraryCases]);
   const selectedCase = libraryCases.find(item => item.id === selectedId) ?? libraryCases[0];
   const selectedMethod = methodOverride ?? methodFromSource(selectedCase.methodology);
   const selectedMethodInfo = methods.find(item => item.id === selectedMethod) ?? methods[0];
   const selectedFidicReference = fidicClaimReferences.find(item => item.clause === selectedFidicClause) ?? fidicClaimReferences[0];
+  const selectedSupportSheet = masterClaimSupportSheets.find(sheet => sheet.id === selectedSupportSheetId) ?? masterClaimSupportSheets[0];
 
   const matchingCases = useMemo(() => {
     const terms = normalize(query).split(" ").filter(Boolean);
@@ -123,6 +95,17 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         item.schedule_impact,
         item.contractual_basis,
         item.burden_of_proof,
+        item.recommended_solution,
+        item.mitigation,
+        item.fragnet_id,
+        item.wbs_code,
+        item.fragnet_activities,
+        item.fragnet_protocol,
+        item.tia_baseline_rule,
+        item.calendar_rule,
+        item.float_rule,
+        item.update_procedure,
+        item.recovery_procedure,
       ].join(" "));
       return (methodFilter === "all" || sourceMethod === methodFilter)
         && (categoryFilter === "all" || item.category === categoryFilter)
@@ -130,7 +113,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
     });
   }, [categoryFilter, libraryCases, methodFilter, query]);
 
-  const chooseCase = (caseItem: MasterClaimCase) => {
+  const chooseCase = (caseItem: DetailedMasterClaimCase) => {
     setSelectedId(caseItem.id);
     setMethodOverride(null);
   };
@@ -157,17 +140,16 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         <div>
           <p className="eyebrow">MASTER CLAIM INTELLIGENCE · READ ONLY</p>
           <h2>مكتبة المنهجيات والحالات العملية</h2>
-          <p>تجمع المكتبة فهرس الموسوعة مع السجل التفصيلي المقروء محلياً من ملف Excel: الوصف والأثر الزمني والمساند التعاقدي والأدلة وقواعد TIA وFragnet عند توافرها. البحث يرشدك ولا يصدر حكماً تعاقدياً آلياً.</p>
+          <p>تجمع المكتبة السجل التفصيلي المقروء محلياً من ملف Excel: الحالات، إجراءات القرار، التدقيق الجنائي، الاعتراضات والردود، القوالب، الحسابات، وقائمة الإقفال. البحث يرشدك ولا يصدر حكماً تعاقدياً آلياً.</p>
         </div>
         <LibraryBig size={26} />
       </div>
 
       <article className="master-library-status" aria-label="حالة مصدر الموسوعة">
-        <div><ShieldCheck size={19} /><span><b>المصدر المرجعي محمّل للقراءة فقط.</b> فُهرست الحالات من HTML، وتُقرأ تفاصيل Excel في متصفحك دون تعديل الأصل أو إدخاله في قاعدة البيانات. {excelCases ? `المتاح في الملف الحالي: ${verifiedExcelCount} حالة موثقة.` : "يجري التحقق من سجل Excel الحالي."}</span></div>
-        <span className="master-library-count">{excelCases ? `${verifiedExcelCount} حالة Excel تفصيلية` : "جارٍ قراءة تفاصيل Excel…"}</span>
+        <div><ShieldCheck size={19} /><span><b>المصدر المرجعي محمّل للقراءة فقط.</b> تُضمَّن بيانات ملف Excel المرفوع داخل النسخة وقت البناء؛ لا يُعدّل الأصل ولا يُرسل إلى خادم أو خدمة خارجية. المتاح: {verifiedWorkbookCaseCount} سجلاً منظماً و{masterClaimIntelligenceSource.supportSheetCount} أوراق دعم.</span></div>
+        <span className="master-library-count">{verifiedWorkbookCaseCount} سجل Excel تفصيلي</span>
       </article>
-      {excelCases ? <p className="case-source-note" aria-live="polite"><b>حالة الفهرسة:</b> عرضنا جميع السجلات الموثقة من الملف الحالي. الهدف المرجعي 88 حالة؛ تنتظر {pendingCaseCount} حالة إضافية ملف المصدر الذي سيوفره فريق المشروع، ولن تُنشأ بيانات بديلة عنها.</p> : null}
-      {excelError ? <p className="case-source-warning">{excelError}</p> : null}
+      <p className="case-source-note" aria-live="polite"><b>حالة الفهرسة:</b> الملف يحتوي {verifiedDCaseCount} حالة من سلسلة D و{verifiedRelatedCaseCount} سجلاً مرتبطاً فعلياً (DIS/CON/VAR/RES). لا يظهر فيه D-056 إلى D-088 كسجلات منظمة؛ تبقى {pendingDCaseCount} حالة من سلسلة D معلقة إلى أن يصل مصدر موثق، ولن تُنشأ بدائل عنها.</p>
 
       <section className="fidic-reference-library" aria-label="مرجع بنود FIDIC 2017">
         <div className="reference-library-heading">
@@ -201,7 +183,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         <div className="case-catalog-toolbar">
           <div><Label><SlidersHorizontal size={14} />المنهج المرجح</Label><Select value={methodFilter} onValueChange={value => setMethodFilter(value as AnalysisMethod | "all")}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل المناهج</SelectItem>{methods.map(method => <SelectItem key={method.id} value={method.id}>{method.label}</SelectItem>)}</SelectContent></Select></div>
           <div><Label><FileText size={14} />تصنيف الواقعة</Label><Select value={categoryFilter} onValueChange={setCategoryFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل التصنيفات</SelectItem>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select></div>
-          <p><b>{matchingCases.length}</b> نتيجة من أصل {libraryCases.length} حالة مفهرسة</p>
+          <p><b>{matchingCases.length}</b> نتيجة من أصل {libraryCases.length} سجل مفهرس</p>
         </div>
 
         <div className="case-result-grid rich-case-grid">
@@ -237,7 +219,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
           {selectedCase.source === "excel" ? <>
             <section><h4>الحل المقترح</h4><p>{selectedCase.recommended_solution || "لم يرد حل تفصيلي لهذه الحالة في ملف Excel."}</p></section>
             <section><h4>إجراءات الوقاية</h4><p>{selectedCase.mitigation || "لم ترد إجراءات وقاية لهذه الحالة في ملف Excel."}</p></section>
-            <section><h4>قواعد TIA وFragnet</h4><p>{[selectedCase.fragnet_id && `Fragnet: ${selectedCase.fragnet_id}`, selectedCase.fragnet_activities && `الأنشطة: ${selectedCase.fragnet_activities}`, selectedCase.tia_baseline_rule && `Baseline: ${selectedCase.tia_baseline_rule}`, selectedCase.calendar_rule && `التقويم: ${selectedCase.calendar_rule}`, selectedCase.float_rule && `Float: ${selectedCase.float_rule}`].filter(Boolean).join("\n") || "لم ترد قواعد Fragnet أو TIA إضافية لهذه الحالة في ملف Excel."}</p></section>
+            <section><h4>WBS و Fragnet وقواعد TIA</h4><p>{[selectedCase.fragnet_id && `Fragnet: ${selectedCase.fragnet_id}`, selectedCase.wbs_code && `WBS: ${selectedCase.wbs_code}`, selectedCase.fragnet_activities && `الأنشطة: ${selectedCase.fragnet_activities}`, selectedCase.fragnet_protocol && `بروتوكول الـ Fragnet: ${selectedCase.fragnet_protocol}`, selectedCase.tia_baseline_rule && `Baseline: ${selectedCase.tia_baseline_rule}`, selectedCase.calendar_rule && `التقويم: ${selectedCase.calendar_rule}`, selectedCase.float_rule && `Float: ${selectedCase.float_rule}`].filter(Boolean).join("\n\n") || "لم ترد قواعد Fragnet أو TIA إضافية لهذه الحالة في ملف Excel."}</p></section>
             <section><h4>إجراء التحديث والاستدراك</h4><p>{[selectedCase.update_procedure, selectedCase.recovery_procedure].filter(Boolean).join("\n\n") || "لم يرد إجراء تحديث أو استدراك إضافي لهذه الحالة في ملف Excel."}</p></section>
           </> : null}
         </div>
@@ -246,6 +228,16 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
           <Button className="run-button" type="button" onClick={applyCase} disabled={isApplying} aria-busy={isApplying}>{isApplying ? "جاري فتح رحلة التحليل…" : "طبّق هذه الحالة الآن"} <ArrowLeft size={16} /></Button>
         </div>
       </article>
+
+      {selectedSupportSheet ? <section className="master-support-sheets" aria-label="أوراق الدعم من ملف Master Claim Intelligence">
+        <div className="reference-library-heading"><FileText size={20} /><div><p className="eyebrow">MASTER CLAIM INTELLIGENCE · SUPPORT SHEETS</p><h3>إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات</h3><p>هذه الأوراق الثمانية مستنسخة للقراءة من الملف المرفوع مع أسماء الروابط الداخلية كما وردت فيه. الصفوف معروضة داخل مساحة تمرير مستقلة للحفاظ على قراءة الهاتف.</p></div></div>
+        <div className="support-sheet-tabs" role="tablist" aria-label="اختيار ورقة دعم">{masterClaimSupportSheets.map(sheet => <button key={sheet.id} type="button" role="tab" aria-selected={sheet.id === selectedSupportSheet.id} className={sheet.id === selectedSupportSheet.id ? "selected" : ""} onClick={() => setSelectedSupportSheetId(sheet.id)}>{sheet.title}</button>)}</div>
+        <article className="support-sheet-reader" role="tabpanel">
+          <div className="support-sheet-reader-heading"><div><span>{selectedSupportSheet.id}</span><h4>{selectedSupportSheet.title}</h4></div><small>{selectedSupportSheet.rows.length} صفاً · {selectedSupportSheet.links.length} رابطاً داخلياً</small></div>
+          <div className="support-sheet-table-wrap"><table><tbody>{selectedSupportSheet.rows.map((row, rowIndex) => <tr key={`${selectedSupportSheet.id}-${rowIndex}`}>{row.map((cell, cellIndex) => rowIndex === 0 ? <th key={`${rowIndex}-${cellIndex}`} scope="col">{cell || "—"}</th> : <td key={`${rowIndex}-${cellIndex}`}>{cell || "—"}</td>)}</tr>)}</tbody></table></div>
+          {selectedSupportSheet.links.length ? <div className="support-sheet-links"><b>الروابط الداخلية الواردة في المصدر</b><ul>{selectedSupportSheet.links.map(link => <li key={`${link.cell}-${link.target}`}><code>{link.cell}</code><span>{link.label || "رابط داخلي"}</span><small>{link.target}</small></li>)}</ul></div> : <p className="support-sheet-empty">لا توجد روابط داخلية مسجلة لهذه الورقة.</p>}
+        </article>
+      </section> : null}
 
       <div className="learning-path-grid reference-paths">
         <article className="learning-path"><BookOpenCheck size={20} /><h3>كيف تستخدم المكتبة؟</h3><p>ابحث عن الحالة، اقرأ الوصف والأثر والأدلة، ثم اضغط «طبّق هذه الحالة الآن» للانتقال إلى رحلة Workshop 8.</p></article>

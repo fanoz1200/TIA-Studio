@@ -11,12 +11,12 @@ describe("ProjectResourcesPanel", () => {
     expect(screen.getByText("لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل.")).toBeTruthy();
     expect(screen.getByText("01 — برنامج الأساس").closest("a")?.getAttribute("href")).toBe("/manus-storage/01-baseline-schedule_1dcca83b.json");
     expect(screen.getAllByText("تنزيل")).toHaveLength(9);
-    expect(screen.getByText("حزمة المصدر والاستمرارية — 1.0.4").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Source-final.tar_9b33e332.gz");
+    expect(screen.getByText("حزمة المصدر والاستمرارية — 1.0.4 (Master Claim)").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Master-Claim-Integrated-Source.tar_0ad79f96.gz");
     expect(screen.getByText("دليل استمرارية المشروع وتسليمه").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md");
-    expect(screen.getByText("نسخة سطح المكتب — Windows 1.0.4").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_cdfb8335.exe");
-    expect(screen.getByText("نسخة سطح المكتب — Linux 1.0.4").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_5e0f37b6.AppImage");
-    expect(screen.getByRole("link", { name: /Windows 1.0.4 — تنزيل ملف EXE/ }).getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_cdfb8335.exe");
-    expect(screen.getByRole("link", { name: /Linux 1.0.4 — تنزيل AppImage/ }).getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_5e0f37b6.AppImage");
+    expect(screen.getByText("نسخة سطح المكتب — Windows 1.0.4 (Master Claim)").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Master-Claim-Windows-x64_2794edd5.exe");
+    expect(screen.getByText("نسخة سطح المكتب — Linux 1.0.4 (Master Claim)").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Master-Claim-Linux-x64_3758a815.AppImage");
+    expect(screen.getByRole("link", { name: /Windows 1.0.4 \(Master Claim\) — تنزيل EXE/ }).getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Master-Claim-Windows-x64_2794edd5.exe");
+    expect(screen.getByRole("link", { name: /Linux 1.0.4 \(Master Claim\) — تنزيل AppImage/ }).getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.4-Master-Claim-Linux-x64_3758a815.AppImage");
     expect(screen.getByRole("heading", { name: "الدليل الحيّ: كيف يعمل البرنامج من البداية للنهاية؟" })).toBeTruthy();
     expect(screen.getByText("الإصدار 1.0.4")).toBeTruthy();
     expect(screen.getByText("تشغيل محلي بنقرة واحدة")).toBeTruthy();

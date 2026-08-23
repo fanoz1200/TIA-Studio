@@ -21,13 +21,13 @@
 
 ## الإصدار الحالي 1.0.4
 
-يحتوي هذا الإصدار الدليل الحيّ داخل **مركز المعرفة والتنزيل**؛ ويعرض منهجيات TIA وWindows والتزامن، وخريطة قارئ P6 ومحرك CPM وFragnet وبوابة الجودة ومحرك التقرير، وترابطها وسير العمل وسجل التغييرات. أضيفت إلى المكتبة 27 بطاقة مرجعية من ملف FIDIC 2017 Claims Reference و5 سيناريوهات عربية مستقلة من ملف الحالات والقرارات. هذه مراجع مساندة وليست نتائج تلقائية أو بديلاً عن حكم المخطط والمختص التعاقدي. لم يظهر في المصادر المرفوعة سجل منظم للحالات D-056 إلى D-088؛ ولذلك لا تزال معلقة بوضوح ولا تُعرض كبيانات مكتملة.
+يحتوي هذا الإصدار الدليل الحيّ داخل **مركز المعرفة والتنزيل**؛ ويعرض منهجيات TIA وWindows والتزامن، وخريطة قارئ P6 ومحرك CPM وFragnet وبوابة الجودة ومحرك التقرير، وترابطها وسير العمل وسجل التغييرات. أُدمج ملف Master Claim Intelligence المرفوع محلياً في المكتبة كسجل ثابت قابل لإعادة التوليد: **70 سجلاً منظماً**، منها 55 من سلسلة D و15 سجلاً داعماً، إضافة إلى 8 أوراق دعم و99 رابطاً داخلياً. هذه مراجع مساندة وليست نتائج تلقائية أو بديلاً عن حكم المخطط والمختص التعاقدي. لم يظهر في هذا المصنف سجل منظم للحالات D-056 إلى D-088؛ ولذلك لا تزال معلقة بوضوح ولا تُعرض كبيانات مكتملة.
 
 | نظام التشغيل | رابط التنزيل الرسمي | الملف الذي يفتحه المستخدم |
 |---|---|---|
-| Windows x64 | [`/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_cdfb8335.exe`](/manus-storage/TIA-Studio-1.0.4-Windows-x64-Complete_cdfb8335.exe) | `TIA-Studio-1.0.4-Windows-x64-Complete.exe` |
-| Linux x64 | [`/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_5e0f37b6.AppImage`](/manus-storage/TIA-Studio-1.0.4-Linux-x64-Complete_5e0f37b6.AppImage) | `TIA-Studio-1.0.4-Linux-x64-Complete.AppImage` |
-| المصدر والتسليم | [`/manus-storage/TIA-Studio-1.0.4-Source-final.tar_9b33e332.gz`](/manus-storage/TIA-Studio-1.0.4-Source-final.tar_9b33e332.gz) | أرشيف TAR.GZ للمصدر والأدلة وملفيّ التسليم لتسهيل الاستمرارية. |
+| Windows x64 | [`/manus-storage/TIA-Studio-1.0.4-Master-Claim-Windows-x64_2794edd5.exe`](/manus-storage/TIA-Studio-1.0.4-Master-Claim-Windows-x64_2794edd5.exe) | `TIA-Studio-1.0.4-Master-Claim-Windows-x64.exe` |
+| Linux x64 | [`/manus-storage/TIA-Studio-1.0.4-Master-Claim-Linux-x64_3758a815.AppImage`](/manus-storage/TIA-Studio-1.0.4-Master-Claim-Linux-x64_3758a815.AppImage) | `TIA-Studio-1.0.4-Master-Claim-Linux-x64.AppImage` |
+| المصدر والتسليم | [`/manus-storage/TIA-Studio-1.0.4-Master-Claim-Integrated-Source.tar_0ad79f96.gz`](/manus-storage/TIA-Studio-1.0.4-Master-Claim-Integrated-Source.tar_0ad79f96.gz) | أرشيف TAR.GZ للمصدر والأدلة وبيانات Master Claim المولدة وملفيّ التسليم لتسهيل الاستمرارية. |
 
 > تبقى هذه الروابط جزءاً من الإصدار ولا تستبدل ملف P6 الأصلي أو حكم المخطط والمختص التعاقدي. عند إصدار نسخة لاحقة، يُحدّث هذا الجدول والدليل الحيّ ومركز الموارد معاً قبل إتاحة التنزيل.
 
