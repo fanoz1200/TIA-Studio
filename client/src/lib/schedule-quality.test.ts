@@ -35,7 +35,13 @@ describe("schedule quality gate", () => {
   });
 
   it("treats missing XER core tables as an explicit blocker", () => {
-    const assessment = assessScheduleQuality(baseSchedule, { projectName: "x", activitiesRead: 2, relationshipsRead: 1, wbsRead: 1, resourcesRead: 0, resourceAssignmentsRead: 0, assignmentsWithCosts: 0, activitiesWithProgress: 0, warnings: [], tablesFound: ["PROJECT", "TASK"] });
+    const assessment = assessScheduleQuality(baseSchedule, { projectName: "x", activitiesRead: 2, relationshipsRead: 1, relationshipsSkipped: 0, wbsRead: 1, resourcesRead: 0, resourceAssignmentsRead: 0, resourceAssignmentsSkipped: 0, assignmentsWithCosts: 0, activitiesWithProgress: 0, warnings: [], tablesFound: ["PROJECT", "TASK"] });
     expect(assessment.rules.find((item) => item.id === "SQ-013")?.severity).toBe("blocker");
+  });
+
+  it("raises review when the importer had to exclude broken XER references", () => {
+    const assessment = assessScheduleQuality(baseSchedule, { projectName: "x", activitiesRead: 2, relationshipsRead: 1, relationshipsSkipped: 2, wbsRead: 1, resourcesRead: 1, resourceAssignmentsRead: 1, resourceAssignmentsSkipped: 1, assignmentsWithCosts: 0, activitiesWithProgress: 0, calendarName: "Standard", warnings: [], tablesFound: ["PROJECT", "TASK", "TASKPRED"] });
+    expect(assessment.analysisReadiness).toBe("review");
+    expect(assessment.rules.find((item) => item.id === "SQ-015")).toMatchObject({ severity: "warning", affectedCount: 3 });
   });
 });

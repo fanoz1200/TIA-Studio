@@ -10,9 +10,13 @@ export type XerImportSummary = {
   projectName: string;
   activitiesRead: number;
   relationshipsRead: number;
+  /** صفر عند الملفات المقروءة سابقاً قبل إضافة عداد الاستبعاد. */
+  relationshipsSkipped?: number;
   wbsRead: number;
   resourcesRead: number;
   resourceAssignmentsRead: number;
+  /** صفر عند الملفات المقروءة سابقاً قبل إضافة عداد الاستبعاد. */
+  resourceAssignmentsSkipped?: number;
   assignmentsWithCosts: number;
   activitiesWithProgress: number;
   calendarName?: string;
@@ -161,10 +165,12 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
   const activityById = new Map(activities.map((activity) => [activity.id, activity]));
   const resourcesById = new Map(resourceRows.map((resource) => [firstValue(resource, "rsrc_id"), resource]));
   const resourceAssignments: ResourceAssignment[] = [];
+  let resourceAssignmentsSkipped = 0;
   for (let index = 0; index < taskResources.length; index += 1) {
     const row = taskResources[index];
     const activityId = firstValue(row, "task_id");
     if (!activityIds.has(activityId)) {
+      resourceAssignmentsSkipped += 1;
       warnings.push(`تم تجاهل إسناد مورد TASKRSRC رقم ${index + 1} لأنه لا يشير إلى نشاط مقروء.`);
       continue;
     }
@@ -195,11 +201,13 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
     });
   }
   const relationships: Relationship[] = [];
+  let relationshipsSkipped = 0;
   for (let index = 0; index < predecessors.length; index += 1) {
     const row = predecessors[index];
     const predecessorId = firstValue(row, "pred_task_id");
     const successorId = firstValue(row, "task_id");
     if (!activityIds.has(predecessorId) || !activityIds.has(successorId)) {
+      relationshipsSkipped += 1;
       warnings.push(`تم تجاهل علاقة XER رقم ${index + 1} لأنها تشير إلى نشاط خارج المشروع أو غير مقروء.`);
       continue;
     }
@@ -238,6 +246,6 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
       wbsNodes,
       resourceAssignments,
     },
-    summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, wbsRead: wbsNodes.length, resourcesRead: resourceRows.length, resourceAssignmentsRead: resourceAssignments.length, assignmentsWithCosts: resourceAssignments.filter((assignment) => Boolean(assignment.targetCost || assignment.remainingCost || assignment.actualRegularCost || assignment.actualOvertimeCost)).length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
+    summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, relationshipsSkipped, wbsRead: wbsNodes.length, resourcesRead: resourceRows.length, resourceAssignmentsRead: resourceAssignments.length, resourceAssignmentsSkipped, assignmentsWithCosts: resourceAssignments.filter((assignment) => Boolean(assignment.targetCost || assignment.remainingCost || assignment.actualRegularCost || assignment.actualOvertimeCost)).length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
   };
 }

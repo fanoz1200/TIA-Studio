@@ -21,7 +21,24 @@ const xerWithResourceAssignment = `%T\tPROJECT
 describe("XER resource and cost import", () => {
   it("reads TASKRSRC values and links the resource assignment to the task and cost account", () => {
     const { schedule, summary } = importXerSchedule(xerWithResourceAssignment, "resources.xer");
-    expect(summary).toMatchObject({ resourcesRead: 1, resourceAssignmentsRead: 1, assignmentsWithCosts: 1 });
+    expect(summary).toMatchObject({ resourcesRead: 1, resourceAssignmentsRead: 1, resourceAssignmentsSkipped: 0, relationshipsSkipped: 0, assignmentsWithCosts: 1 });
     expect(schedule.resourceAssignments).toEqual([expect.objectContaining({ id: "TR-01", activityId: "T-100", resourceId: "R-EXC", resourceName: "حفار", resourceType: "nonlabor", targetCost: 5000, remainingCost: 2500, costPerUnit: 50, remainingQuantityPerHour: 1, costAccountId: "AC-01", wbsId: "W-01", source: "xer" })]);
+  });
+
+  it("records skipped relationship and resource rows as review evidence without changing the XER source", () => {
+    const raw = `${xerWithResourceAssignment}
+%T\tTASKPRED
+%F\ttask_pred_id\tpred_task_id\ttask_id\tpred_type
+%R\tREL-ORPHAN\tMISSING\tT-100\tPR_FS
+%E
+%T\tTASKRSRC
+%F\ttaskrsrc_id\ttask_id\trsrc_id
+%R\tTR-ORPHAN\tMISSING\tR-EXC
+%E`;
+    const result = importXerSchedule(raw, "orphan-links.xer");
+
+    expect(result.summary).toMatchObject({ relationshipsRead: 0, relationshipsSkipped: 1, resourceAssignmentsRead: 1, resourceAssignmentsSkipped: 1 });
+    expect(result.summary.warnings.join(" ")).toContain("تم تجاهل علاقة XER");
+    expect(result.summary.warnings.join(" ")).toContain("تم تجاهل إسناد مورد TASKRSRC");
   });
 });

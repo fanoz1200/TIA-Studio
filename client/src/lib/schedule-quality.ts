@@ -127,6 +127,12 @@ export function assessScheduleQuality(schedule: Schedule, xerSummary?: XerImport
     rules.push(xerSummary.calendarName
       ? rule("SQ-014", "سجل تقويم XER", "pass", `تمت قراءة اسم التقويم: ${xerSummary.calendarName}.`, "راجع نمط ساعات وأيام التقويم يدوياً لأن ترميز P6 لا يكتمل استعادته.")
       : rule("SQ-014", "سجل تقويم XER", "warning", "لم يُقرأ سجل تقويم واضح من XER.", "اختر تقويم العمل يدوياً قبل حساب تاريخ الإكمال."));
+    const relationshipsSkipped = xerSummary.relationshipsSkipped ?? 0;
+    const resourceAssignmentsSkipped = xerSummary.resourceAssignmentsSkipped ?? 0;
+    const skippedLinks = relationshipsSkipped + resourceAssignmentsSkipped;
+    rules.push(skippedLinks
+      ? rule("SQ-015", "نزاهة روابط XER المقروءة", "warning", `استبعد القارئ ${relationshipsSkipped} علاقة و${resourceAssignmentsSkipped} إسناد مورد لأن طرفاً مرجعياً لم يُقرأ كنشاط.`, "راجع TASKPRED وTASKRSRC في نسخة P6 المصدر؛ لم يجرِ تعديل الملف الأصلي.", skippedLinks)
+      : rule("SQ-015", "نزاهة روابط XER المقروءة", "pass", "لم يستبعد القارئ علاقات أو إسنادات موارد بسبب طرف نشاط غير مقروء.", "لا يلزم إجراء إضافي من هذه القاعدة."));
   }
 
   const summary = rules.reduce((current, item) => {
