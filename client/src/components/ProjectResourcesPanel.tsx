@@ -18,10 +18,10 @@ const resources = [
   { title: "مرجع المنهجيات", description: "ارتباط واجهات التطبيق بمنهجية TIA وبروتوكول SCL وحدود النتيجة المهنية.", href: "/manus-storage/TIA_STUDIO_METHODOLOGY_AR_f914a14f.md", icon: FileText, kind: "Markdown" },
   { title: "الذكاء الاصطناعي والتشغيل المحلي", description: "توضيح ما يُحسب محلياً، وما يحتاج حساباً وخدمات تخزين، وما لا يستخدم نموذجاً ذكياً إطلاقاً.", href: "/manus-storage/TIA_STUDIO_AI_AND_LOCAL_USE_AR_edf36f0d.md", icon: Info, kind: "Markdown" },
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
-  { title: "حزمة المصدر والاستمرارية — 1.0.4 (Master Claim)", description: "أرشيف TAR.GZ نظيف من المصدر والأدلة والأمثلة وبيانات Master Claim المولدة من ملف Excel. فكّه، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/TIA-Studio-1.0.4-Master-Claim-Integrated-Source.tar_0ad79f96.gz", icon: HardDriveDownload, kind: "TAR.GZ · Source + Handoff" },
+  { title: "حزمة المصدر والاستمرارية — 1.0.5 (Workshop)", description: "أرشيف TAR.GZ نظيف من المصدر والأدلة والأمثلة والمرجع الوصفي لـWorkshop NO8. لا يضم ملفات P6 أو Excel الأصلية للمستخدم. فكّه، ثبّت الاعتمادات، ثم اتبع دليل التشغيل المحلي قبل استخدام السجل والأدلة المشتركة.", href: "/manus-storage/TIA-Studio-1.0.5-source.tar_433b5530.gz", icon: HardDriveDownload, kind: "TAR.GZ · Source + Handoff" },
   { title: "دليل استمرارية المشروع وتسليمه", description: "خطوات حفظ المصدر، استعادة العمل، متابعة التطوير عبر GitHub أو من حزمة المصدر، وحدود ما يلزم اختباره قبل أي إصدار جديد.", href: "/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md", icon: GitBranch, kind: "Markdown · Continuity" },
-  { title: "نسخة سطح المكتب — Windows 1.0.4 (Master Claim)", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64، ويشمل مكتبة Master Claim الجديدة بـ70 سجلاً و8 أوراق دعم، إضافة إلى إصلاح بدء الخادم المضمّن. لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.4-Master-Claim-Windows-x64_2794edd5.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
-  { title: "نسخة سطح المكتب — Linux 1.0.4 (Master Claim)", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64، ويشمل مكتبة Master Claim الجديدة بـ70 سجلاً و8 أوراق دعم. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.4-Master-Claim-Linux-x64_3758a815.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
+  { title: "نسخة سطح المكتب — Windows 1.0.5 (Workshop)", description: "ملف EXE محمول واحد يفتح البرنامج مباشرة على Windows x64، ويشمل مرجع Workshop NO8 الوصفي وفحوص استيراد/CPM المحلية، من دون ملفات P6 أو Excel الأصلية. لا يحتاج تثبيت Node.js أو فك ZIP. غير موقّع رقمياً: افحصه ببرنامج الحماية ثم ابدأ بمشروع تدريبي قبل أي ملف حقيقي.", href: "/manus-storage/TIA-Studio-1.0.5-Windows-x64_290fa539.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
+  { title: "نسخة سطح المكتب — Linux 1.0.5 (Workshop)", description: "ملف AppImage واحد يفتح البرنامج محلياً على Linux x64، ويشمل مرجع Workshop NO8 الوصفي وفحوص الاستيراد المحلية، من دون ملفات P6 أو Excel الأصلية. امنحه صلاحية التنفيذ مرة واحدة، ثم افتحه واستخدم مشروعاً تدريبياً للتحقق قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.5-Linux-x64_1ec045c9.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
 const examples = [
@@ -79,8 +79,8 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="desktop-download-quick" aria-label="تنزيل نسخة الكمبيوتر">
       <div><HardDriveDownload size={24} /><div><b>حمّل نسخة الكمبيوتر الآن</b><p>اختر نظامك ثم افتح ملفاً واحداً فقط: لا تحتاج إلى Node.js أو أوامر أو فك ملف ZIP.</p></div></div>
       <div className="desktop-download-quick__actions">
-        <a className="desktop-download-quick__primary" href={resolveResourceDownloadHref(resources[7].href)} download><Download size={17} />Windows 1.0.4 (Master Claim) — تنزيل EXE</a>
-        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} download><Download size={17} />Linux 1.0.4 (Master Claim) — تنزيل AppImage</a>
+        <a className="desktop-download-quick__primary" href={resolveResourceDownloadHref(resources[7].href)} download><Download size={17} />Windows 1.0.5 (Workshop) — تنزيل EXE</a>
+        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} download><Download size={17} />Linux 1.0.5 (Workshop) — تنزيل AppImage</a>
       </div>
     </section>
 

@@ -71,7 +71,9 @@ if (!existsSync(packagedElectron)) {
 
 const port = await chooseLocalPort();
 const child = spawn(packagedElectron, [windowsServerEntry], {
-  cwd: path.dirname(windowsServerEntry),
+  // app.asar ملف وليس مجلداً، لذلك لا يجوز استخدام dirname لمسار ملف داخله
+  // كدليل عمل. يشغّل Electron نقطة الدخول من داخل الأرشيف مع بقاء cwd صالحاً.
+  cwd: path.dirname(windowsAsar),
   env: {
     ...process.env,
     ELECTRON_RUN_AS_NODE: "1",
