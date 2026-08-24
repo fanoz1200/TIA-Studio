@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "kitVersion": "1.0.0",
+  "kitName": "TIA Studio Local-First Windows Desktop Blueprint",
+  "purpose": "A reusable engineering brief for turning a local web application into a single-install Windows desktop application without depending on a hosted website at run time.",
+  "principles": [
+    "Local-first: calculations, temporary working data and source files stay on the user's computer by default.",
+    "Deterministic domain engine: keep critical calculations in testable local modules, not in a generative-model prompt.",
+    "Production must not import development-only tooling such as Vite.",
+    "The desktop shell starts the bundled production server once, then opens localhost in Electron.",
+    "Treat raw customer files, credentials and legal evidence as confidential; do not commit, package or send them to external AI services.",
+    "Every release requires repeatable tests, a production build and a real-device installer test before it is described as validated."
+  ],
+  "referenceArchitecture": {
+    "frontend": "React + TypeScript + Vite",
+    "localServer": "Node/Express bundled for production",
+    "desktopShell": "Electron + electron-builder",
+    "runtimeFlow": [
+      "Build the web client into dist/public.",
+      "Bundle the Node production entry point into dist/index.js.",
+      "Electron launches the bundled local server inside its main process or as an explicit child process.",
+      "Electron waits for a localhost health response on an allowed port range.",
+      "Electron opens a BrowserWindow to the local URL.",
+      "On quit, Electron stops the local server cleanly."
+    ],
+    "productionBoundary": {
+      "required": [
+        "Serve static dist/public assets through a production-only server module.",
+        "Load Vite dynamically only when NODE_ENV is development.",
+        "Keep Vite and vite.config imports out of the production bundle."
+      ],
+      "releaseGate": "Fail the release if the bundled production server imports vite, createViteServer or vite.config."
+    }
+  },
+  "releaseWorkflow": [
+    {
+      "step": 1,
+      "name": "Test",
+      "commandPattern": "pnpm test && pnpm check"
+    },
+    {
+      "step": 2,
+      "name": "Build",
+      "commandPattern": "pnpm build"
+    },
+    {
+      "step": 3,
+      "name": "Verify production boundary",
+      "checks": [
+        "Production bundle has no Vite import chain.",
+        "Desktop package configuration creates the intended targets.",
+        "No private source data or environment files are in the package."
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Package",
+      "targets": [
+        "NSIS Setup for normal users and Start-menu integration",
+        "Portable executable as a fallback for restricted devices"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "Smoke test",
+      "checks": [
+        "The portable executable starts the local server and returns an HTTP response.",
+        "The Setup installer is tested on a real Windows device for install, Start-menu shortcut and launch."
+      ]
+    },
+    {
+      "step": 6,
+      "name": "Handover",
+      "checks": [
+        "Record version, SHA-256, test evidence and known limitations.",
+        "Commit source, docs and tests to a protected private repository.",
+        "Create a manual source handover package outside the project folder."
+      ]
+    }
+  ],
+  "acceptanceCriteria": [
+    "A Setup installation launches from Windows Start on a real Windows device.",
+    "The portable executable launches without network access after first download.",
+    "Production packaging does not require vite or other development dependencies at runtime.",
+    "The app clearly distinguishes local desktop access from controlled web-workspace access.",
+    "The release contains no raw customer schedules, spreadsheets, evidence files, secrets or credentials."
+  ],
+  "agentInstructions": [
+    "Read the repository's existing packaging, test and security documentation before changing code.",
+    "Do not substitute a development server for the production server.",
+    "Do not claim Primavera parity, legal entitlement or an installer test that has not actually been run.",
+    "Write or update automated tests for production-import boundaries and packaging configuration.",
+    "Keep a changelog and a release manifest; do not silently overwrite older distributed artifacts."
+  ],
+  "inputsRequiredFromProjectOwner": [
+    "Target operating systems and architectures.",
+    "Whether local-only use or controlled web collaboration is required.",
+    "Real-device test feedback for each installer target.",
+    "A decision on code-repository privacy and branch protection."
+  ],
+  "nonGoals": [
+    "This blueprint is not a license-revocation system for already distributed local executables.",
+    "This blueprint does not provide code signing certificates or bypass Windows SmartScreen.",
+    "This blueprint does not move customer evidence into a repository or an external model."
+  ]
+}
