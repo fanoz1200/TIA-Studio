@@ -10,13 +10,14 @@ describe("ProjectResourcesPanel", () => {
     expect(screen.getByRole("heading", { name: "مركز المعرفة والتنزيل" })).toBeTruthy();
     expect(screen.getByText("لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل.")).toBeTruthy();
     expect(screen.getByText("01 — برنامج الأساس").closest("a")?.getAttribute("href")).toBe("/manus-storage/01-baseline-schedule_1dcca83b.json");
-    expect(screen.getAllByText("تنزيل")).toHaveLength(9);
+    expect(screen.getAllByText("تنزيل")).toHaveLength(10);
     expect(screen.getByText("حزمة المصدر والاستمرارية — 1.0.7").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz");
     expect(screen.getByText("دليل استمرارية المشروع وتسليمه").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md");
-    expect(screen.getByText("نسخة سطح المكتب — Windows 1.0.7").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Windows-x64_a5e482c9.exe");
+    expect(screen.getByText("نسخة سطح المكتب — Windows 1.0.7 Setup (الموصى بها)").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Windows-x64-Setup_7327be86.exe");
+    expect(screen.getByText("نسخة سطح المكتب — Windows 1.0.7 المحمولة").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Windows-x64-Portable_20a0a969.exe");
     expect(screen.getByText("نسخة سطح المكتب — Linux 1.0.7").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage");
-    expect(screen.getByRole("link", { name: /Windows 1.0.7 — تنزيل EXE/ }).getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Windows-x64_a5e482c9.exe");
-    expect(screen.getByRole("link", { name: /Linux 1.0.7 — تنزيل AppImage/ }).getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage");
+    expect(screen.getByRole("link", { name: /Windows 1.0.7 — Setup/ }).getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Windows-x64-Setup_7327be86.exe");
+    expect(screen.getByRole("link", { name: /Windows 1.0.7 — محمول/ }).getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Windows-x64-Portable_20a0a969.exe");
     expect(screen.getByRole("heading", { name: "الدليل الحيّ: كيف يعمل البرنامج من البداية للنهاية؟" })).toBeTruthy();
     expect(screen.getByText("الإصدار 1.0.7")).toBeTruthy();
     expect(screen.getByText("تشغيل محلي بنقرة واحدة")).toBeTruthy();

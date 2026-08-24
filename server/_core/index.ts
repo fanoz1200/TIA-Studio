@@ -1,12 +1,14 @@
 import "dotenv/config";
 import express from "express";
 import { createServer, type Server } from "http";
+import path from "path";
+import { pathToFileURL } from "url";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { serveStatic, setupVite } from "./vite";
+import { serveStatic } from "./static";
 
 export async function startServer(): Promise<Server> {
   const app = express();
@@ -24,8 +26,11 @@ export async function startServer(): Promise<Server> {
       createContext,
     })
   );
-  // development mode uses Vite, production mode uses static files
+  // لا نحمّل Vite في مدخل الإنتاج؛ حزمة Windows تحذف devDependencies ومنها vite.
+  // مسار الملف يُبنى وقت التشغيل فقط كي لا يضيفه esbuild إلى dist/index.js.
   if (process.env.NODE_ENV === "development") {
+    const viteEntry = pathToFileURL(path.join(import.meta.dirname, "vite.ts")).href;
+    const { setupVite } = await import(viteEntry);
     await setupVite(app, server);
   } else {
     serveStatic(app);

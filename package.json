@@ -19,7 +19,9 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "desktop:dev": "pnpm build && electron .",
     "desktop:pack": "pnpm build && electron-builder --linux AppImage --x64 --publish never",
-    "desktop:pack:windows": "pnpm build && electron-builder --win portable --x64 --publish never",
+    "desktop:pack:windows:portable": "pnpm build && electron-builder --win portable --x64 --publish never --config.win.artifactName='TIA-Studio-${version}-Windows-x64-Portable.${ext}'",
+    "desktop:pack:windows:setup": "pnpm build && electron-builder --win nsis --x64 --publish never --config.win.artifactName='TIA-Studio-${version}-Windows-x64-Setup.${ext}'",
+    "desktop:pack:windows": "pnpm build && electron-builder --win portable --x64 --publish never --config.win.artifactName='TIA-Studio-${version}-Windows-x64-Portable.${ext}' && electron-builder --win nsis --x64 --publish never --config.win.artifactName='TIA-Studio-${version}-Windows-x64-Setup.${ext}'",
     "desktop:release": "pnpm build && electron-builder --linux AppImage --win portable --x64 --publish never",
     "desktop:verify:packaged": "node desktop/verify-packaged-local-server.mjs",
     "desktop:verify:windows-sandbox": "bash desktop/verify-windows-package-wine.sh",
@@ -154,9 +156,20 @@
     },
     "win": {
       "artifactName": "TIA-Studio-${version}-Windows-x64.${ext}",
+      "signAndEditExecutable": false,
+      "signExecutable": false,
       "target": [
+        "nsis",
         "portable"
       ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": false
     }
   },
   "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af",

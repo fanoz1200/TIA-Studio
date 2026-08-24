@@ -14,7 +14,7 @@
 
 ## ما تم التحقق منه قبل التجهيز
 
-اجتازت المنصة 134 اختباراً في 44 ملف اختبار، وفحص TypeScript وبناء الإنتاج. كما روجعت واجهات الدليل والموسوعة والرحلة والتقويم وXER وسجل القضايا وNotice على سطح المكتب والهاتف.
+بعد إصلاح حزمة Windows، اجتازت المنصة 142 اختباراً في 46 ملف اختبار، وفحص TypeScript وبناء الإنتاج. أضيفت اختبارات تغليف سطح المكتب ضمن المجموعة، مع فحص يمنع أن يحمل خادم الإنتاج Vite وقت تشغيل Windows. كما روجعت واجهات الدليل والموسوعة والرحلة والتقويم وXER وسجل القضايا وNotice على سطح المكتب والهاتف.
 
 ## حدود مهنية مهمة
 
@@ -22,13 +22,14 @@
 
 ## تحقق Windows المطلوب
 
-بعد بناء ملف Windows Portable، يجتاز الملف فحص بدء محلي داخل بيئة معزولة. يظل اختبار المستخدم الأخير على جهاز Windows فعلي، بحساب مستخدم عادي ومن دون صلاحيات مسؤول، خطوة تسليم عملية للتأكد من توافق بيئة المستخدم وSmartScreen والطابعات وفتح ملفات التصدير.
+ملف Windows Portable الحالي اجتاز فحص بدء محلي داخل بيئة معزولة. يعالج Setup وPortable الحاليان خطأ `Cannot find package 'vite'` الذي ظهر في حزمة 1.0.7 الأسبق عند التشغيل من `%LocalAppData%\Temp`. بُني Setup القياسي بنجاح، لكن لم يكتمل فحص تثبيته داخل Wine بسبب قيود بيئة الاختبار؛ لذلك يظل اختبار المستخدم على جهاز Windows فعلي، بحساب مستخدم عادي ومن دون صلاحيات مسؤول، خطوة تسليم عملية للتأكد من التثبيت وSmartScreen والطابعات وفتح ملفات التصدير.
 
 ## أصول التنزيل وبصماتها
 
 | الحزمة | رابط التنزيل | SHA-256 |
 |---|---|---|
-| Windows x64 | [`TIA-Studio-1.0.7-Windows-x64.exe`](/manus-storage/TIA-Studio-1.0.7-Windows-x64_a5e482c9.exe) | `2ea651d2cfed95cbfb2d6636529f9fb3139cc97142372016207eef164225b032` |
+| Windows x64 — Setup (موصى به) | [`TIA-Studio-1.0.7-Windows-x64-Setup.exe`](/manus-storage/TIA-Studio-1.0.7-Windows-x64-Setup_7327be86.exe) | `15dcc0c6c5523fe36c6363b6c0f09ab69afa46210f8b019f9922e10767cdbd83` |
+| Windows x64 — Portable | [`TIA-Studio-1.0.7-Windows-x64-Portable.exe`](/manus-storage/TIA-Studio-1.0.7-Windows-x64-Portable_20a0a969.exe) | `c06896df092c43fafdfe8b788a679a3ca6ad91b033f498f4f33c2d24ff6ce224` |
 | Linux x64 | [`TIA-Studio-1.0.7-Linux-x64.AppImage`](/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage) | `3668d4ef09e192ec4e2ba9f7b50bf89aab999bdc6ce8e72f0284dbab480249b6` |
 | المصدر | [`TIA-Studio-1.0.7-Source.tar.gz`](/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz) | `fde9dbadea904b5142594eccdfff8ef8ab95f8dad4f225af43f1b5217f3b3d4d` |
 

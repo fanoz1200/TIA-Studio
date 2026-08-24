@@ -30,6 +30,15 @@ describe("حزمة سطح المكتب المحلية", () => {
     expect(server).not.toContain("findAvailablePort(preferredPort)");
   });
 
+  it("لا يحمّل Vite مع خادم الإنتاج المعبأ في Windows", () => {
+    const server = fs.readFileSync(path.join(projectRoot, "server", "_core", "index.ts"), "utf8");
+    const staticServer = fs.readFileSync(path.join(projectRoot, "server", "_core", "static.ts"), "utf8");
+    expect(server).toContain('import { serveStatic } from "./static"');
+    expect(server).toContain("const viteEntry = pathToFileURL");
+    expect(server).not.toContain('from "./vite"');
+    expect(staticServer).not.toContain('from "vite"');
+  });
+
   it("يطلب من الخادم المضمّن البقاء على حلقة الجهاز المحلية فقط", () => {
     const main = fs.readFileSync(path.join(projectRoot, "desktop", "main.cjs"), "utf8");
     expect(main).toContain('process.env.TIA_DESKTOP_LOCAL = "1"');

@@ -16,10 +16,20 @@ describe("عقد نسخة سطح المكتب", () => {
     expect(main).toContain("127.0.0.1");
   });
 
-  it("يوثق حدوده ويحتوي إعداد بناء مثبتاً", () => {
+  it("يوثق حدوده ويحتوي إعداد بناء مثبت وملف محمول", () => {
     const manifest = JSON.parse(readProjectFile("package.json")) as { scripts: Record<string, string>; build: Record<string, unknown> };
     expect(manifest.scripts["desktop:pack"]).toContain("electron-builder");
-    expect(manifest.build.extraResources).toBeDefined();
+    expect(manifest.scripts["desktop:pack:windows:portable"]).toContain("--win portable");
+    expect(manifest.scripts["desktop:pack:windows:setup"]).toContain("--win nsis");
+    expect(manifest.scripts["desktop:pack:windows:setup"]).toContain("Windows-x64-Setup");
+    expect(manifest.build.files).toContain("dist/**/*");
+    expect(manifest.build.files).toContain("node_modules/**/*");
+    expect((manifest.build.win as { signAndEditExecutable: boolean }).signAndEditExecutable).toBe(false);
+    expect((manifest.build.win as { signExecutable: boolean }).signExecutable).toBe(false);
+    expect((manifest.build.win as { target: string[] }).target).toEqual(expect.arrayContaining(["nsis", "portable"]));
+    expect((manifest.build.nsis as { script?: string }).script).toBeUndefined();
+    expect((manifest.build.nsis as { runAfterFinish?: boolean }).runAfterFinish).toBe(false);
+    expect(existsSync(resolve(root, "desktop/installer.nsi"))).toBe(false);
     expect(existsSync(resolve(root, "docs/TIA_STUDIO_DESKTOP_RELEASE_AR.md"))).toBe(true);
   });
 });
