@@ -32,6 +32,8 @@ export const projectMembers = mysqlTable("project_members", {
   projectKey: varchar("projectKey", { length: 128 }).notNull(),
   memberUserId: int("memberUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
   projectRole: mysqlEnum("projectRole", ["planner", "contracts", "claims_manager", "viewer"]).notNull().default("viewer"),
+  /** ينتهي حق المراجع في مساحة الفريق عند هذا الموعد؛ null محفوظ للعضويات القديمة فقط. */
+  accessExpiresAt: timestamp("accessExpiresAt"),
   addedBy: int("addedBy").notNull().references(() => users.id),
   addedAt: timestamp("addedAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -47,6 +49,8 @@ export const projectInvitations = mysqlTable("project_invitations", {
   projectKey: varchar("projectKey", { length: 128 }).notNull(),
   email: varchar("email", { length: 320 }).notNull(),
   projectRole: mysqlEnum("projectRole", ["planner", "contracts", "claims_manager", "viewer"]).notNull().default("viewer"),
+  /** مدة العضوية بعد القبول، منفصلة عن صلاحية رابط الدعوة ذات الأيام السبعة. */
+  accessDurationDays: int("accessDurationDays").notNull().default(30),
   tokenHash: varchar("tokenHash", { length: 64 }).notNull(),
   status: mysqlEnum("status", ["pending", "accepted", "cancelled", "expired"]).notNull().default("pending"),
   expiresAt: timestamp("expiresAt").notNull(),

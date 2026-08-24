@@ -9,6 +9,7 @@ const nonNegative = z.number().finite().min(0).optional();
 const resourceType = z.enum(["labor", "nonlabor", "material", "unknown"]);
 const noticeStatus = z.enum(["draft", "under_review", "sent", "overdue", "cancelled"]);
 const projectRole = z.enum(["planner", "contracts", "claims_manager", "viewer"]);
+const accessDurationDays = z.number().int().min(1).max(365);
 
 const resourceAssignment = z.object({
   id: key, activityId: key, resourceId: z.string().trim().max(128).optional(), resourceName: z.string().trim().max(255).optional(), resourceType,
@@ -48,14 +49,14 @@ export const claimReviewRouter = router({
 
 export const projectMemberRouter = router({
   list: protectedProcedure.input(z.object({ projectKey: key })).query(({ ctx, input }) => listProjectMembers(ctx.user.id, input.projectKey)),
-  addByEmail: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole })).mutation(({ ctx, input }) => addProjectMember(ctx.user.id, input)),
-  updateRole: protectedProcedure.input(z.object({ projectKey: key, memberUserId: z.number().int().positive(), projectRole })).mutation(({ ctx, input }) => updateProjectMemberRole(ctx.user.id, input)),
+  addByEmail: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole, accessDurationDays })).mutation(({ ctx, input }) => addProjectMember(ctx.user.id, input)),
+  updateRole: protectedProcedure.input(z.object({ projectKey: key, memberUserId: z.number().int().positive(), projectRole, accessDurationDays: accessDurationDays.optional() })).mutation(({ ctx, input }) => updateProjectMemberRole(ctx.user.id, input)),
   remove: protectedProcedure.input(z.object({ projectKey: key, memberUserId: z.number().int().positive() })).mutation(({ ctx, input }) => removeProjectMember(ctx.user.id, input)),
 });
 
 export const projectInvitationRouter = router({
   list: protectedProcedure.input(z.object({ projectKey: key })).query(({ ctx, input }) => listProjectInvitations(ctx.user.id, input.projectKey)),
-  create: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole, origin: z.string().url().max(512) })).mutation(({ ctx, input }) => createProjectInvitation(ctx.user.id, input)),
+  create: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole, accessDurationDays, origin: z.string().url().max(512) })).mutation(({ ctx, input }) => createProjectInvitation(ctx.user.id, input)),
   cancel: protectedProcedure.input(z.object({ projectKey: key, invitationId: z.number().int().positive() })).mutation(({ ctx, input }) => cancelProjectInvitation(ctx.user.id, input)),
   accept: protectedProcedure.input(z.object({ token: z.string().trim().min(40).max(256) })).mutation(({ ctx, input }) => acceptProjectInvitation(ctx.user.id, input.token)),
 });

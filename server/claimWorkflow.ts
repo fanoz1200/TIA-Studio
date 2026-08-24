@@ -73,6 +73,23 @@ export function canAssignReviewParticipant(ownerUserId: number, actingUserId: nu
 export type ProjectMemberRole = "planner" | "contracts" | "claims_manager" | "viewer";
 export type ProjectInvitationStatus = "pending" | "accepted" | "cancelled" | "expired";
 
+/** مدة وصول عضو مساحة العمل. لا تعني صلاحية رابط الدعوة الذي ينتهي خلال سبعة أيام. */
+export function accessExpiryFromDays(accessDurationDays: number, from = new Date()) {
+  if (!Number.isInteger(accessDurationDays) || accessDurationDays < 1 || accessDurationDays > 365) throw new Error("مدة الوصول يجب أن تكون من يوم واحد إلى 365 يوماً.");
+  const expiresAt = new Date(from.getTime());
+  expiresAt.setUTCDate(expiresAt.getUTCDate() + accessDurationDays);
+  return expiresAt;
+}
+
+export function isProjectMemberAccessActive(accessExpiresAt: Date | null | undefined, now = new Date()) {
+  return !accessExpiresAt || accessExpiresAt.getTime() > now.getTime();
+}
+
+export function canParticipateInReview(input: { isOwner: boolean; role?: ProjectMemberRole; accessExpiresAt?: Date | null; stage: "planning_review" | "contract_review" | "claims_manager_approval"; now?: Date }) {
+  if (input.isOwner) return true;
+  return Boolean(input.role && isProjectMemberAccessActive(input.accessExpiresAt, input.now) && canServeReviewStage(input.role, input.stage));
+}
+
 export function hashInvitationToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
@@ -90,26 +107,29 @@ export function canServeReviewStage(role: ProjectMemberRole | "owner", stage: "p
 export async function listProjectMembers(ownerUserId: number, projectKey: string) {
   const db = await requireDb();
   const [owner] = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.id, ownerUserId)).limit(1);
-  const members = await db.select({ id: projectMembers.id, memberUserId: projectMembers.memberUserId, projectRole: projectMembers.projectRole, addedAt: projectMembers.addedAt, name: users.name, email: users.email }).from(projectMembers).innerJoin(users, eq(projectMembers.memberUserId, users.id)).where(and(eq(projectMembers.ownerUserId, ownerUserId), eq(projectMembers.projectKey, projectKey))).orderBy(asc(users.name));
+  const now = new Date();
+  const members = await db.select({ id: projectMembers.id, memberUserId: projectMembers.memberUserId, projectRole: projectMembers.projectRole, accessExpiresAt: projectMembers.accessExpiresAt, addedAt: projectMembers.addedAt, name: users.name, email: users.email }).from(projectMembers).innerJoin(users, eq(projectMembers.memberUserId, users.id)).where(and(eq(projectMembers.ownerUserId, ownerUserId), eq(projectMembers.projectKey, projectKey))).orderBy(asc(users.name));
   return [
-    ...(owner ? [{ id: 0, memberUserId: owner.id, projectRole: "owner" as const, name: owner.name || "مالك المشروع", email: owner.email, addedAt: null, isOwner: true }] : []),
-    ...members.map(member => ({ ...member, name: member.name || member.email || `عضو ${member.memberUserId}`, isOwner: false })),
+    ...(owner ? [{ id: 0, memberUserId: owner.id, projectRole: "owner" as const, accessExpiresAt: null, isAccessExpired: false, name: owner.name || "مالك المشروع", email: owner.email, addedAt: null, isOwner: true }] : []),
+    ...members.map(member => ({ ...member, isAccessExpired: !isProjectMemberAccessActive(member.accessExpiresAt, now), name: member.name || member.email || `عضو ${member.memberUserId}`, isOwner: false })),
   ];
 }
 
-export async function addProjectMember(ownerUserId: number, input: { projectKey: string; email: string; projectRole: ProjectMemberRole }) {
+export async function addProjectMember(ownerUserId: number, input: { projectKey: string; email: string; projectRole: ProjectMemberRole; accessDurationDays: number }) {
   const db = await requireDb();
   const normalizedEmail = input.email.trim().toLowerCase();
   const [member] = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.email, normalizedEmail)).limit(1);
   if (!member) throw new Error("لا يوجد مستخدم مسجل بهذا البريد. اطلب من العضو تسجيل الدخول إلى التطبيق مرة واحدة أولاً.");
   if (member.id === ownerUserId) throw new Error("مالك المشروع موجود بالفعل في قائمة الأعضاء.");
-  await db.insert(projectMembers).values({ ownerUserId, projectKey: input.projectKey, memberUserId: member.id, projectRole: input.projectRole, addedBy: ownerUserId }).onDuplicateKeyUpdate({ set: { projectRole: input.projectRole, addedBy: ownerUserId, updatedAt: new Date() } });
-  return { memberUserId: member.id, name: member.name || member.email || "عضو المشروع", email: member.email, projectRole: input.projectRole };
+  const accessExpiresAt = accessExpiryFromDays(input.accessDurationDays);
+  await db.insert(projectMembers).values({ ownerUserId, projectKey: input.projectKey, memberUserId: member.id, projectRole: input.projectRole, accessExpiresAt, addedBy: ownerUserId }).onDuplicateKeyUpdate({ set: { projectRole: input.projectRole, accessExpiresAt, addedBy: ownerUserId, updatedAt: new Date() } });
+  return { memberUserId: member.id, name: member.name || member.email || "عضو المشروع", email: member.email, projectRole: input.projectRole, accessExpiresAt: accessExpiresAt.toISOString() };
 }
 
-export async function updateProjectMemberRole(ownerUserId: number, input: { projectKey: string; memberUserId: number; projectRole: ProjectMemberRole }) {
+export async function updateProjectMemberRole(ownerUserId: number, input: { projectKey: string; memberUserId: number; projectRole: ProjectMemberRole; accessDurationDays?: number }) {
   const db = await requireDb();
-  const result = await db.update(projectMembers).set({ projectRole: input.projectRole, addedBy: ownerUserId, updatedAt: new Date() }).where(and(eq(projectMembers.ownerUserId, ownerUserId), eq(projectMembers.projectKey, input.projectKey), eq(projectMembers.memberUserId, input.memberUserId)));
+  const accessExpiresAt = input.accessDurationDays === undefined ? undefined : accessExpiryFromDays(input.accessDurationDays);
+  const result = await db.update(projectMembers).set({ projectRole: input.projectRole, ...(accessExpiresAt ? { accessExpiresAt } : {}), addedBy: ownerUserId, updatedAt: new Date() }).where(and(eq(projectMembers.ownerUserId, ownerUserId), eq(projectMembers.projectKey, input.projectKey), eq(projectMembers.memberUserId, input.memberUserId)));
   if (!result[0]?.affectedRows) throw new Error("عضو المشروع غير موجود أو لا تملك صلاحية تعديل دوره.");
 }
 
@@ -120,23 +140,24 @@ export async function removeProjectMember(ownerUserId: number, input: { projectK
 }
 
 /** ينشئ رابط دعوة قصير العمر. لا يُحفظ الرمز الخام ولا يرسل الخادم بريداً تلقائياً. */
-export async function createProjectInvitation(ownerUserId: number, input: { projectKey: string; email: string; projectRole: ProjectMemberRole; origin: string }) {
+export async function createProjectInvitation(ownerUserId: number, input: { projectKey: string; email: string; projectRole: ProjectMemberRole; accessDurationDays: number; origin: string }) {
   const db = await requireDb();
   const email = input.email.trim().toLowerCase();
   const [owner] = await db.select({ email: users.email }).from(users).where(eq(users.id, ownerUserId)).limit(1);
   if (owner?.email?.toLowerCase() === email) throw new Error("لا يمكن دعوة مالك المشروع إلى مشروعه نفسه.");
   const token = randomBytes(32).toString("base64url");
   const expiresAt = invitationExpiry();
-  await db.insert(projectInvitations).values({ ownerUserId, projectKey: input.projectKey, email, projectRole: input.projectRole, tokenHash: hashInvitationToken(token), status: "pending", expiresAt, sentBy: ownerUserId }).onDuplicateKeyUpdate({ set: { projectRole: input.projectRole, tokenHash: hashInvitationToken(token), status: "pending", expiresAt, acceptedByUserId: null, acceptedAt: null, sentBy: ownerUserId, updatedAt: new Date() } });
+  const accessDurationDays = accessExpiryFromDays(input.accessDurationDays) && input.accessDurationDays;
+  await db.insert(projectInvitations).values({ ownerUserId, projectKey: input.projectKey, email, projectRole: input.projectRole, accessDurationDays, tokenHash: hashInvitationToken(token), status: "pending", expiresAt, sentBy: ownerUserId }).onDuplicateKeyUpdate({ set: { projectRole: input.projectRole, accessDurationDays, tokenHash: hashInvitationToken(token), status: "pending", expiresAt, acceptedByUserId: null, acceptedAt: null, sentBy: ownerUserId, updatedAt: new Date() } });
   const inviteLink = `${input.origin.replace(/\/$/, "")}/?invite=${encodeURIComponent(token)}`;
-  return { email, projectRole: input.projectRole, expiresAt: expiresAt.toISOString(), inviteLink, emailSubject: `دعوة للانضمام إلى مشروع TIA: ${input.projectKey}`, emailBody: `تمت دعوتك للانضمام إلى مشروع «${input.projectKey}» بدور «${input.projectRole}». سجّل الدخول بالبريد نفسه ثم افتح الرابط التالي قبل ${expiresAt.toISOString().slice(0, 10)}:\n${inviteLink}` };
+  return { email, projectRole: input.projectRole, accessDurationDays, expiresAt: expiresAt.toISOString(), inviteLink, emailSubject: `دعوة للانضمام إلى مشروع TIA: ${input.projectKey}`, emailBody: `تمت دعوتك للانضمام إلى مشروع «${input.projectKey}» بدور «${input.projectRole}» لمدة ${accessDurationDays} يوماً من تاريخ القبول. سجّل الدخول بالبريد نفسه ثم افتح الرابط التالي قبل ${expiresAt.toISOString().slice(0, 10)}:\n${inviteLink}` };
 }
 
 export async function listProjectInvitations(ownerUserId: number, projectKey: string) {
   const db = await requireDb();
   const now = new Date();
   await db.update(projectInvitations).set({ status: "expired", updatedAt: now }).where(and(eq(projectInvitations.ownerUserId, ownerUserId), eq(projectInvitations.projectKey, projectKey), eq(projectInvitations.status, "pending"), lt(projectInvitations.expiresAt, now)));
-  return db.select({ id: projectInvitations.id, email: projectInvitations.email, projectRole: projectInvitations.projectRole, status: projectInvitations.status, expiresAt: projectInvitations.expiresAt, acceptedAt: projectInvitations.acceptedAt, createdAt: projectInvitations.createdAt, acceptedByName: users.name, acceptedByEmail: users.email }).from(projectInvitations).leftJoin(users, eq(projectInvitations.acceptedByUserId, users.id)).where(and(eq(projectInvitations.ownerUserId, ownerUserId), eq(projectInvitations.projectKey, projectKey))).orderBy(desc(projectInvitations.updatedAt));
+  return db.select({ id: projectInvitations.id, email: projectInvitations.email, projectRole: projectInvitations.projectRole, accessDurationDays: projectInvitations.accessDurationDays, status: projectInvitations.status, expiresAt: projectInvitations.expiresAt, acceptedAt: projectInvitations.acceptedAt, createdAt: projectInvitations.createdAt, acceptedByName: users.name, acceptedByEmail: users.email }).from(projectInvitations).leftJoin(users, eq(projectInvitations.acceptedByUserId, users.id)).where(and(eq(projectInvitations.ownerUserId, ownerUserId), eq(projectInvitations.projectKey, projectKey))).orderBy(desc(projectInvitations.updatedAt));
 }
 
 export async function cancelProjectInvitation(ownerUserId: number, input: { projectKey: string; invitationId: number }) {
@@ -160,8 +181,9 @@ export async function acceptProjectInvitation(userId: number, token: string) {
     if (!user?.email || user.email.trim().toLowerCase() !== invitation.email.trim().toLowerCase()) throw new Error("يجب تسجيل الدخول بالبريد الذي استلم الدعوة لقبولها.");
     const accepted = await tx.update(projectInvitations).set({ status: "accepted", acceptedByUserId: userId, acceptedAt: now, updatedAt: now }).where(and(eq(projectInvitations.id, invitation.id), eq(projectInvitations.status, "pending"), eq(projectInvitations.tokenHash, tokenHash)));
     if (!accepted[0]?.affectedRows) throw new Error("تمت معالجة الدعوة في جلسة أخرى؛ أعد تحميل الصفحة.");
-    await tx.insert(projectMembers).values({ ownerUserId: invitation.ownerUserId, projectKey: invitation.projectKey, memberUserId: userId, projectRole: invitation.projectRole, addedBy: invitation.sentBy }).onDuplicateKeyUpdate({ set: { projectRole: invitation.projectRole, addedBy: invitation.sentBy, updatedAt: now } });
-    return { projectKey: invitation.projectKey, projectRole: invitation.projectRole, ownerUserId: invitation.ownerUserId, memberName: user.name || user.email };
+    const accessExpiresAt = accessExpiryFromDays(invitation.accessDurationDays, now);
+    await tx.insert(projectMembers).values({ ownerUserId: invitation.ownerUserId, projectKey: invitation.projectKey, memberUserId: userId, projectRole: invitation.projectRole, accessExpiresAt, addedBy: invitation.sentBy }).onDuplicateKeyUpdate({ set: { projectRole: invitation.projectRole, accessExpiresAt, addedBy: invitation.sentBy, updatedAt: now } });
+    return { projectKey: invitation.projectKey, projectRole: invitation.projectRole, ownerUserId: invitation.ownerUserId, accessExpiresAt: accessExpiresAt.toISOString(), memberName: user.name || user.email };
   });
 }
 
@@ -326,9 +348,9 @@ export async function assignReviewParticipant(userId: number, input: { reviewId:
     const [reviewer] = await tx.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.id, input.reviewerId)).limit(1);
     if (!reviewer) throw new Error("معرّف المراجع غير صحيح.");
     if (reviewer.id !== review.userId) {
-      const [membership] = await tx.select({ id: projectMembers.id, projectRole: projectMembers.projectRole }).from(projectMembers).where(and(eq(projectMembers.ownerUserId, review.userId), eq(projectMembers.projectKey, review.projectKey), eq(projectMembers.memberUserId, reviewer.id))).limit(1);
+      const [membership] = await tx.select({ id: projectMembers.id, projectRole: projectMembers.projectRole, accessExpiresAt: projectMembers.accessExpiresAt }).from(projectMembers).where(and(eq(projectMembers.ownerUserId, review.userId), eq(projectMembers.projectKey, review.projectKey), eq(projectMembers.memberUserId, reviewer.id))).limit(1);
       if (!membership) throw new Error("لا يمكن تعيين مراجع خارج قائمة أعضاء هذا المشروع.");
-      if (!canServeReviewStage(membership.projectRole, input.stage)) throw new Error("دور عضو المشروع لا يطابق مرحلة المراجعة المحددة؛ عيّن مراجع التخطيط أو العقود أو مدير المطالبات المناسب.");
+      if (!canParticipateInReview({ isOwner: false, role: membership.projectRole, accessExpiresAt: membership.accessExpiresAt, stage: input.stage })) throw new Error("تعذر تعيين المراجع لأن صلاحية وصوله منتهية أو لا يطابق دوره مرحلة المراجعة.");
     }
     await tx.insert(claimReviewParticipants).values({ claimReviewId: review.id, stage: input.stage, reviewerId: input.reviewerId, assignedBy: userId }).onDuplicateKeyUpdate({ set: { reviewerId: input.reviewerId, assignedBy: userId, assignedAt: new Date() } });
     await tx.insert(claimReviewStages).values({ claimReviewId: review.id, stage: input.stage, reviewerId: userId, decision: "commented", comment: `تم تعيين المراجع «${reviewer.name || reviewer.email || "عضو المشروع"}» لهذه المرحلة.` });
@@ -345,6 +367,10 @@ export async function recordReviewDecision(userId: number, input: { reviewId: nu
     const stage = review.currentStage as ReviewStage;
     const [assignment] = await tx.select().from(claimReviewParticipants).where(and(eq(claimReviewParticipants.claimReviewId, review.id), eq(claimReviewParticipants.stage, stage as "planning_review" | "contract_review" | "claims_manager_approval"), eq(claimReviewParticipants.reviewerId, userId))).limit(1);
     if (!canRecordReviewDecision({ isOwner, currentStage: stage, decision: input.decision, isAssignedReviewer: Boolean(assignment) })) throw new Error("لا تملك صلاحية اتخاذ هذا القرار في مرحلة المراجعة الحالية.");
+    if (!isOwner && ["planning_review", "contract_review", "claims_manager_approval"].includes(stage)) {
+      const [membership] = await tx.select({ projectRole: projectMembers.projectRole, accessExpiresAt: projectMembers.accessExpiresAt }).from(projectMembers).where(and(eq(projectMembers.ownerUserId, review.userId), eq(projectMembers.projectKey, review.projectKey), eq(projectMembers.memberUserId, userId))).limit(1);
+      if (!membership || !canParticipateInReview({ isOwner: false, role: membership.projectRole, accessExpiresAt: membership.accessExpiresAt, stage: stage as "planning_review" | "contract_review" | "claims_manager_approval" })) throw new Error("انتهت صلاحية وصولك إلى مساحة مراجعة هذا المشروع. اطلب من المالك تمديدها.");
+    }
     const next = nextReviewState(review.currentStage as ReviewStage, review.status as ReviewStatus, input.decision);
     await tx.update(claimReviews).set({ currentStage: next.stage, status: next.status }).where(eq(claimReviews.id, review.id));
     await tx.insert(claimReviewStages).values({ claimReviewId: review.id, stage: review.currentStage, reviewerId: userId, decision: input.decision, comment: optional(input.comment) });
@@ -358,6 +384,10 @@ async function getClaimReviewById(userId: number, reviewId: number): Promise<Cla
   const [assignedReview] = ownedReview ? [] : await db.select({ review: claimReviews }).from(claimReviewParticipants).innerJoin(claimReviews, eq(claimReviewParticipants.claimReviewId, claimReviews.id)).where(and(eq(claimReviewParticipants.claimReviewId, reviewId), eq(claimReviewParticipants.reviewerId, userId))).limit(1);
   const review = ownedReview ?? assignedReview?.review;
   if (!review) throw new Error("تعذر استرجاع مسار المراجعة بعد تحديثه.");
+  if (!ownedReview) {
+    const [membership] = await db.select({ accessExpiresAt: projectMembers.accessExpiresAt }).from(projectMembers).where(and(eq(projectMembers.ownerUserId, review.userId), eq(projectMembers.projectKey, review.projectKey), eq(projectMembers.memberUserId, userId))).limit(1);
+    if (!membership || !isProjectMemberAccessActive(membership.accessExpiresAt)) throw new Error("انتهت صلاحية وصولك إلى مساحة مراجعة هذا المشروع. اطلب من المالك تمديدها.");
+  }
   const audit = await db.select().from(claimReviewStages).where(eq(claimReviewStages.claimReviewId, review.id)).orderBy(asc(claimReviewStages.recordedAt), asc(claimReviewStages.id));
   const participants = await db.select().from(claimReviewParticipants).where(eq(claimReviewParticipants.claimReviewId, review.id)).orderBy(asc(claimReviewParticipants.stage));
   const [claimChain] = await db.select().from(claimChains).where(and(eq(claimChains.ownerUserId, review.userId), eq(claimChains.projectKey, review.projectKey), eq(claimChains.claimKey, review.claimKey))).limit(1);

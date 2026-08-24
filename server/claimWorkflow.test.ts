@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getDb } from "./db";
-import { addNoticePeriod, buildAutomaticNoticeNarrative, canAssignReviewParticipant, canRecordReviewDecision, canServeReviewStage, createAutomaticNoticeDraft, createProjectInvitation, hashInvitationToken, invitationExpiry, listProjectMembers, nextReviewState, updateProjectMemberRole } from "./claimWorkflow";
+import { accessExpiryFromDays, addNoticePeriod, buildAutomaticNoticeNarrative, canAssignReviewParticipant, canParticipateInReview, canRecordReviewDecision, canServeReviewStage, createAutomaticNoticeDraft, createProjectInvitation, hashInvitationToken, invitationExpiry, isProjectMemberAccessActive, listProjectMembers, nextReviewState, updateProjectMemberRole } from "./claimWorkflow";
 
 vi.mock("./db", () => ({ getDb: vi.fn() }));
 
@@ -51,6 +51,20 @@ describe("claim review workflow", () => {
     expect(canServeReviewStage("owner", "contract_review")).toBe(true);
   });
 
+  it("calculates time-limited team access in UTC and treats an expired membership as unavailable", () => {
+    const expiresAt = accessExpiryFromDays(14, new Date("2026-08-18T12:00:00.000Z"));
+    expect(expiresAt.toISOString()).toBe("2026-09-01T12:00:00.000Z");
+    expect(isProjectMemberAccessActive(expiresAt, new Date("2026-09-01T11:59:59.000Z"))).toBe(true);
+    expect(isProjectMemberAccessActive(expiresAt, new Date("2026-09-01T12:00:00.000Z"))).toBe(false);
+    expect(() => accessExpiryFromDays(0)).toThrow("مدة الوصول");
+  });
+
+  it("rejects an expired reviewer even if their role otherwise matches the review stage", () => {
+    expect(canParticipateInReview({ isOwner: false, role: "planner", accessExpiresAt: new Date("2026-08-01T00:00:00.000Z"), stage: "planning_review", now: new Date("2026-08-02T00:00:00.000Z") })).toBe(false);
+    expect(canParticipateInReview({ isOwner: false, role: "planner", accessExpiresAt: new Date("2026-08-10T00:00:00.000Z"), stage: "planning_review", now: new Date("2026-08-02T00:00:00.000Z") })).toBe(true);
+    expect(canParticipateInReview({ isOwner: true, stage: "planning_review" })).toBe(true);
+  });
+
   it("creates an expiring invitation link while persisting only its hash and the requested project role", async () => {
     let storedInvitation: Record<string, unknown> | undefined;
     const ownerQuery = { from: () => ({ where: () => ({ limit: async () => [{ email: "owner@example.com" }] }) }) };
@@ -60,12 +74,12 @@ describe("claim review workflow", () => {
     };
     vi.mocked(getDb).mockResolvedValue(fakeDb as never);
 
-    const invitation = await createProjectInvitation(17, { projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", origin: "https://tia.example/" });
+    const invitation = await createProjectInvitation(17, { projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", accessDurationDays: 30, origin: "https://tia.example/" });
 
     expect(invitation.email).toBe("planner@example.com");
     expect(invitation.projectRole).toBe("planner");
     expect(invitation.inviteLink).toMatch(/^https:\/\/tia\.example\/\?invite=[A-Za-z0-9_-]+$/);
-    expect(storedInvitation).toMatchObject({ ownerUserId: 17, projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", status: "pending" });
+    expect(storedInvitation).toMatchObject({ ownerUserId: 17, projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", accessDurationDays: 30, status: "pending" });
     expect(String(storedInvitation?.tokenHash)).toMatch(/^[a-f0-9]{64}$/);
     expect(JSON.stringify(storedInvitation)).not.toContain(invitation.inviteLink.split("=")[1]);
   });
