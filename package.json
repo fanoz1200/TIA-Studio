@@ -1,6 +1,6 @@
 {
   "name": "tia-delay-analysis",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Arabic Time Impact Analysis studio with local CPM/TIA verification and professional claim exports.",
   "author": "TIA Studio",
   "type": "module",

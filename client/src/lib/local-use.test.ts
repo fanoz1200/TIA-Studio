@@ -26,8 +26,8 @@ describe("عقد التشغيل المحلي", () => {
 
     expect(resourcesPanel).toContain("حزمة المصدر والاستمرارية — 1.0.7");
     expect(resourcesPanel).toContain("TIA-Studio-1.0.7-Source.tar_2eb10450.gz");
-    expect(resourcesPanel).toContain("TIA-Studio-1.0.7-Windows-x64-Setup_7327be86.exe");
-    expect(resourcesPanel).toContain("TIA-Studio-1.0.7-Windows-x64-Portable_20a0a969.exe");
+    expect(resourcesPanel).toContain("TIA-Studio-1.0.8-Windows-x64-Setup_ac41d3ee.exe");
+    expect(resourcesPanel).toContain("TIA-Studio-1.0.8-Windows-x64-Portable_11faa62c.exe");
     expect(resourcesPanel).toContain("TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage");
     expect(localUseGuide).toContain("دون اتصال");
     expect(localUseGuide).toContain("PWA");

@@ -20,8 +20,8 @@ const resources = [
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
   { title: "حزمة المصدر والاستمرارية — 1.0.7", description: "أرشيف TAR.GZ نظيف من المصدر والأدلة والأمثلة. يشمل تقويم مصر الافتراضي بستة أيام، بوابة الجودة المبكرة، عارض XER وقالب الأحداث المهني. لا يضم ملفات P6 أو Excel الأصلية للمستخدم.", href: "/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz", icon: HardDriveDownload, kind: "TAR.GZ · Source + Handoff" },
   { title: "دليل استمرارية المشروع وتسليمه", description: "خطوات حفظ المصدر، استعادة العمل، متابعة التطوير عبر GitHub أو من حزمة المصدر، وحدود ما يلزم اختباره قبل أي إصدار جديد.", href: "/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md", icon: GitBranch, kind: "Markdown · Continuity" },
-  { title: "نسخة سطح المكتب — Windows 1.0.7 Setup (الموصى بها)", description: "مثبّت Windows x64: اضغط Download ثم شغّل ملف Setup مرة واحدة. يضيف اختصاراً في Start ويثبت التطبيق في مكانه الطبيعي؛ لا تحتاج Node.js أو فك ضغط. أزيل اعتماد Vite الذي سبب خطأ التشغيل من Temp. الحزمة غير موقّعة رقمياً: افحصها قبل التشغيل، واختبرها أولاً على جهاز Windows حقيقي.", href: "/manus-storage/TIA-Studio-1.0.7-Windows-x64-Setup_7327be86.exe", icon: HardDriveDownload, kind: "Windows x64 · Setup" },
-  { title: "نسخة سطح المكتب — Windows 1.0.7 المحمولة", description: "ملف EXE مباشر لا يثبت شيئاً ولا يضيف أيقونة Start؛ شغّله من مجلد تختاره أنت. مناسب للتجربة أو عند منع التثبيت في جهاز العمل. هو نفس الإصلاح الذي يفصل خادم الإنتاج عن Vite، لكن لا يوفر تثبيتاً مركزياً أو تحديثاً تلقائياً.", href: "/manus-storage/TIA-Studio-1.0.7-Windows-x64-Portable_20a0a969.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
+  { title: "نسخة سطح المكتب — Windows 1.0.8 Setup (الموصى بها)", description: "مثبّت Windows x64 يتضمن Claim Console: اضغط Download ثم شغّل ملف Setup مرة واحدة. يضيف اختصاراً في Start ويثبت التطبيق في مكانه الطبيعي؛ لا تحتاج Node.js أو فك ضغط. الحزمة غير موقّعة رقمياً: افحصها قبل التشغيل من هذا الرابط الرسمي فقط.", href: "/manus-storage/TIA-Studio-1.0.8-Windows-x64-Setup_ac41d3ee.exe", icon: HardDriveDownload, kind: "Windows x64 · Setup" },
+  { title: "نسخة سطح المكتب — Windows 1.0.8 المحمولة", description: "ملف EXE مباشر يتضمن Claim Console ولا يثبت شيئاً ولا يضيف أيقونة Start؛ شغّله من مجلد تختاره أنت. مناسب للتجربة أو عند منع التثبيت في جهاز العمل، لكنه لا يوفر تثبيتاً مركزياً أو تحديثاً تلقائياً.", href: "/manus-storage/TIA-Studio-1.0.8-Windows-x64-Portable_11faa62c.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
   { title: "نسخة سطح المكتب — Linux 1.0.7", description: "ملف AppImage واحد لـ Linux x64، ويشمل الحساب المحلي وفحوص الاستيراد وميزات 1.0.7 من دون ملفات P6 أو Excel الأصلية. امنحه صلاحية التنفيذ مرة واحدة، ثم جرّبه على مشروع تدريبي قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
@@ -80,8 +80,8 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="desktop-download-quick" aria-label="تنزيل نسخة الكمبيوتر">
       <div><HardDriveDownload size={24} /><div><b>حمّل نسخة الكمبيوتر الآن</b><p>على Windows حمّل Setup أولاً للتثبيت الطبيعي وأيقونة Start. استخدم النسخة المحمولة فقط لو جهازك يمنع التثبيت.</p></div></div>
       <div className="desktop-download-quick__actions">
-        <a className="desktop-download-quick__primary" href={resolveResourceDownloadHref(resources[7].href)} download><Download size={17} />Windows 1.0.7 — Setup</a>
-        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} download><Download size={17} />Windows 1.0.7 — محمول</a>
+        <a className="desktop-download-quick__primary" href={resolveResourceDownloadHref(resources[7].href)} download><Download size={17} />Windows 1.0.8 — Setup</a>
+        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} download><Download size={17} />Windows 1.0.8 — محمول</a>
       </div>
     </section>
 
