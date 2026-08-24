@@ -51,6 +51,38 @@ describe("CPM engine", () => {
     expect(result.projectDuration).toBe(8);
   });
 
+  it("applies verified SNET and FNET lower-bound constraints using the selected schedule calendar", () => {
+    const result = runCPM({
+      id: "xer-lower-bound-constraints",
+      name: "قيود XER السفلية",
+      startDate: "2026-01-05",
+      calendar: { id: "five-day", name: "خمسة أيام", workingWeekdays: [1, 2, 3, 4, 5], holidays: [], hoursPerDay: 8 },
+      activities: [
+        { id: "SNET", name: "قيد بدء", duration: 2, constraint: { type: "start-on-or-after", date: "2026-01-12", sourceCode: "CS_SNET" } },
+        { id: "FNET", name: "قيد إتمام", duration: 2, constraint: { type: "finish-on-or-after", date: "2026-01-19", sourceCode: "CS_FNET" } },
+      ],
+      relationships: [],
+    });
+
+    expect(result.activities.find((activity) => activity.id === "SNET")).toMatchObject({ earlyStart: 5, earlyFinish: 7 });
+    expect(result.activities.find((activity) => activity.id === "FNET")).toMatchObject({ earlyStart: 8, earlyFinish: 10 });
+    expect(result.projectDuration).toBe(10);
+    expect(result.warnings.join(" ")).toContain("قيد/قيود سفلية");
+  });
+
+  it("does not claim negative float or Primavera parity for unsupported imported constraint types", () => {
+    const result = runCPM({
+      id: "review-only-constraint",
+      name: "قيد مراجعة فقط",
+      startDate: "2026-01-05",
+      activities: [{ id: "MFO", name: "Must Finish On", duration: 2, constraintAudit: [{ slot: "primary", code: "CS_MFO", date: "2026-01-06", status: "review-required", note: "لا يحسب محلياً" }] }],
+      relationships: [],
+    });
+
+    expect(result.activities[0]?.totalFloat).toBe(0);
+    expect(result.warnings.join(" ")).toContain("غير محسوبة محلياً");
+  });
+
   it("rejects logical cycles instead of producing misleading dates", () => {
     expect(() =>
       runCPM({

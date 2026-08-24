@@ -2,7 +2,7 @@
  * TIA Studio — XER schedule adapter
  * يحول جداول Primavera P6 النصية الضرورية لتحليل CPM محلياً دون رفع الملف.
  */
-import { calendarDayCalendar, type Activity, type Relationship, type RelationshipType, type ResourceAssignment, type Schedule, type WbsNode } from "./cpm";
+import { calendarDayCalendar, type Activity, type ActivityConstraintAudit, type Relationship, type RelationshipType, type ResourceAssignment, type Schedule, type WbsNode } from "./cpm";
 
 type XerRow = Record<string, string>;
 
@@ -19,6 +19,13 @@ export type XerImportSummary = {
   resourceAssignmentsSkipped?: number;
   assignmentsWithCosts: number;
   activitiesWithProgress: number;
+  /** معرّفات TASK.clndr_id المميزة التي احتفظ بها المستورد؛ لا تعني فك نمط P6. */
+  taskCalendarIds?: string[];
+  taskCalendarCount?: number;
+  activitiesWithoutCalendarId?: number;
+  constraintsRead?: number;
+  supportedConstraintsRead?: number;
+  unsupportedConstraintsRead?: number;
   calendarName?: string;
   warnings: string[];
   tablesFound: string[];
@@ -100,6 +107,24 @@ function resourceType(value: string): ResourceAssignment["resourceType"] {
   return "unknown";
 }
 
+function importedConstraint(task: XerRow, slot: "primary" | "secondary") {
+  const code = firstValue(task, slot === "primary" ? "cstr_type" : "cstr_type2").toUpperCase();
+  const rawDate = firstValue(task, slot === "primary" ? "cstr_date" : "cstr_date2");
+  if (!code && !rawDate) return { audit: undefined, constraint: undefined };
+  const date = parseXerDate(rawDate);
+  const label = slot === "primary" ? "الأساسي" : "الثانوي";
+  const audit = (status: ActivityConstraintAudit["status"], note: string): ActivityConstraintAudit => ({ slot, code: code || "(فارغ)", date: date || undefined, rawDate: rawDate || undefined, status, note });
+  if (code === "CS_ASAP" && slot === "primary") return { audit: audit("not-applicable", "ASAP لا يضيف قيداً زمنياً صريحاً إلى الحساب المحلي."), constraint: undefined };
+  if (slot === "primary" && (code === "CS_SNET" || code === "CS_FNET") && date) {
+    return {
+      audit: audit("supported", code === "CS_SNET" ? "قيد Start On or After محصور في التمرير الأمامي المحلي." : "قيد Finish On or After محصور في التمرير الأمامي المحلي."),
+      constraint: { type: code === "CS_SNET" ? "start-on-or-after" as const : "finish-on-or-after" as const, date, sourceCode: code as "CS_SNET" | "CS_FNET" },
+    };
+  }
+  const dateProblem = (code === "CS_SNET" || code === "CS_FNET") && !date ? " لكن تاريخه غير قابل للقراءة." : "";
+  return { audit: audit("review-required", `قيد ${label} برمز ${code || "غير مقروء"} لا يحسبه محرك CPM المحلي${dateProblem}`), constraint: undefined };
+}
+
 function buildWbsNodes(rows: XerRow[]) {
   const rawNodes = rows.map((row, index) => ({
     id: firstValue(row, "wbs_id") || `WBS-${index + 1}`,
@@ -146,6 +171,9 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
     const remainingDuration = numeric(firstValue(task, "remain_drtn_hr_cnt"));
     const progress = percent(firstValue(task, "phys_complete_pct", "complete_pct", "duration_pct", "percent_complete"));
     const percentTypeRaw = firstValue(task, "complete_pct_type", "percent_complete_type").toLowerCase();
+    const primaryConstraint = importedConstraint(task, "primary");
+    const secondaryConstraint = importedConstraint(task, "secondary");
+    const constraintAudit = [primaryConstraint.audit, secondaryConstraint.audit].filter((item): item is ActivityConstraintAudit => Boolean(item));
     return {
       id,
       name: code === title ? title : `${code} — ${title}`,
@@ -158,8 +186,17 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
       remainingDuration: remainingDuration ? Math.max(0, remainingDuration / 8) : undefined,
       actualStart: parseXerDate(firstValue(task, "act_start_date")) || undefined,
       actualFinish: parseXerDate(firstValue(task, "act_end_date", "act_finish_date")) || undefined,
+      calendarId: firstValue(task, "clndr_id") || undefined,
+      constraint: primaryConstraint.constraint,
+      constraintAudit: constraintAudit.length ? constraintAudit : undefined,
     };
   });
+
+  const taskCalendarIds = Array.from(new Set(activities.map((activity) => activity.calendarId).filter((value): value is string => Boolean(value)))).sort();
+  const activitiesWithoutCalendarId = activities.filter((activity) => !activity.calendarId).length;
+  const constraintAudits = activities.flatMap((activity) => activity.constraintAudit ?? []);
+  const supportedConstraintsRead = activities.filter((activity) => Boolean(activity.constraint)).length;
+  const unsupportedConstraintsRead = constraintAudits.filter((item) => item.status === "review-required").length;
 
   const activityIds = new Set(activities.map((activity) => activity.id));
   const activityById = new Map(activities.map((activity) => [activity.id, activity]));
@@ -230,6 +267,12 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
   if (calendars.length) warnings.push("تم التعرف على سجل التقويم في XER، لكن نمط العمل المشفر في P6 لا يُفك تلقائياً؛ راجع التقويم واختر أيام العمل والعطل من التطبيق.");
   else warnings.push("لم يعثر المستورد على سجل CALENDAR؛ طُبق تقويم الأيام التقويمية حتى يراجعه المستخدم.");
   warnings.push("حُولت مدد P6 من ساعات إلى أيام عمل على أساس 8 ساعات/يوم؛ راجع الإعداد إذا كان المشروع يستخدم يوماً مختلفاً.");
+  if (taskCalendarIds.length > 1) warnings.push(`يحتوي TASK على ${taskCalendarIds.length} معرفات تقويم مختلفة؛ الحساب الحالي يستخدم تقويم مراجعة واحداً ولا يفك تقاويم P6 لكل نشاط.`);
+  else if (taskCalendarIds.length === 1) warnings.push(`احتُفظ بمعرف تقويم الأنشطة ${taskCalendarIds[0]}، لكن نمط P6 المشفر لا يُفك محلياً.`);
+  else warnings.push("لم تُقرأ معرفات تقويم الأنشطة TASK.clndr_id؛ راجع تعيين التقويم داخل P6.");
+  if (activitiesWithoutCalendarId) warnings.push(`يوجد ${activitiesWithoutCalendarId} نشاطاً بلا معرف تقويم مقروء.`);
+  if (supportedConstraintsRead) warnings.push(`احتُفظ وطُبق محلياً ${supportedConstraintsRead} قيد/قيود SNET/FNET فقط؛ يلزم التحقق داخل P6.`);
+  if (unsupportedConstraintsRead) warnings.push(`يوجد ${unsupportedConstraintsRead} قيد/قيود XER لا يحسبها المحرك المحلي وتحتاج مراجعة مانعة قبل اعتماد التحليل.`);
   if (!taskResources.length) warnings.push("لم يعثر المستورد على جدول TASKRSRC؛ ستبقى شاشة الأثر المالي بلا إسنادات موارد حتى تُستورد نسخة P6 تتضمن الموارد.");
 
   return {
@@ -246,6 +289,6 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
       wbsNodes,
       resourceAssignments,
     },
-    summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, relationshipsSkipped, wbsRead: wbsNodes.length, resourcesRead: resourceRows.length, resourceAssignmentsRead: resourceAssignments.length, resourceAssignmentsSkipped, assignmentsWithCosts: resourceAssignments.filter((assignment) => Boolean(assignment.targetCost || assignment.remainingCost || assignment.actualRegularCost || assignment.actualOvertimeCost)).length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
+    summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, relationshipsSkipped, wbsRead: wbsNodes.length, resourcesRead: resourceRows.length, resourceAssignmentsRead: resourceAssignments.length, resourceAssignmentsSkipped, assignmentsWithCosts: resourceAssignments.filter((assignment) => Boolean(assignment.targetCost || assignment.remainingCost || assignment.actualRegularCost || assignment.actualOvertimeCost)).length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, taskCalendarIds, taskCalendarCount: taskCalendarIds.length, activitiesWithoutCalendarId, constraintsRead: constraintAudits.length, supportedConstraintsRead, unsupportedConstraintsRead, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
   };
 }

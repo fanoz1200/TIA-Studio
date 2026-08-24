@@ -29,7 +29,7 @@ export type QualityLedgerEntry = Pick<ScheduleQualityAssessment, "scheduleFinger
 const validRelationshipTypes: RelationshipType[] = ["FS", "SS", "FF", "SF"];
 
 function fingerprint(schedule: Schedule) {
-  const raw = [schedule.id, schedule.startDate, schedule.dataDate ?? "", schedule.activities.map((activity) => `${activity.id}:${activity.duration}:${activity.wbsId ?? activity.wbs ?? ""}`).join("|"), schedule.relationships.map((relationship) => `${relationship.predecessorId}>${relationship.successorId}:${relationship.type}:${relationship.lag ?? 0}`).join("|")].join("#");
+  const raw = [schedule.id, schedule.startDate, schedule.dataDate ?? "", schedule.activities.map((activity) => `${activity.id}:${activity.duration}:${activity.wbsId ?? activity.wbs ?? ""}:${activity.calendarId ?? ""}:${activity.constraint?.type ?? ""}:${activity.constraint?.date ?? ""}:${(activity.constraintAudit ?? []).map(item => `${item.slot}:${item.code}:${item.rawDate ?? ""}:${item.status}`).join(",")}`).join("|"), schedule.relationships.map((relationship) => `${relationship.predecessorId}>${relationship.successorId}:${relationship.type}:${relationship.lag ?? 0}`).join("|")].join("#");
   let hash = 2166136261;
   for (let index = 0; index < raw.length; index += 1) {
     hash ^= raw.charCodeAt(index);
@@ -133,6 +133,20 @@ export function assessScheduleQuality(schedule: Schedule, xerSummary?: XerImport
     rules.push(skippedLinks
       ? rule("SQ-015", "نزاهة روابط XER المقروءة", "warning", `استبعد القارئ ${relationshipsSkipped} علاقة و${resourceAssignmentsSkipped} إسناد مورد لأن طرفاً مرجعياً لم يُقرأ كنشاط.`, "راجع TASKPRED وTASKRSRC في نسخة P6 المصدر؛ لم يجرِ تعديل الملف الأصلي.", skippedLinks)
       : rule("SQ-015", "نزاهة روابط XER المقروءة", "pass", "لم يستبعد القارئ علاقات أو إسنادات موارد بسبب طرف نشاط غير مقروء.", "لا يلزم إجراء إضافي من هذه القاعدة."));
+    const taskCalendarCount = xerSummary.taskCalendarCount ?? xerSummary.taskCalendarIds?.length ?? 0;
+    rules.push(taskCalendarCount > 1
+      ? rule("SQ-016", "تقاويم P6 على مستوى النشاط", "blocker", `قرأ المستورد ${taskCalendarCount} معرفات تقويم للأنشطة، بينما CPM المحلي يطبق تقويماً واحداً ولا يفك النمط المشفر لكل تقويم.`, "أكمل الحساب والمراجعة في P6 أو وحّد تقاويم النشاط بعد اعتماد مهني؛ لا تعتمد نتيجة TIA المحلية لهذا الملف.", taskCalendarCount)
+      : taskCalendarCount === 1
+        ? rule("SQ-016", "تقويم P6 على مستوى النشاط", "warning", "احتُفظ بمعرف تقويم واحد للأنشطة، لكن نمط P6 وساعاته واستثناءاته لم تُفك محلياً.", "طابق التقويم مع P6 يدوياً قبل اعتماد تاريخ الإكمال أو مقارنة TIA.")
+        : rule("SQ-016", "تقاويم P6 على مستوى النشاط", "warning", "لم يثبت قارئ XER معرف تقويم TASK لكل نشاط.", "راجع تعيينات تقويم الأنشطة في P6 قبل اعتماد أي تاريخ."));
+    const unsupportedConstraints = xerSummary.unsupportedConstraintsRead ?? 0;
+    const supportedConstraints = xerSummary.supportedConstraintsRead ?? 0;
+    rules.push(unsupportedConstraints
+      ? rule("SQ-017", "قيود P6 غير محسوبة محلياً", "blocker", `قرأ المستورد ${unsupportedConstraints} قيداً لا يحاول المحرك المحلي تقليده.`, "راجع القيود في P6 وقرر مسار التحليل؛ لا تتجاوز هذا الحاجز بتصدير XER تجريبي.", unsupportedConstraints)
+      : supportedConstraints
+        ? rule("SQ-017", "قيود P6 السفلية المقروءة", "warning", `طُبق ${supportedConstraints} قيد SNET/FNET محدود في التمرير الأمامي فقط.`, "طابق التواريخ والـfloat والمسار الحرج بعد F9 داخل نسخة P6 غير إنتاجية.", supportedConstraints)
+        : rule("SQ-017", "قيود P6", "pass", "لم يقرأ المستورد قيداً يحتاج محاكاة محلية من الحقول المتاحة.", "يبقى فحص القيود داخل P6 مطلوباً عند أي شك في اكتمال التصدير."));
+    rules.push(rule("SQ-018", "افتراض تحويل ساعات XER", "warning", "حُولت المدد والـlag من ساعات إلى أيام على أساس 8 ساعات/يوم؛ لا يستبدل ذلك ساعات تقويم P6 الفعلية.", "راجع ساعات اليوم والتقاويم والاستثناءات داخل P6 قبل اعتماد النتائج."));
   }
 
   const summary = rules.reduce((current, item) => {

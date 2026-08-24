@@ -39,6 +39,23 @@ export const fiveDayCalendar: WorkingCalendar = {
   hoursPerDay: 8,
 };
 
+/** قيد زمني محدود يدعمه الحساب المحلي بعد استيراده من XER. */
+export type ActivityConstraint = {
+  type: "start-on-or-after" | "finish-on-or-after";
+  date: string;
+  sourceCode: "CS_SNET" | "CS_FNET";
+};
+
+/** الأثر الخام الذي قرأه المستورد، بما في ذلك ما لا يحاول CPM المحلي حسابه. */
+export type ActivityConstraintAudit = {
+  slot: "primary" | "secondary";
+  code: string;
+  date?: string;
+  rawDate?: string;
+  status: "supported" | "not-applicable" | "review-required";
+  note: string;
+};
+
 export type Activity = {
   id: string;
   name: string;
@@ -48,12 +65,16 @@ export type Activity = {
   owner?: string;
   kind?: "base" | "fragnet";
   plannedStart?: number;
-  calendarId?: string;
   percentComplete?: number;
   percentCompleteType?: "duration" | "physical" | "units" | "unknown";
   remainingDuration?: number;
   actualStart?: string;
   actualFinish?: string;
+  /** معرف تقويم النشاط كما ظهر في TASK.clndr_id؛ لا يعني أن نمط P6 فُك محلياً. */
+  calendarId?: string;
+  /** قيد أولي محدود فقط؛ القيود الأخرى تظل في constraintAudit للمراجعة. */
+  constraint?: ActivityConstraint;
+  constraintAudit?: ActivityConstraintAudit[];
 };
 
 export type WbsNode = {
@@ -297,6 +318,12 @@ function ensureValidSchedule(schedule: Schedule) {
     if (activity.percentComplete !== undefined && (!Number.isFinite(activity.percentComplete) || activity.percentComplete < 0 || activity.percentComplete > 100)) {
       throw new Error(`نسبة إنجاز النشاط ${activity.id} يجب أن تكون بين 0 و100.`);
     }
+    if (activity.constraint) {
+      parseIsoDate(activity.constraint.date);
+      if (activity.constraint.type !== "start-on-or-after" && activity.constraint.type !== "finish-on-or-after") {
+        throw new Error(`نوع قيد النشاط ${activity.id} غير مدعوم في الحساب المحلي.`);
+      }
+    }
     activityIds.add(activity.id);
   }
 
@@ -361,6 +388,13 @@ function relationshipFreeFloat(predecessor: ActivityMetrics, successor: Activity
   }
 }
 
+/** يحول القيد السفلي إلى أول يوم CPM مسموح لبداية النشاط وفق تقويم الجدول المختار. */
+function lowerBoundConstraintStart(activity: Activity, scheduleStartDate: string, calendar: WorkingCalendar) {
+  if (!activity.constraint) return undefined;
+  const constraintDay = dateToRelativeDay(scheduleStartDate, activity.constraint.date, calendar);
+  return activity.constraint.type === "start-on-or-after" ? constraintDay : constraintDay - activity.duration;
+}
+
 export function runCPM(schedule: Schedule): CpmResult {
   ensureValidSchedule(schedule);
   const calendar = cloneCalendar(schedule.calendar);
@@ -403,7 +437,8 @@ export function runCPM(schedule: Schedule): CpmResult {
   for (const activityId of topologicalOrder) {
     const activity = activityById.get(activityId)!;
     const constraints = (incoming.get(activityId) ?? []).map((relationship) => relationshipConstraint(metrics.get(relationship.predecessorId)!, activity, relationship));
-    const earlyStart = Math.max(0, activity.plannedStart ?? 0, ...constraints);
+    const lowerBound = lowerBoundConstraintStart(activity, schedule.startDate, calendar);
+    const earlyStart = Math.max(0, activity.plannedStart ?? 0, lowerBound ?? Number.NEGATIVE_INFINITY, ...constraints);
     metrics.set(activityId, { ...activity, earlyStart, earlyFinish: earlyStart + activity.duration, lateStart: 0, lateFinish: 0, totalFloat: 0, freeFloat: 0, isCritical: false });
   }
 
@@ -433,6 +468,12 @@ export function runCPM(schedule: Schedule): CpmResult {
   if (openEnds.length > 2) warnings.push(`يوجد ${openEnds.length} أنشطة ذات نهاية مفتوحة؛ راجع منطق الشبكة قبل اعتماد التحليل.`);
   if (activities.some((activity) => activity.totalFloat < -EPSILON)) warnings.push("يوجد عائمة سالبة في الشبكة؛ راجع القيود والمنطق.");
   if (calendar.id !== calendarDayCalendar.id) warnings.push(`تاريخ الإكمال محول وفق تقويم «${calendar.name}»؛ بينما تُعرض ES/EF وTF بوحدة أيام العمل.`);
+  const appliedConstraints = activities.filter((activity) => activity.constraint).length;
+  const reviewConstraints = activities.flatMap((activity) => activity.constraintAudit ?? []).filter((item) => item.status === "review-required").length;
+  const taskCalendarIds = Array.from(new Set(activities.map((activity) => activity.calendarId).filter((value): value is string => Boolean(value))));
+  if (appliedConstraints) warnings.push(`طُبق ${appliedConstraints} قيد/قيود سفلية فقط في التمرير الأمامي المحلي؛ راجع النتيجة داخل P6.`);
+  if (reviewConstraints) warnings.push(`يوجد ${reviewConstraints} قيد/قيود XER غير محسوبة محلياً؛ لا تعتمد نتيجة CPM قبل مراجعتها.`);
+  if (taskCalendarIds.length > 1) warnings.push(`يستخدم الملف ${taskCalendarIds.length} معرفات تقويم على مستوى النشاط، بينما الحساب المحلي يطبق تقويماً واحداً فقط.`);
 
   return { scheduleId: schedule.id, scheduleName: schedule.name, projectDuration, completionDate: addWorkingDays(schedule.startDate, projectDuration, calendar), calendar, activities, relationships: schedule.relationships, topologicalOrder, criticalActivityIds: activities.filter((activity) => activity.isCritical).map((activity) => activity.id), warnings };
 }

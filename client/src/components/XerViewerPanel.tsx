@@ -29,7 +29,7 @@ function snapshotLabel(snapshot: ScheduleSnapshot) {
   return "Update لاحق";
 }
 
-function ScheduleFacts({ schedule }: { schedule: Schedule }) {
+function ScheduleFacts({ schedule, summary }: { schedule: Schedule; summary?: XerImportSummary }) {
   const calendar = schedule.calendar;
   return (
     <dl className="xer-viewer__facts">
@@ -39,6 +39,8 @@ function ScheduleFacts({ schedule }: { schedule: Schedule }) {
       <div><dt>WBS</dt><dd>{new Set(schedule.activities.map(item => item.wbs).filter(Boolean)).size || "غير مقروء"}</dd></div>
       <div><dt>التقويم</dt><dd>{calendar?.name ?? "غير مسجل"}</dd></div>
       <div><dt>أيام العمل</dt><dd>{calendar?.workingWeekdays?.length ?? 0} أيام/أسبوع</dd></div>
+      <div><dt>تقويمات الأنشطة</dt><dd>{summary ? `${summary.taskCalendarCount ?? summary.taskCalendarIds?.length ?? 0} معرف` : "غير مقروء"}</dd></div>
+      <div><dt>قيود XER</dt><dd>{summary ? `${summary.supportedConstraintsRead ?? 0} محسوب · ${summary.unsupportedConstraintsRead ?? 0} مراجعة` : "غير مقروء"}</dd></div>
     </dl>
   );
 }
@@ -68,7 +70,7 @@ export function XerViewerPanel({ schedule, xerSummary, baselineSnapshot, updateS
     </div>
 
     <section className="xer-viewer__section" aria-labelledby="xer-files-title"><div className="xer-viewer__section-heading"><div><h2 id="xer-files-title">الملفات والنسخ اللي بتقارنها</h2><p>كل ملف مرفوع يفضل منفصل؛ البرنامج لا يخلط Baseline مع الـUpdates تلقائياً.</p></div><Badge className="badge-muted">{snapshots.length} ملف/نسخة</Badge></div>
-      {snapshots.length ? <div className="xer-viewer__snapshots">{snapshots.map(snapshot => <article key={snapshot.id} className="xer-viewer__snapshot"><div><Badge className="badge-blue">{snapshot.label}</Badge><h3>{snapshot.fileName}</h3><p>{snapshot.schedule.name}</p></div><ScheduleFacts schedule={snapshot.schedule} /></article>)}</div> : <div className="xer-viewer__empty"><FileCode2 size={28} /><div><h3>لسه مفيش نسخة مرفوعة للعرض</h3><p>ارفع Baseline وبعده Update قبل الحدث من شاشة رفع P6. ده أفضل ترتيب لمراجعة TIA.</p><Button onClick={() => onNavigate("schedule")}>روح لرفع P6</Button></div></div>}</section>
+      {snapshots.length ? <div className="xer-viewer__snapshots">{snapshots.map(snapshot => <article key={snapshot.id} className="xer-viewer__snapshot"><div><Badge className="badge-blue">{snapshot.label}</Badge><h3>{snapshot.fileName}</h3><p>{snapshot.schedule.name}</p></div><ScheduleFacts schedule={snapshot.schedule} summary={snapshot.summary} /></article>)}</div> : <div className="xer-viewer__empty"><FileCode2 size={28} /><div><h3>لسه مفيش نسخة مرفوعة للعرض</h3><p>ارفع Baseline وبعده Update قبل الحدث من شاشة رفع P6. ده أفضل ترتيب لمراجعة TIA.</p><Button onClick={() => onNavigate("schedule")}>روح لرفع P6</Button></div></div>}</section>
 
     <section className="xer-viewer__section" aria-labelledby="xer-diff-title"><div className="xer-viewer__section-heading"><div><h2 id="xer-diff-title">فرق سريع بين Baseline وآخر نسخة</h2><p>دي مقارنة تعريفية بالمعرفات والعدادات، مش حكم تأخيري نهائي.</p></div></div>
       <div className="xer-viewer__diff"><article><span>أنشطة أُضيفت</span><strong>{addedActivities.length}</strong><p>{addedActivities.slice(0, 5).map(item => item.id).join("، ") || "لا يوجد"}</p></article><article><span>أنشطة اختفت</span><strong>{removedActivities.length}</strong><p>{removedActivities.slice(0, 5).map(item => item.id).join("، ") || "لا يوجد"}</p></article><article><span>فرق العلاقات</span><strong>{current.relationships.length - baseline.relationships.length > 0 ? "+" : ""}{current.relationships.length - baseline.relationships.length}</strong><p>{baseline.relationships.length} في Baseline ← {current.relationships.length} في النسخة الحالية</p></article><article><span>فرق Data Date</span><strong>{baseline.dataDate === current.dataDate ? "نفس التاريخ" : "راجع"}</strong><p>{baseline.dataDate ?? "غير مسجل"} ← {current.dataDate ?? "غير مسجل"}</p></article></div></section>

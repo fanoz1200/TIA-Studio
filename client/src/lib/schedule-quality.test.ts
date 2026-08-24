@@ -44,4 +44,12 @@ describe("schedule quality gate", () => {
     expect(assessment.analysisReadiness).toBe("review");
     expect(assessment.rules.find((item) => item.id === "SQ-015")).toMatchObject({ severity: "warning", affectedCount: 3 });
   });
+
+  it("blocks local TIA readiness when XER carries multiple task calendars or constraints outside the implemented subset", () => {
+    const assessment = assessScheduleQuality(baseSchedule, { projectName: "x", activitiesRead: 2, relationshipsRead: 1, relationshipsSkipped: 0, wbsRead: 1, resourcesRead: 0, resourceAssignmentsRead: 0, resourceAssignmentsSkipped: 0, assignmentsWithCosts: 0, activitiesWithProgress: 0, taskCalendarIds: ["CAL-01", "CAL-02"], taskCalendarCount: 2, supportedConstraintsRead: 1, unsupportedConstraintsRead: 1, warnings: [], tablesFound: ["PROJECT", "TASK", "TASKPRED"] });
+
+    expect(assessment.analysisReadiness).toBe("blocked");
+    expect(assessment.rules.find((item) => item.id === "SQ-016")?.severity).toBe("blocker");
+    expect(assessment.rules.find((item) => item.id === "SQ-017")?.severity).toBe("blocker");
+  });
 });

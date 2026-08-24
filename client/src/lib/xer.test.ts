@@ -42,3 +42,31 @@ describe("XER resource and cost import", () => {
     expect(result.summary.warnings.join(" ")).toContain("تم تجاهل إسناد مورد TASKRSRC");
   });
 });
+
+const xerWithTaskCalendarsAndConstraints = `%T\tPROJECT
+%F\tproj_short_name\tplan_start_date
+%R\tقيود وتجارب\t2026-03-01
+%E
+%T\tTASK
+%F\ttask_id\ttask_code\ttask_name\ttarget_drtn_hr_cnt\tclndr_id\tcstr_type\tcstr_date
+%R\tT-100\tA100\tقيد بداية\t16\tCAL-01\tCS_SNET\t2026-03-10
+%R\tT-200\tA200\tقيد نهاية\t16\tCAL-02\tCS_FNET\t2026-03-20
+%R\tT-300\tA300\tقيد غير مدعوم\t8\tCAL-02\tCS_MFO\t2026-03-24
+%E
+%T\tTASKPRED
+%F\ttask_pred_id\tpred_task_id\ttask_id\tpred_type
+%R\tR-100\tT-100\tT-200\tPR_FS
+%E`;
+
+describe("XER task calendars and constraints", () => {
+  it("retains per-task calendar identifiers and distinguishes supported lower-bound constraints from review-only constraints", () => {
+    const { schedule, summary } = importXerSchedule(xerWithTaskCalendarsAndConstraints, "constraints.xer");
+
+    expect(summary).toMatchObject({ taskCalendarIds: ["CAL-01", "CAL-02"], taskCalendarCount: 2, activitiesWithoutCalendarId: 0, constraintsRead: 3, supportedConstraintsRead: 2, unsupportedConstraintsRead: 1 });
+    expect(schedule.activities.find((activity) => activity.id === "T-100")).toMatchObject({ calendarId: "CAL-01", constraint: { type: "start-on-or-after", date: "2026-03-10", sourceCode: "CS_SNET" } });
+    expect(schedule.activities.find((activity) => activity.id === "T-200")).toMatchObject({ calendarId: "CAL-02", constraint: { type: "finish-on-or-after", date: "2026-03-20", sourceCode: "CS_FNET" } });
+    expect(schedule.activities.find((activity) => activity.id === "T-300")?.constraintAudit).toEqual([expect.objectContaining({ code: "CS_MFO", status: "review-required" })]);
+    expect(summary.warnings.join(" ")).toContain("معرفات تقويم مختلفة");
+    expect(summary.warnings.join(" ")).toContain("لا يحسبها المحرك المحلي");
+  });
+});
