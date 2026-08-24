@@ -95,11 +95,12 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     mocks.exportDocx.mockImplementation(() => new Promise<void>((resolve) => { completeExport = resolve; }));
     renderPanel("report");
 
+    expect(screen.getByText("لغة المخرجات / Output language")).toBeTruthy();
     expect((screen.getByRole("button", { name: "ملف مطابقة P6 (JSON)" }) as HTMLButtonElement).disabled).toBe(true);
     const excelButton = screen.getByRole("button", { name: "تصدير التقرير النهائي Excel" }) as HTMLButtonElement;
     expect(excelButton.disabled).toBe(false);
     fireEvent.click(excelButton);
-    expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ schedule, analysis: activeResult, events: [event], narrative: "سرد اختبار" }));
+    expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ schedule, analysis: activeResult, events: [event], narrative: "سرد اختبار", language: "ar" }));
     expect(mocks.toastSuccess).toHaveBeenCalledWith("تم إنشاء التقرير النهائي Excel متعدد الأوراق.");
     fireEvent.click(screen.getByRole("button", { name: "تنزيل Fact Pack (JSON)" }));
     expect(mocks.exportFactPack).toHaveBeenCalledWith(expect.objectContaining({ impactDays: 3, events: [expect.objectContaining({ id: "EV-01", title: "تأخر اعتماد" })], methodology: expect.any(String) }));
@@ -112,5 +113,13 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     completeExport?.();
     await waitFor(() => expect(mocks.exportDocx).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.queryByRole("status")).toBeNull());
+  });
+
+  it("يمرر لغة English المختارة إلى مُصدّر التقرير بدلاً من لغة الواجهة", () => {
+    renderPanel("report");
+    fireEvent.click(screen.getByRole("combobox"));
+    fireEvent.click(screen.getByRole("option", { name: "English — LTR" }));
+    fireEvent.click(screen.getByRole("button", { name: "تصدير التقرير النهائي Excel" }));
+    expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ language: "en" }));
   });
 });

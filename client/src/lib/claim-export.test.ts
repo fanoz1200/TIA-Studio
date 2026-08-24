@@ -69,6 +69,21 @@ describe("claim report exporters", () => {
     expect(factPack.professionalLimits.join(" ")).toContain("ليست رأياً قانونياً");
   });
 
+  it("creates English sections and an English fact pack when the document language is selected explicitly", () => {
+    const englishPayload: ClaimReportPayload = {
+      ...payload,
+      language: "en",
+      template: { ...payload.template, title: "Extension of Time Claim", recipient: "The Engineer" },
+    };
+    const sections = claimReportSections(englishPayload);
+    const factPack = buildFullClaimFactPack(englishPayload);
+    expect(sections.map((section) => section.heading)).toContain("3. Delay-analysis method and result");
+    expect(sections.find((section) => section.heading === "3. Delay-analysis method and result")?.body).toContain("+9 working days");
+    expect(factPack.document.language).toBe("en");
+    expect(factPack.professionalLimits.join(" ")).toContain("not legal advice");
+    expect(factPack.missingItems.join(" ")).toContain("Gantt attachments");
+  });
+
   it("generates a valid DOCX package", async () => {
     const blob = await buildClaimDocxBlob(payload);
     const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -83,5 +98,14 @@ describe("claim report exporters", () => {
     const bytes = new Uint8Array(await blob.arrayBuffer());
     expect(blob.size).toBeGreaterThan(1_000);
     expect(new TextDecoder().decode(bytes.slice(0, 4))).toBe("%PDF");
+  });
+
+  it("generates a valid English PDF without loading the Arabic font", async () => {
+    globalThis.fetch = vi.fn();
+    const blob = await buildClaimPdfBlob({ ...payload, language: "en" });
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    expect(blob.size).toBeGreaterThan(1_000);
+    expect(new TextDecoder().decode(bytes.slice(0, 4))).toBe("%PDF");
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 });

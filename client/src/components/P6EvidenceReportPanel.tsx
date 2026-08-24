@@ -44,6 +44,7 @@ import {
   type ClaimTemplateDraft,
 } from "@/lib/claim-export";
 import { exportAnalysisExcel } from "@/lib/analysis-excel";
+import type { DocumentLanguage } from "@/lib/language";
 import { ScheduleComparisonPanel } from "@/components/ScheduleComparisonPanel";
 import {
   evaluateWorkflowReadiness,
@@ -146,6 +147,9 @@ export function P6EvidenceReportPanel({
   const [evidenceDate, setEvidenceDate] = useState("");
   const [evidenceDescription, setEvidenceDescription] = useState("");
   const [template, setTemplate] = useState<ClaimTemplateDraft>(initialTemplate);
+  const [documentLanguage, setDocumentLanguage] = useState<DocumentLanguage>(() =>
+    window.localStorage.getItem("tia-studio-document-language") === "en" ? "en" : "ar"
+  );
   const [isImporting, setIsImporting] = useState(false);
   const [exportingFormat, setExportingFormat] = useState<"docx" | "pdf" | null>(
     null
@@ -317,13 +321,21 @@ export function P6EvidenceReportPanel({
           byResourceType: Object.entries(financial.byResourceType).map(
             ([type, bucket]) => ({
               label:
-                type === "labor"
-                  ? "عمالة"
-                  : type === "nonlabor"
-                    ? "معدات / غير عمالة"
-                    : type === "material"
-                      ? "مواد"
-                      : "غير مصنف",
+                documentLanguage === "en"
+                  ? type === "labor"
+                    ? "Labour"
+                    : type === "nonlabor"
+                      ? "Plant / non-labour"
+                      : type === "material"
+                        ? "Materials"
+                        : "Unclassified"
+                  : type === "labor"
+                    ? "عمالة"
+                    : type === "nonlabor"
+                      ? "معدات / غير عمالة"
+                      : type === "material"
+                        ? "مواد"
+                        : "غير مصنف",
               dailyCost: bucket.dailyCost,
               extensionCost: bucket.extensionCost,
             })
@@ -332,6 +344,7 @@ export function P6EvidenceReportPanel({
         }
       : undefined;
     return {
+      language: documentLanguage,
       projectName: schedule.name,
       scheduleSource: sourceLabel(schedule.source),
       baselineFinish: activeResult.baseline.completionDate,
@@ -370,11 +383,18 @@ export function P6EvidenceReportPanel({
           }
         : null,
       scheduleQuality,
-      resultSources: [
-        `مصدر البرنامج: ${sourceLabel(schedule.source)} — ${schedule.activities.length} نشاط و${schedule.relationships.length} علاقة عند إنشاء التقرير.`,
-        `محرك الحساب: CPM محلي ثم TIA/Fragnet؛ الأثر الظاهر ${impactDays} يوم عمل.`,
-        "بوابة الجودة: فحص بنيوي داخلي قابل للتفسير، ولا يحل محل إعادة الفتح في Primavera أو المراجعة المهنية.",
-      ],
+      resultSources:
+        documentLanguage === "en"
+          ? [
+              `Schedule source: ${sourceLabel(schedule.source)} — ${schedule.activities.length} activities and ${schedule.relationships.length} relationships at report generation.`,
+              `Calculation engine: local CPM followed by TIA/Fragnet; displayed impact is ${impactDays} working days.`,
+              "Quality gate: an explainable internal structural check; it does not replace opening the file in Primavera or professional review.",
+            ]
+          : [
+              `مصدر البرنامج: ${sourceLabel(schedule.source)} — ${schedule.activities.length} نشاط و${schedule.relationships.length} علاقة عند إنشاء التقرير.`,
+              `محرك الحساب: CPM محلي ثم TIA/Fragnet؛ الأثر الظاهر ${impactDays} يوم عمل.`,
+              "بوابة الجودة: فحص بنيوي داخلي قابل للتفسير، ولا يحل محل إعادة الفتح في Primavera أو المراجعة المهنية.",
+            ],
       generatedAt: new Date().toISOString(),
     };
   }
@@ -420,6 +440,7 @@ export function P6EvidenceReportPanel({
       analysis: activeResult,
       events,
       narrative,
+      language: documentLanguage,
     });
     toast.success("تم إنشاء التقرير النهائي Excel متعدد الأوراق.");
   }
@@ -726,6 +747,29 @@ export function P6EvidenceReportPanel({
           <FileText size={22} />
         </div>
         <WorkflowQualityGate checks={workflowChecks} />
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
+          <Label htmlFor="document-language" className="font-semibold">
+            لغة المخرجات / Output language
+          </Label>
+          <Select
+            value={documentLanguage}
+            onValueChange={(value: DocumentLanguage) => {
+              setDocumentLanguage(value);
+              window.localStorage.setItem("tia-studio-document-language", value);
+            }}
+          >
+            <SelectTrigger id="document-language" className="w-52 bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ar">العربية — RTL</SelectItem>
+              <SelectItem value="en">English — LTR</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground">
+            ينطبق الاختيار على Word وPDF وExcel وFact Pack. البيانات التي كتبتها تظل كما سجلتها.
+          </p>
+        </div>
         <div className="claim-template-grid">
           <div>
             <Label>اسم القالب</Label>

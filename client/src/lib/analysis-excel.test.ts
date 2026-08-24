@@ -25,4 +25,21 @@ describe("ملف Excel التحليلي", () => {
     const rows = XLSX.utils.sheet_to_json<unknown[]>(book.Sheets["الملخص"], { header: 1 });
     expect(JSON.stringify(rows)).toContain("الأثر المحسوب");
   });
+
+  it("creates English worksheet names and headers when English is selected", () => {
+    const schedule = JSON.parse(readFileSync(examplePath("05-training-tia-baseline.json"), "utf8")) as Schedule;
+    const event = JSON.parse(readFileSync(examplePath("06-training-tia-event.json"), "utf8")) as Fragnet;
+    const baseline = runCPM(schedule);
+    const impacted = runCPM(insertFragnet(schedule, event));
+    const analysis: TiaResult = {
+      fragnetId: event.id, fragnetTitle: event.title, baseline, impacted,
+      impactDays: impacted.projectDuration - baseline.projectDuration,
+      baselineCompletionDate: baseline.completionDate, impactedCompletionDate: impacted.completionDate,
+      outcome: "delayed", notes: ["Synthetic training data"],
+    };
+    const book = buildAnalysisWorkbook({ schedule, quality: assessScheduleQuality(schedule), analysis, events: [event], narrative: "Training narrative", language: "en" });
+    expect(book.SheetNames).toEqual(expect.arrayContaining(["Summary", "Activities", "Relationships", "Events", "Quality gate"]));
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(book.Sheets.Summary, { header: 1 });
+    expect(JSON.stringify(rows)).toContain("Calculated impact");
+  });
 });

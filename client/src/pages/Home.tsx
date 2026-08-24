@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useAppLanguage } from "@/contexts/LanguageContext";
 import {
   buildActivitySplitFragnet,
   calendarDayCalendar,
@@ -251,28 +252,32 @@ function defaultWindow(schedule: Schedule): AnalysisWindow {
   };
 }
 
-const navItems: { key: ViewKey; label: string; icon: typeof Network }[] = [
-  { key: "guided", label: "1. ابدأ التحليل", icon: Play },
-  { key: "guide", label: "دليل بالصور", icon: CircleHelp },
-  { key: "overview", label: "لوحة المتابعة", icon: BarChart3 },
-  { key: "schedule", label: "2. ارفع برنامج P6", icon: Network },
-  { key: "quality", label: "2.1 فحص جودة الجدول", icon: ShieldCheck },
-  { key: "issues", label: "3. سجّل الواقعة", icon: ClipboardList },
-  { key: "claimConsole", label: "Claim Console", icon: Scale },
-  { key: "event", label: "4. نمذجة الحدث (Fragnet)", icon: Zap },
-  { key: "analysis", label: "5. نتيجة التحليل", icon: ScanSearch },
-  { key: "report", label: "6. تقرير المطالبة", icon: TextQuote },
-  { key: "windows", label: "نوافذ وتزامن", icon: CalendarClock },
-  { key: "financial", label: "الأثر المالي", icon: WalletCards },
-  { key: "notices", label: "سجل Notices", icon: BellRing },
-  { key: "review", label: "الاعتماد الإلكتروني", icon: ClipboardCheck },
-  { key: "members", label: "أعضاء المشروع", icon: UsersRound },
-  { key: "compare", label: "مقارنة التحديثات", icon: GitCompareArrows },
-  { key: "xerViewer", label: "معاينة XER قبل P6", icon: FileCode2 },
-  { key: "resources", label: "الأدلة والملفات", icon: HardDriveDownload },
-  { key: "learning", label: "التدريب والشرح", icon: BookOpenCheck },
-  { key: "methods", label: "الموسوعة العلمية (SCL)", icon: LibraryBig },
+const navItems: { key: ViewKey; label: string; labelEn: string; icon: typeof Network }[] = [
+  { key: "guided", label: "1. ابدأ التحليل", labelEn: "1. Start analysis", icon: Play },
+  { key: "guide", label: "دليل بالصور", labelEn: "Visual guide", icon: CircleHelp },
+  { key: "overview", label: "لوحة المتابعة", labelEn: "Dashboard", icon: BarChart3 },
+  { key: "schedule", label: "2. ارفع برنامج P6", labelEn: "2. Import P6 schedule", icon: Network },
+  { key: "quality", label: "2.1 فحص جودة الجدول", labelEn: "2.1 Schedule quality", icon: ShieldCheck },
+  { key: "issues", label: "3. سجّل الواقعة", labelEn: "3. Record issue", icon: ClipboardList },
+  { key: "claimConsole", label: "Claim Console", labelEn: "Claim Console", icon: Scale },
+  { key: "event", label: "4. نمذجة الحدث (Fragnet)", labelEn: "4. Model event (Fragnet)", icon: Zap },
+  { key: "analysis", label: "5. نتيجة التحليل", labelEn: "5. Analysis result", icon: ScanSearch },
+  { key: "report", label: "6. تقرير المطالبة", labelEn: "6. Claim report", icon: TextQuote },
+  { key: "windows", label: "نوافذ وتزامن", labelEn: "Windows & concurrency", icon: CalendarClock },
+  { key: "financial", label: "الأثر المالي", labelEn: "Financial impact", icon: WalletCards },
+  { key: "notices", label: "سجل Notices", labelEn: "Notice register", icon: BellRing },
+  { key: "review", label: "الاعتماد الإلكتروني", labelEn: "Electronic review", icon: ClipboardCheck },
+  { key: "members", label: "أعضاء المشروع", labelEn: "Project members", icon: UsersRound },
+  { key: "compare", label: "مقارنة التحديثات", labelEn: "Compare updates", icon: GitCompareArrows },
+  { key: "xerViewer", label: "معاينة XER قبل P6", labelEn: "Review XER before P6", icon: FileCode2 },
+  { key: "resources", label: "الأدلة والملفات", labelEn: "Guides & files", icon: HardDriveDownload },
+  { key: "learning", label: "التدريب والشرح", labelEn: "Training", icon: BookOpenCheck },
+  { key: "methods", label: "الموسوعة العلمية (SCL)", labelEn: "Technical library (SCL)", icon: LibraryBig },
 ];
+
+function navigationLabel(item: (typeof navItems)[number], language: "ar" | "en") {
+  return language === "en" ? item.labelEn : item.label;
+}
 
 function getInitialView(): ViewKey {
   const requested = new URLSearchParams(window.location.search).get("screen");
@@ -485,6 +490,7 @@ export default function Home() {
   // startLogin() during render (no href={startLogin()}) — it mints a one-time
   // nonce cookie and must run only at the moment of navigation.
   let { user, loading, error, isAuthenticated, logout } = useAuth();
+  const { language, setLanguage, direction } = useAppLanguage();
 
   const [view, setView] = useState<ViewKey>(getInitialView);
   const [showFirstRunGuide, setShowFirstRunGuide] = useState(() =>
@@ -1229,7 +1235,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="app-shell" dir="rtl">
+    <div className="app-shell" dir={direction}>
       <FirstRunGuide
         open={showFirstRunGuide}
         onOpenChange={setShowFirstRunGuide}
@@ -1267,7 +1273,7 @@ export default function Home() {
                 className={view === item.key ? "nav-item active" : "nav-item"}
               >
                 <Icon size={18} />
-                <span>{item.label}</span>
+                <span>{navigationLabel(item, language)}</span>
                 {item.key === "analysis" && activeImpact ? (
                   <em>+{activeImpact}</em>
                 ) : null}
@@ -1277,27 +1283,38 @@ export default function Home() {
         </nav>
         <div className="method-card">
           <BookOpenCheck size={18} />
-          <strong>دليل حساب قابل للتتبع</strong>
-          <p>برنامج + تقويم ← Fragnet ← CPM ← نافذة/تزامن ← سرد فني.</p>
+          <strong>{language === "en" ? "Traceable calculation guide" : "دليل حساب قابل للتتبع"}</strong>
+          <p>{language === "en" ? "Schedule + calendar ← Fragnet ← CPM ← window/concurrency ← technical narrative." : "برنامج + تقويم ← Fragnet ← CPM ← نافذة/تزامن ← سرد فني."}</p>
           <button onClick={() => setView("methods")}>
-            عرض دليل SCL <ChevronLeft size={15} />
+            {language === "en" ? "Open the SCL guide" : "عرض دليل SCL"} <ChevronLeft size={15} />
           </button>
         </div>
         <div className="local-note">
           <ShieldCheck size={16} />
-          <span>الأدلة المحفوظة ترتبط بحسابك عند تسجيل الدخول.</span>
+          <span>{language === "en" ? "Saved evidence is linked to your account after sign-in." : "الأدلة المحفوظة ترتبط بحسابك عند تسجيل الدخول."}</span>
         </div>
       </aside>
       <main className="main-area">
         <header className="topbar">
           <div className="crumbs">
-            <span>مشروعات</span>
+            <span>{language === "en" ? "Projects" : "مشروعات"}</span>
             <ChevronLeft size={14} />
             <b>{schedule.name}</b>
             <ChevronLeft size={14} />
-            <strong>{navItems.find(item => item.key === view)?.label}</strong>
+            <strong>{(() => { const item = navItems.find(candidate => candidate.key === view); return item ? navigationLabel(item, language) : ""; })()}</strong>
           </div>
           <div className="top-actions">
+            <label className="sr-only" htmlFor="interface-language">لغة الواجهة / Interface language</label>
+            <select
+              id="interface-language"
+              className="outline-action h-9 rounded-md border border-input bg-background px-2 text-sm font-medium"
+              value={language}
+              onChange={event => setLanguage(event.target.value as "ar" | "en")}
+              aria-label="لغة الواجهة / Interface language"
+            >
+              <option value="ar">العربية</option>
+              <option value="en">English</option>
+            </select>
             <Button
               variant="outline"
               className="outline-action"
@@ -1309,7 +1326,7 @@ export default function Home() {
               }}
             >
               <CircleHelp size={16} />
-              شرح الاستخدام
+              {language === "en" ? "How to use" : "شرح الاستخدام"}
             </Button>
             <Button
               variant="outline"
@@ -1322,7 +1339,7 @@ export default function Home() {
               }}
             >
               <HardDriveDownload size={16} />
-              تنزيل نسخة الكمبيوتر
+              {language === "en" ? "Download Windows app" : "تنزيل نسخة الكمبيوتر"}
             </Button>
             <Button
               variant="outline"
@@ -1330,7 +1347,7 @@ export default function Home() {
               onClick={exportSchedule}
             >
               <Download size={16} />
-              تصدير البرنامج
+              {language === "en" ? "Export schedule" : "تصدير البرنامج"}
             </Button>
             <Button
               className="run-button"
@@ -1354,7 +1371,7 @@ export default function Home() {
               }}
             >
               <Play size={16} fill="currentColor" />
-              تشغيل التحليل
+              {language === "en" ? "Run analysis" : "تشغيل التحليل"}
             </Button>
           </div>
         </header>
