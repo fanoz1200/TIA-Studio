@@ -11,7 +11,16 @@ export type WorkingCalendar = {
   name: string;
   workingWeekdays: number[];
   holidays: string[];
+  /** اسم الإجازة اختياري للعرض؛ الحساب يعتمد على التاريخ فقط. */
+  holidayLabels?: Record<string, string>;
   hoursPerDay?: number;
+  /** رمز بلد اختياري؛ لا يغير الحساب ما لم تتحول الإجازات إلى تواريخ في القائمة. */
+  countryCode?: string;
+  /** مصدر آخر تحميل للإجازات، للشفافية عند مراجعة التحليل. */
+  holidaySource?: string;
+  holidaysLastCheckedAt?: string;
+  /** يظل صحيحاً حتى يراجع المحلل التواريخ المتغيرة أو قرارات الترحيل. */
+  holidayReviewRequired?: boolean;
 };
 
 export const calendarDayCalendar: WorkingCalendar = {
@@ -245,7 +254,12 @@ function cloneCalendar(calendar?: WorkingCalendar): WorkingCalendar {
     name: source.name,
     workingWeekdays: [...source.workingWeekdays],
     holidays: [...source.holidays],
+    holidayLabels: source.holidayLabels ? { ...source.holidayLabels } : undefined,
     hoursPerDay: source.hoursPerDay ?? 8,
+    countryCode: source.countryCode,
+    holidaySource: source.holidaySource,
+    holidaysLastCheckedAt: source.holidaysLastCheckedAt,
+    holidayReviewRequired: source.holidayReviewRequired,
   };
 }
 

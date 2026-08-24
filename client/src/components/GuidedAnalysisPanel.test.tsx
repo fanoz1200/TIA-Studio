@@ -22,8 +22,8 @@ const preUpdate: ScheduleSnapshot = { id: "UP-1", stage: "pre-event-update", fil
 
 function renderPanel(overrides: Partial<React.ComponentProps<typeof GuidedAnalysisPanel>> = {}) {
   const props: React.ComponentProps<typeof GuidedAnalysisPanel> = {
-    schedule: importedSchedule, xerSummary: summary, journeyStep: 1, journeyPath: null, p6GateApproved: false, isXerImporting: false, baselineSnapshot: null, updateSnapshots: [],
-    onJourneyPathChange: vi.fn(), onJourneyStepChange: vi.fn(), onP6GateApprovedChange: vi.fn(), onScheduleUpload: vi.fn().mockResolvedValue(undefined), onApplyIssueExcel: vi.fn(), onPrepareSplit: vi.fn(), onNavigate: vi.fn(),
+    schedule: importedSchedule, xerSummary: summary, journeyStep: 1, journeyPath: null, p6GateApproved: false, qualityGateApproved: false, isXerImporting: false, baselineSnapshot: null, updateSnapshots: [],
+    onJourneyPathChange: vi.fn(), onJourneyStepChange: vi.fn(), onP6GateApprovedChange: vi.fn(), onQualityGateApprovedChange: vi.fn(), onScheduleUpload: vi.fn().mockResolvedValue(undefined), onApplyIssueExcel: vi.fn(), onPrepareSplit: vi.fn(), onNavigate: vi.fn(),
     ...overrides,
   };
   render(<GuidedAnalysisPanel {...props} />);
@@ -54,9 +54,18 @@ describe("معالج رحلة TIA وفق Workshop 8", () => {
   it("يعرض بوابة P6 وتحذيرات الاستيراد مع Update قبل الحدث", () => {
     const warningSummary = { ...summary, warnings: ["لم يُقرأ تقويم مخصص للنشاط A200."] };
     renderPanel({ journeyStep: 4, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [{ ...preUpdate, summary: warningSummary }], xerSummary: warningSummary });
-    expect(screen.getByRole("heading", { name: "Update قبل الحدث والتحديثات اللاحقة" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Update قبل الحدث وبوابة الجودة" })).toBeTruthy();
     expect(screen.getByText(/لم يُقرأ تقويم مخصص/)).toBeTruthy();
     expect(screen.getByLabelText(/أقرّ بمراجعة بيانات P6/)).toBeTruthy();
+    expect(screen.getByLabelText(/راجعت بوابة الجودة/)).toBeTruthy();
+  });
+
+  it("لا يسمح بتجاوز بوابة الجودة قبل إدخال الواقعة", () => {
+    const props = renderPanel({ journeyStep: 4, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [preUpdate], p6GateApproved: true, qualityGateApproved: false });
+    expect(screen.getByRole("button", { name: "التالي" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText(/راجع عدادات الجدول والتقويم وData Date/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "افتح فحص الجدول" }));
+    expect(props.onNavigate).toHaveBeenCalledWith("quality");
   });
 
   it("يعرض معاينة تقسيم النشاط إلى Pre وEvent وPost قبل الحساب", () => {

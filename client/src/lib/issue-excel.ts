@@ -1,3 +1,4 @@
+import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
 import type { Schedule } from "./cpm";
 
@@ -74,19 +75,89 @@ export function exportIssueRegisterExcel(issues: Array<SpreadsheetIssue & { stat
   download(workbookBlob(buildIssueRegisterWorkbook(issues)), "TIA-Issue-Register.xlsx");
 }
 
-export function downloadIssueImportTemplate() {
-  const instructions = [
-    ["تعليمات استيراد سجل القضايا"],
-    ["لا تغيّر أسماء الأعمدة أو ترتيبها في ورقة «سجل القضايا»."],
-    ["القيم المسموح بها — المسؤولية", "employer | contractor | engineer | third_party | undetermined"],
-    ["القيم المسموح بها — سبب التأخير", "employer | contractor | neutral"],
-    ["القيم المسموح بها — الحرجية", "unknown | potentially_critical | critical | noncritical"],
-    ["الأنشطة المتأثرة", "افصل معرفات الأنشطة بفاصلة إنجليزية أو عربية. يجب أن تكون موجودة في البرنامج الحالي."],
-    ["معرف العلاقة", "يجب أن يكون معرف علاقة منطقية موجودة في البرنامج الحالي. لا يُطبق أي Fragnet عند الاستيراد."],
-    ["ملخص الأثر", "حقل إلزامي يشرح الأثر المتوقع على الزمن أو التسلسل أو المسار الحرج، ولا يغني عن حساب TIA."],
-    ["المراجع", "حقل إلزامي للمحاضر أو بنود العقد أو أرقام الأدلة أو المراسلات ذات الصلة."],
+const REQUIRED_ISSUE_COLUMNS = new Set<(typeof ISSUE_EXCEL_COLUMNS)[number]>(ISSUE_EXCEL_COLUMNS.filter(column => column !== "أبلغ عنها"));
+
+/** ملف منفصل لأن المستخدم يملأه أولاً؛ لا يحتوي أي بيانات مشروع أو ملف XER. */
+export async function buildIssueImportTemplateWorkbook() {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "TIA Studio";
+  workbook.created = new Date();
+
+  const sheet = workbook.addWorksheet("سجل القضايا", { views: [{ rightToLeft: true, state: "frozen", ySplit: 1 }] });
+  const guidance = workbook.addWorksheet("تعليمات", { views: [{ rightToLeft: true }] });
+  const choices = workbook.addWorksheet("القيم المسموحة", { views: [{ rightToLeft: true }] });
+
+  sheet.columns = [
+    { width: 16 }, { width: 30 }, { width: 16 }, { width: 18 }, { width: 18 }, { width: 16 }, { width: 21 },
+    { width: 20 }, { width: 20 }, { width: 31 }, { width: 44 }, { width: 35 }, { width: 35 },
   ];
-  download(workbookBlob(createWorkbook([], instructions)), "TIA-Issue-Import-Template.xlsx");
+  const headerRow = sheet.addRow(Array.from(ISSUE_EXCEL_COLUMNS));
+  headerRow.height = 34;
+  headerRow.eachCell((cell, columnNumber) => {
+    const column = ISSUE_EXCEL_COLUMNS[columnNumber - 1];
+    const required = REQUIRED_ISSUE_COLUMNS.has(column);
+    cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: required ? "FFB85C2A" : "FF277F92" } };
+    cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    cell.border = { bottom: { style: "medium", color: { argb: "FF153D58" } } };
+    cell.note = required ? "حقل مطلوب للاستيراد." : "حقل اختياري؛ اتركه فارغاً إن لم يتوفر.";
+  });
+  sheet.autoFilter = { from: "A1", to: "M1" };
+  for (let row = 2; row <= 201; row += 1) {
+    const current = sheet.getRow(row);
+    current.height = 26;
+    current.eachCell({ includeEmpty: true }, cell => {
+      cell.alignment = { vertical: "top", horizontal: "right", wrapText: true };
+      cell.border = { bottom: { style: "hair", color: { argb: "FFD7E5E9" } } };
+    });
+    sheet.getCell(`C${row}`).numFmt = "yyyy-mm-dd";
+    sheet.getCell(`H${row}`).numFmt = "0.0";
+    sheet.getCell(`E${row}`).dataValidation = { type: "list", allowBlank: false, formulae: ["\"employer,contractor,engineer,third_party,undetermined\""] };
+    sheet.getCell(`F${row}`).dataValidation = { type: "list", allowBlank: false, formulae: ["\"employer,contractor,neutral\""] };
+    sheet.getCell(`G${row}`).dataValidation = { type: "list", allowBlank: false, formulae: ["\"unknown,potentially_critical,critical,noncritical\""] };
+    sheet.getCell(`H${row}`).dataValidation = { type: "decimal", operator: "greaterThan", allowBlank: false, formulae: [0], showErrorMessage: true, errorTitle: "مدة غير صحيحة", error: "اكتب مدة Fragnet أكبر من صفر وأقل من 3651 يوم عمل." };
+    sheet.getCell(`C${row}`).dataValidation = { type: "date", operator: "between", allowBlank: false, formulae: [new Date(2000, 0, 1), new Date(2100, 11, 31)], showErrorMessage: true, errorTitle: "تاريخ غير صحيح", error: "اكتب تاريخ الواقعة بصيغة YYYY-MM-DD." };
+  }
+
+  guidance.columns = [{ width: 28 }, { width: 88 }];
+  const instructions = [
+    ["دليل قالب سجل القضايا", "البرتقالي = حقل مطلوب. الأزرق = حقل اختياري. لا تغيّر صف العناوين ولا ترتيبه."],
+    ["طريقة التعبئة", "كل صف = واقعة واحدة مستقلة. بعد الرفع يراجع البرنامج كل رقم قضية، تاريخ، Activity ID، وعلاقة منطقية قبل الحفظ."],
+    ["القوائم المنسدلة", "استخدم القوائم في المسؤولية وسبب التأخير والحرجية. الأكواد بالإنجليزية عمداً لأنها القيم التي يستوردها البرنامج؛ معناها العربي موجود في ورقة «القيم المسموحة»."],
+    ["رقم القضية", "مطلوب وفريد، مثال: ISS-001. لا تكرر نفس الرقم في الملف."],
+    ["تاريخ الواقعة", "مطلوب بصيغة YYYY-MM-DD. لا تضع تاريخ معرفة متأخر بدلاً من تاريخ حدوث الواقعة."],
+    ["معرف العلاقة", "مطلوب: علاقة منطقية موجودة في البرنامج المستورد. هو موضع مقترح الـFragnet؛ لا يُطبّق شيء أثناء الاستيراد."],
+    ["الأنشطة المتأثرة", "مطلوب: ضع أكثر من Activity ID بفاصلة عربية أو إنجليزية، مثال: A100، A110. يراجع البرنامج وجودها بعد الرفع."],
+    ["الوصف والأثر والمراجع", "مطلوبة: اكتب الوقائع الفنية والأثر المتوقع ومرجع الدليل. القالب لا يحكم بالاستحقاق ولا يغني عن تحليل TIA ومراجعة المختص."],
+    ["حدود السلامة", "الإجازات والتقويم وData Date وجودة البرنامج تُراجع داخل TIA Studio قبل تنفيذ التحليل. راجع Primavera على نسخة غير إنتاجية قبل أي استخدام مهني."],
+  ];
+  instructions.forEach((values, index) => {
+    const row = guidance.addRow(values);
+    row.height = index === 0 ? 36 : 44;
+    row.eachCell(cell => { cell.alignment = { vertical: "top", horizontal: "right", wrapText: true }; cell.border = { bottom: { style: "thin", color: { argb: "FFD7E5E9" } } }; });
+    if (index === 0) row.eachCell(cell => { cell.font = { bold: true, color: { argb: "FFFFFFFF" } }; cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF153D58" } }; });
+    else row.getCell(1).font = { bold: true, color: { argb: "FF195971" } };
+  });
+
+  choices.columns = [{ width: 30 }, { width: 28 }, { width: 52 }];
+  const choiceRows = [
+    ["الحقل", "القيمة في القائمة", "المعنى"],
+    ["المسؤولية", "employer", "صاحب العمل"], ["المسؤولية", "contractor", "المقاول"], ["المسؤولية", "engineer", "المهندس / الاستشاري"], ["المسؤولية", "third_party", "طرف ثالث"], ["المسؤولية", "undetermined", "غير محدد بعد"],
+    ["سبب التأخير", "employer", "سبب من صاحب العمل"], ["سبب التأخير", "contractor", "سبب من المقاول"], ["سبب التأخير", "neutral", "سبب محايد أو عام"],
+    ["الحرجية", "unknown", "لم تُحدد بعد"], ["الحرجية", "potentially_critical", "قد تكون حرجة"], ["الحرجية", "critical", "حرجة بعد المراجعة"], ["الحرجية", "noncritical", "غير حرجة"],
+  ];
+  choiceRows.forEach((values, index) => {
+    const row = choices.addRow(values);
+    row.eachCell(cell => { cell.alignment = { vertical: "middle", horizontal: "right", wrapText: true }; cell.border = { bottom: { style: "thin", color: { argb: "FFD7E5E9" } } }; });
+    if (index === 0) row.eachCell(cell => { cell.font = { bold: true, color: { argb: "FFFFFFFF" } }; cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF277F92" } }; });
+  });
+  return workbook;
+}
+
+export async function downloadIssueImportTemplate() {
+  const workbook = await buildIssueImportTemplateWorkbook();
+  const buffer = await workbook.xlsx.writeBuffer();
+  download(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), "TIA-Issue-Import-Template.xlsx");
 }
 
 export function parseIssueRegisterExcel(data: ArrayBuffer, schedule: Pick<Schedule, "activities" | "relationships">): IssueExcelParseResult {

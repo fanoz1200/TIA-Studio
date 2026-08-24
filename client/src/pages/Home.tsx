@@ -76,6 +76,12 @@ import {
 } from "@/lib/cpm";
 import { importXerSchedule, type XerImportSummary } from "@/lib/xer";
 import { importP6XmlSchedule } from "@/lib/p6-xml";
+import {
+  findRegionalCalendarCountry,
+  loadPublicHolidays,
+  regionalCalendarCountries,
+  regionalCalendarForCountry,
+} from "@/lib/regional-calendar";
 import { sclMethods, sclSources } from "@/lib/scl-methods";
 import { P6EvidenceReportPanel } from "@/components/P6EvidenceReportPanel";
 import { ScheduleQualityPanel } from "@/components/ScheduleQualityPanel";
@@ -100,7 +106,9 @@ import {
   shouldShowFirstRunGuide,
 } from "@/components/FirstRunGuide";
 import { UserGuidePanel } from "@/components/UserGuidePanel";
+import { XerViewerPanel } from "@/components/XerViewerPanel";
 import "./home-mobile-nav.css";
+import "../components/regional-calendar.css";
 
 const logoUrl = "/manus-storage/tia-studio-symbol_a5a70021.png";
 const workspaceImageUrl =
@@ -124,6 +132,7 @@ type ViewKey =
   | "review"
   | "members"
   | "compare"
+  | "xerViewer"
   | "resources"
   | "learning"
   | "issues";
@@ -135,10 +144,15 @@ const baseSchedule: Schedule = {
   startDate: "2026-01-05",
   dataDate: "2026-01-17",
   calendar: {
-    ...fiveDayCalendar,
-    id: "palm-five-day",
-    name: "تقويم المشروع — 5 أيام",
+    id: "palm-egypt-six-day",
+    name: "تقويم المشروع — مصر (6 أيام)",
+    workingWeekdays: [0, 1, 2, 3, 4, 6],
     holidays: ["2026-01-26"],
+    holidayLabels: { "2026-01-26": "إجازة تدريبية في النموذج" },
+    hoursPerDay: 8,
+    countryCode: "EG",
+    holidaySource: "نموذج تدريبي — راجع الإجازات الفعلية",
+    holidayReviewRequired: true,
   },
   source: "manual",
   activities: [
@@ -250,6 +264,7 @@ const navItems: { key: ViewKey; label: string; icon: typeof Network }[] = [
   { key: "review", label: "الاعتماد الإلكتروني", icon: ClipboardCheck },
   { key: "members", label: "أعضاء المشروع", icon: UsersRound },
   { key: "compare", label: "مقارنة التحديثات", icon: GitCompareArrows },
+  { key: "xerViewer", label: "معاينة XER قبل P6", icon: FileCode2 },
   { key: "resources", label: "الأدلة والملفات", icon: HardDriveDownload },
   { key: "learning", label: "التدريب والشرح", icon: BookOpenCheck },
   { key: "methods", label: "الموسوعة العلمية (SCL)", icon: LibraryBig },
@@ -507,8 +522,13 @@ export default function Home() {
   );
   const [journeyStep, setJourneyStep] = useState(1);
   const [p6GateApproved, setP6GateApproved] = useState(false);
+  const [qualityGateApproved, setQualityGateApproved] = useState(false);
   const [isXerImporting, setIsXerImporting] = useState(false);
   const [holidayInput, setHolidayInput] = useState("");
+  const [holidayYear, setHolidayYear] = useState(() =>
+    Number((schedule.dataDate ?? schedule.startDate).slice(0, 4))
+  );
+  const [isHolidaySyncing, setIsHolidaySyncing] = useState(false);
   const [eventTitle, setEventTitle] = useState("تأخر اعتماد مستند فني");
   const [eventDescription, setEventDescription] = useState(
     "يوثق هذا الـ Fragnet مدة الحدث ومنطقه بين نشاطين من البرنامج المعتمد."
@@ -658,7 +678,9 @@ export default function Home() {
     setEventModel("relationship");
     setEventDate(imported.dataDate ?? imported.startDate);
     setNewWindowFrom(imported.startDate);
+    setHolidayYear(Number((imported.dataDate ?? imported.startDate).slice(0, 4)));
     setP6GateApproved(false);
+    setQualityGateApproved(false);
   }
   function loadDemo() {
     resetForImported(baseSchedule);
@@ -1058,8 +1080,69 @@ export default function Home() {
             ? "أيام تقويمية (7/7)"
             : "أسبوع عمل 5 أيام (الإثنين–الجمعة)",
         holidays: previous.calendar?.holidays ?? [],
+        holidayLabels: previous.calendar?.holidayLabels,
+        countryCode: previous.calendar?.countryCode,
+        holidaySource: previous.calendar?.holidaySource,
+        holidaysLastCheckedAt: previous.calendar?.holidaysLastCheckedAt,
+        holidayReviewRequired: previous.calendar?.holidayReviewRequired,
       },
     }));
+  }
+  function applyRegionalCalendar(countryCode: string) {
+    const country = findRegionalCalendarCountry(countryCode);
+    if (!country) return;
+    setSchedule(previous => ({
+      ...previous,
+      calendar: regionalCalendarForCountry(country, previous.calendar),
+    }));
+    void syncRegionalHolidays(countryCode);
+  }
+  async function syncRegionalHolidays(countryCode?: string) {
+    const country = findRegionalCalendarCountry(
+      countryCode ?? schedule.calendar?.countryCode
+    );
+    if (!country) {
+      toast.error("اختر البلد أولاً قبل تحميل الإجازات.");
+      return;
+    }
+    setIsHolidaySyncing(true);
+    try {
+      const loaded = await loadPublicHolidays(
+        country.holidayCountryCode,
+        holidayYear
+      );
+      const labels = Object.fromEntries(
+        loaded.map(holiday => [holiday.date, holiday.label])
+      );
+      setSchedule(previous => {
+        const calendar = previous.calendar ?? regionalCalendarForCountry(country);
+        return {
+          ...previous,
+          calendar: {
+            ...calendar,
+            countryCode: country.code,
+            holidays: Array.from(
+              new Set([...calendar.holidays, ...loaded.map(item => item.date)])
+            ).sort(),
+            holidayLabels: { ...calendar.holidayLabels, ...labels },
+            holidaySource: `Nager.Date — ${holidayYear}`,
+            holidaysLastCheckedAt: new Date().toISOString(),
+            holidayReviewRequired: true,
+          },
+        };
+      });
+      toast.success(
+        `تم تحميل ${loaded.length} إجازة منشورة لـ ${country.label.split(" — ")[0]}. راجع الترحيلات والأعياد الهجرية قبل الاعتماد.`
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "تعذر تحديث الإجازات الآن؛ يمكنك إدخالها يدوياً."
+      );
+    } finally {
+      setIsHolidaySyncing(false);
+    }
   }
   function addHoliday() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(holidayInput)) {
@@ -1075,6 +1158,11 @@ export default function Home() {
           holidays: Array.from(
             new Set([...calendar.holidays, holidayInput])
           ).sort(),
+          holidayLabels: {
+            ...calendar.holidayLabels,
+            [holidayInput]: "إجازة أضافها المستخدم",
+          },
+          holidayReviewRequired: true,
         },
       };
     });
@@ -1088,6 +1176,12 @@ export default function Home() {
         calendar: {
           ...calendar,
           holidays: calendar.holidays.filter(item => item !== day),
+          holidayLabels: Object.fromEntries(
+            Object.entries(calendar.holidayLabels ?? {}).filter(
+              ([date]) => date !== day
+            )
+          ),
+          holidayReviewRequired: true,
         },
       };
     });
@@ -1287,7 +1381,7 @@ export default function Home() {
           <StatusBadge result={activeResult} />
         </section>
         <ClaimContinuityPanel
-          view={view === "guide" ? "guided" : view}
+          view={view === "guide" || view === "xerViewer" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedWindow={selectedWindow}
@@ -1295,14 +1389,14 @@ export default function Home() {
           onActiveClaimChange={handleActiveClaimChange}
         />
         <IssueLogPanel
-          view={view === "guide" ? "guided" : view}
+          view={view === "guide" || view === "xerViewer" ? "guided" : view}
           schedule={schedule}
           existingEvents={events}
           isAuthenticated={isAuthenticated}
           onApplyFragnet={applyIssueFragnet}
         />
         <P6EvidenceReportPanel
-          view={view === "guide" ? "guided" : view}
+          view={view === "guide" || view === "xerViewer" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedEvent={selectedEvent}
@@ -1320,7 +1414,7 @@ export default function Home() {
           }}
         />
         <FinancialNoticeReviewPanel
-          view={view === "guide" ? "guided" : view}
+          view={view === "guide" || view === "xerViewer" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedEvent={selectedEvent}
@@ -1336,6 +1430,13 @@ export default function Home() {
           xerSummary={xerSummary}
           onNavigate={next => setView(next)}
         />
+        {view === "xerViewer" && <XerViewerPanel
+          schedule={schedule}
+          xerSummary={xerSummary}
+          baselineSnapshot={baselineSnapshot}
+          updateSnapshots={updateSnapshots}
+          onNavigate={next => setView(next)}
+        />}
         <KnowledgeCentrePanel
           view={view}
           projectKey={schedule.id}
@@ -1372,6 +1473,7 @@ export default function Home() {
             journeyStep={journeyStep}
             journeyPath={journeyPath}
             p6GateApproved={p6GateApproved}
+            qualityGateApproved={qualityGateApproved}
             isXerImporting={isXerImporting}
             baselineSnapshot={baselineSnapshot}
             updateSnapshots={updateSnapshots}
@@ -1379,6 +1481,7 @@ export default function Home() {
             onJourneyPathChange={setJourneyPath}
             onJourneyStepChange={setJourneyStep}
             onP6GateApprovedChange={setP6GateApproved}
+            onQualityGateApprovedChange={setQualityGateApproved}
             onScheduleUpload={importJourneySchedule}
             onApplyIssueExcel={applyWorkshopExcel}
             onPrepareSplit={prepareWorkshopSplit}
@@ -1771,6 +1874,55 @@ export default function Home() {
                   <CalendarDays size={21} />
                 </div>
                 <div className="calendar-presets">
+                  <div className="calendar-regional-controls">
+                    <div>
+                      <Label htmlFor="calendar-country">بلد المشروع</Label>
+                      <Select
+                        value={schedule.calendar?.countryCode ?? "custom"}
+                        onValueChange={value => {
+                          if (value !== "custom") applyRegionalCalendar(value);
+                        }}
+                      >
+                        <SelectTrigger id="calendar-country" className="mt-1">
+                          <SelectValue placeholder="اختَر بلد المشروع" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="custom">تقويم مشروع مخصص</SelectItem>
+                          {regionalCalendarCountries.map(country => (
+                            <SelectItem key={country.code} value={country.code}>
+                              {country.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="holiday-year">سنة الإجازات</Label>
+                      <Input
+                        id="holiday-year"
+                        type="number"
+                        min="2020"
+                        max="2100"
+                        value={holidayYear}
+                        onChange={event => setHolidayYear(Number(event.target.value))}
+                        dir="ltr"
+                        className="mt-1"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="tiny-button regional-sync-button"
+                      disabled={isHolidaySyncing || !schedule.calendar?.countryCode}
+                      onClick={() => void syncRegionalHolidays()}
+                    >
+                      {isHolidaySyncing ? (
+                        <LoaderCircle className="animate-spin" size={15} />
+                      ) : (
+                        <Download size={15} />
+                      )}
+                      تحديث الإجازات
+                    </Button>
+                  </div>
                   <button
                     onClick={() => setCalendarPreset("five")}
                     className={
@@ -1837,13 +1989,30 @@ export default function Home() {
                   {(schedule.calendar?.holidays ?? []).length ? (
                     schedule.calendar?.holidays.map(day => (
                       <button key={day} onClick={() => removeHoliday(day)}>
-                        <span dir="ltr">{day}</span>
+                        <span>
+                          <b dir="ltr">{day}</b>
+                          {schedule.calendar?.holidayLabels?.[day] ? (
+                            <small>{schedule.calendar.holidayLabels[day]}</small>
+                          ) : null}
+                        </span>
                         <X size={13} />
                       </button>
                     ))
                   ) : (
                     <span>لا توجد عطل استثنائية مدخلة.</span>
                   )}
+                </div>
+                <div className="calendar-review-note" role="note">
+                  <ShieldCheck size={15} />
+                  <span>
+                    المصدر: {schedule.calendar?.holidaySource ?? "إدخال يدوي"}
+                    {schedule.calendar?.holidaysLastCheckedAt
+                      ? ` · آخر تحديث ${new Date(schedule.calendar.holidaysLastCheckedAt).toLocaleDateString("ar-EG")}`
+                      : ""}
+                    {schedule.calendar?.holidayReviewRequired
+                      ? " · راجع العيد المتغير وقرار الترحيل قبل اعتماد الحساب."
+                      : ""}
+                  </span>
                 </div>
               </div>
               <div className="panel schedule-panel">

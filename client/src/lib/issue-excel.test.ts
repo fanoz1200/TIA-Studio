@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 import { describe, expect, it } from "vitest";
-import { buildIssueRegisterWorkbook, ISSUE_EXCEL_COLUMNS, parseIssueRegisterExcel } from "./issue-excel";
+import { buildIssueImportTemplateWorkbook, buildIssueRegisterWorkbook, ISSUE_EXCEL_COLUMNS, parseIssueRegisterExcel } from "./issue-excel";
 
 const schedule = {
   activities: [{ id: "A-10", name: "نشاط" }],
@@ -38,5 +38,16 @@ describe("تبادل Excel لسجل القضايا", () => {
     expect(values[0]).toContain("المراجع");
     expect(values[1]).toContain("أثر محتمل على التسلسل ونهاية المشروع.");
     expect(values[1]).toContain("خطاب ENG-17 ومحضر اجتماع 22.");
+  });
+
+  it("ينشئ قالباً احترافياً يوضح الحقول الإلزامية ويضع قوائم اختيار وقواعد إدخال", async () => {
+    const workbook = await buildIssueImportTemplateWorkbook();
+    const sheet = workbook.getWorksheet("سجل القضايا");
+    expect(sheet?.getCell("A1").note).toBe("حقل مطلوب للاستيراد.");
+    expect(sheet?.getCell("D1").note).toBe("حقل اختياري؛ اتركه فارغاً إن لم يتوفر.");
+    expect(sheet?.getCell("E2").dataValidation.formulae).toContain("\"employer,contractor,engineer,third_party,undetermined\"");
+    expect(sheet?.getCell("H2").dataValidation.type).toBe("decimal");
+    expect(workbook.getWorksheet("تعليمات")?.getCell("A1").value).toBe("دليل قالب سجل القضايا");
+    expect(workbook.getWorksheet("القيم المسموحة")?.getCell("C2").value).toBe("صاحب العمل");
   });
 });

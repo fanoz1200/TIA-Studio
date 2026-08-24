@@ -1,10 +1,14 @@
 {
   "name": "tia-delay-analysis",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Arabic Time Impact Analysis studio with local CPM/TIA verification and professional claim exports.",
   "author": "TIA Studio",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fanoz1200/TIA-Studio.git"
+  },
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
     "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
@@ -69,6 +73,7 @@
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.44.5",
     "embla-carousel-react": "^8.6.0",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "framer-motion": "^12.23.22",
     "input-otp": "^1.4.2",

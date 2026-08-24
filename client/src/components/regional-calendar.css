@@ -1,0 +1,74 @@
+.calendar-regional-controls {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.6fr) minmax(92px, 0.6fr) auto;
+  align-items: end;
+  gap: 8px;
+  grid-column: 1 / -1;
+  padding: 0 0 4px;
+}
+
+.calendar-regional-controls label {
+  display: block;
+  color: #657176;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calendar-regional-controls button {
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.regional-sync-button:disabled {
+  cursor: not-allowed;
+}
+
+.holiday-list button > span {
+  display: grid;
+  gap: 1px;
+  text-align: right;
+}
+
+.holiday-list button b {
+  font-weight: 600;
+}
+
+.holiday-list button small {
+  max-width: 148px;
+  overflow: hidden;
+  color: #9c6146;
+  font: 500 9px/1.25 inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-review-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 12px 20px 0;
+  padding: 9px 10px;
+  color: #6a5c43;
+  background: #fff7e7;
+  border: 1px solid #f0dba4;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.calendar-review-note svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #b7791f;
+}
+
+@media (max-width: 760px) {
+  .calendar-regional-controls {
+    grid-template-columns: 1fr 0.72fr;
+  }
+
+  .calendar-regional-controls button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}

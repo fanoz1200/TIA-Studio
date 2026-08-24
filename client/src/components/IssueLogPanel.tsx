@@ -59,6 +59,8 @@ export function IssueLogPanel({ view, schedule, existingEvents, isAuthenticated,
   const [relationshipIds, setRelationshipIds] = useState<string[]>([]);
   const [relationshipSearch, setRelationshipSearch] = useState("");
   const [affectedActivityIds, setAffectedActivityIds] = useState<string[]>(schedule.activities.slice(0, 1).map(activity => activity.id));
+  const [activitySearch, setActivitySearch] = useState("");
+  const [activityIdPaste, setActivityIdPaste] = useState("");
   const [preview, setPreview] = useState<IssueFragnetProposal | null>(null);
   const [importRows, setImportRows] = useState<ExcelIssueRow[]>([]);
   const [importErrors, setImportErrors] = useState<string[]>([]);
@@ -71,11 +73,31 @@ export function IssueLogPanel({ view, schedule, existingEvents, isAuthenticated,
     return { relationship, predecessor, successor, searchText };
   }).filter(option => !relationshipSearch.trim() || option.searchText.includes(relationshipSearch.trim().toLowerCase())), [relationshipSearch, schedule.activities, schedule.relationships]);
 
+  const activityOptions = useMemo(() => {
+    const query = activitySearch.trim().toLowerCase();
+    if (!query) return schedule.activities;
+    return schedule.activities.filter(activity => `${activity.id} ${activity.name} ${activity.wbs ?? ""} ${activity.wbsId ?? ""}`.toLowerCase().includes(query));
+  }, [activitySearch, schedule.activities]);
+
   if (view !== "issues") return null;
   if (!isAuthenticated) return <section className="issue-log-panel"><div className="issue-log-heading"><div><p className="eyebrow">PLANNER ISSUE LOG</p><h2>سجل القضايا المؤثر في البرنامج</h2><p>سجّل الواقعة أولاً ثم راجع Fragnet المقترح قبل إضافته إلى نسخة TIA مستقلة.</p></div><ClipboardList size={24} /></div><div className="issue-log-login"><LogIn size={19} /><span>سجّل الدخول لحفظ قضايا المشروع وسجل مراجعة Fragnet بشكل آمن.</span><Button className="run-button" onClick={startLogin}>تسجيل الدخول</Button></div></section>;
 
   const toggleActivity = (id: string) => setAffectedActivityIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
   const toggleRelationship = (id: string) => setRelationshipIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
+  const addPastedActivities = () => {
+    const submittedIds = Array.from(new Set(activityIdPaste.split(/[،,;\s]+/).map(id => id.trim()).filter(Boolean)));
+    if (!submittedIds.length) { toast.message("الصق Activity IDs مفصولة بفاصلة أو سطر جديد أولاً."); return; }
+    const knownIds = new Set(schedule.activities.map(activity => activity.id));
+    const accepted = submittedIds.filter(id => knownIds.has(id));
+    const unknown = submittedIds.filter(id => !knownIds.has(id));
+    if (!accepted.length) { toast.error("ولا معرف من المكتوب موجود في البرنامج الحالي."); return; }
+    const merged = Array.from(new Set(affectedActivityIds.concat(accepted)));
+    if (merged.length > 100) { toast.error("الحد الأقصى 100 نشاط متأثر لكل واقعة. راجع نطاق الواقعة أو قسّمها."); return; }
+    setAffectedActivityIds(merged);
+    setActivityIdPaste("");
+    if (unknown.length) toast.warning(`تمت إضافة ${accepted.length} نشاط؛ لم أجد: ${unknown.slice(0, 5).join("، ")}${unknown.length > 5 ? "…" : ""}.`);
+    else toast.success(`تمت إضافة ${accepted.length} نشاط إلى نطاق الواقعة.`);
+  };
   const saveRequirements = [
     { label: "رقم واقعة", done: Boolean(issueNo.trim()) },
     { label: "عنوان واضح", done: Boolean(title.trim()) },
@@ -128,7 +150,7 @@ export function IssueLogPanel({ view, schedule, existingEvents, isAuthenticated,
       <div><Label>تصنيف الحرجية</Label><Select value={criticality} onValueChange={value => setCriticality(value as typeof criticality)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unknown">قيد التقييم</SelectItem><SelectItem value="potentially_critical">مرشح للحرجية</SelectItem><SelectItem value="critical">حرج</SelectItem><SelectItem value="noncritical">غير حرج</SelectItem></SelectContent></Select></div>
       <div><Label>مدة Fragnet المقترحة (أيام عمل)</Label><Input type="number" min="0.01" max="3650" step="0.25" value={duration} onChange={event => setDuration(event.target.value)} /></div>
       <div className="issue-form-wide"><div className="issue-field-heading"><Label>نقطة الربط التي سيدخل فيها Fragnet</Label><b>{relationshipIds.length} مختارة</b></div><p className="issue-field-help">هذه هي علاقة السهم بين نشاط سابق ونشاط لاحق. تظهر من البرنامج الذي رفعته أنت، وليست قائمة ثابتة. إذا اخترت أكثر من نقطة، يحفظ النظام قضية ومقترح Fragnet مستقلين لكل نقطة حتى لا يختلط المسار.</p><Input value={relationshipSearch} onChange={event => setRelationshipSearch(event.target.value)} placeholder="ابحث برقم العلاقة أو Activity ID أو اسم النشاط…" /><div className="issue-relationship-list">{relationshipOptions.length ? relationshipOptions.map(({ relationship, predecessor, successor }) => <label key={relationship.id} className={relationshipIds.includes(relationship.id) ? "selected" : ""}><input type="checkbox" checked={relationshipIds.includes(relationship.id)} onChange={() => toggleRelationship(relationship.id)} /><span><b>{relationship.id} · {relationship.type}</b><em>{relationship.predecessorId} — {predecessor?.name ?? "نشاط غير مقروء"}</em><i>←</i><em>{relationship.successorId} — {successor?.name ?? "نشاط غير مقروء"}</em></span></label>) : <p>لا توجد علاقة مطابقة للبحث. راجع برنامج P6 المستورد أو امسح البحث.</p>}</div></div>
-      <div className="issue-form-wide"><Label>الأنشطة المتأثرة (للتوثيق والمراجعة)</Label><p className="issue-field-help">اختيار الأنشطة هنا يوضح نطاق الواقعة للمراجع. أما موضع إدراج الـFragnet فيحدده اختيار «نقطة الربط» أعلاه.</p><div className="issue-activity-pills">{schedule.activities.map(activity => <label key={activity.id}><input type="checkbox" checked={affectedActivityIds.includes(activity.id)} onChange={() => toggleActivity(activity.id)} /><span>{activity.id} — {activity.name}</span></label>)}</div></div>
+      <div className="issue-form-wide"><div className="issue-field-heading"><Label>الأنشطة المتأثرة (للتوثيق والمراجعة)</Label><b>{affectedActivityIds.length} مختارة</b></div><p className="issue-field-help">اختيار الأنشطة يوضح نطاق الواقعة للمراجع. أما موضع إدراج الـFragnet فيحدده اختيار «نقطة الربط» أعلاه. ابحث بالـActivity ID أو الاسم أو WBS، أو الصق قائمة IDs من Excel؛ كل علاقة مختارة تبقى مقترح Fragnet مستقل.</p><div className="issue-activity-tools"><Input value={activitySearch} onChange={event => setActivitySearch(event.target.value)} placeholder="ابحث بالـActivity ID أو الاسم أو WBS…" /><div><Textarea rows={2} value={activityIdPaste} onChange={event => setActivityIdPaste(event.target.value)} placeholder="الصق Activity IDs: A100، A110 أو كل ID في سطر" /><Button type="button" variant="outline" onClick={addPastedActivities}>إضافة المعرفات</Button></div></div><div className="issue-activity-pills">{activityOptions.length ? activityOptions.map(activity => <label key={activity.id}><input type="checkbox" checked={affectedActivityIds.includes(activity.id)} onChange={() => toggleActivity(activity.id)} /><span>{activity.id} — {activity.name}{activity.wbs ? ` · ${activity.wbs}` : ""}</span></label>) : <p>لا توجد أنشطة مطابقة للبحث. امسح البحث أو راجع المعرفات في البرنامج المستورد.</p>}</div></div>
       <div className="issue-form-wide"><Label>الوصف الفني</Label><Textarea rows={3} value={description} onChange={event => setDescription(event.target.value)} placeholder="اشرح الوقائع الفنية وما الذي يجعل العلاقة أو الأنشطة المختارة مناسبة للتحليل…" /></div>
       <div className="issue-form-wide"><Label>ملخص الأثر المتوقع</Label><Textarea rows={2} value={impactSummary} onChange={event => setImpactSummary(event.target.value)} placeholder="اشرح الأثر المتوقع على التسلسل أو المدة أو الحرجية. لا يغني ذلك عن حساب TIA." /></div>
       <div className="issue-form-wide"><Label>المراجع والأدلة</Label><Textarea rows={2} value={referenceNotes} onChange={event => setReferenceNotes(event.target.value)} placeholder="اذكر رقم الخطاب أو المحضر أو الصورة أو بند العقد أو رابط الدليل…" /></div>

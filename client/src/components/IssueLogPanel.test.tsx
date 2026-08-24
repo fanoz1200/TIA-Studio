@@ -45,7 +45,7 @@ describe("أدوات Excel في سجل القضايا", () => {
     expect(saveButton.disabled).toBe(true);
     const relationship = screen.getByRole("checkbox", { name: /REL-001.*FS/ });
     fireEvent.click(relationship);
-    expect(screen.getByText("1 مختارة")).toBeTruthy();
+    expect(screen.getAllByText("1 مختارة").length).toBeGreaterThan(0);
     expect(screen.getByText("نقطة ربط واحدة على الأقل").className).toContain("complete");
   });
 

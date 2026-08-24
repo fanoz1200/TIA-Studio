@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import React from "react";
 import {
   BellRing,
   CheckCircle2,
@@ -446,14 +447,14 @@ export function FinancialNoticeReviewPanel({
           <div className="workflow-login">
             <LogIn size={18} />
             <span>
-              سجّل الدخول لحفظ سجل Notices الخاص بهذا المشروع بشكل آمن.
+              تقدر تجهز وتنزل مسودة محلية من غير حساب. سجّل الدخول فقط لو عايز
+              تحفظ الإشعار وتتابع سجله وأدلته داخل المشروع.
             </span>
             <Button className="run-button" onClick={startLogin}>
               تسجيل الدخول
             </Button>
           </div>
-        ) : (
-          <>
+        ) : null}
             <div className="workflow-toolbar">
               <Button variant="outline" onClick={resetNoticeFromEvent}>
                 تجهيز مسودة قابلة للتحرير
@@ -619,10 +620,20 @@ export function FinancialNoticeReviewPanel({
             </div>
             <div className="workflow-footer">
               <p>
-                المسودة الآلية لا تُرسل مراسلة؛ تنشأ مرة واحدة لكل حدث وتعود عند
-                تكرار الإجراء. راجع التاريخ والبند والنص قبل حالة «مرسل».
+                المسودة المحلية لا تُرسل مراسلة ولا تثبت استحقاقاً. راجع التاريخ
+                والبند والنص والعقد قبل أي إرسال أو حفظ رسمي.
               </p>
               <div className="workflow-actions">
+                <Button
+                  variant="outline"
+                  disabled={!selectedNoticeEvent || !noticeNarrative.trim()}
+                  onClick={downloadLocalNoticeDraft}
+                >
+                  <Download size={16} />
+                  تنزيل مسودة Notice محلية
+                </Button>
+                {isAuthenticated ? (
+                  <>
                 <Button
                   variant="outline"
                   disabled={
@@ -676,8 +687,16 @@ export function FinancialNoticeReviewPanel({
                   <Send size={16} />
                   حفظ الإشعار
                 </Button>
+                  </>
+                ) : (
+                  <p className="workflow-subtle">
+                    الحفظ في السجل ومراجع الأدلة يحتاجان تسجيل الدخول؛ التنزيل
+                    المحلي متاح الآن.
+                  </p>
+                )}
               </div>
             </div>
+            {isAuthenticated ? (
             <div className="notice-register">
               {notices.isLoading ? (
                 <span>جار تحميل السجل…</span>
@@ -702,8 +721,7 @@ export function FinancialNoticeReviewPanel({
                 <span>لم يتم إنشاء Notices لهذا المشروع بعد.</span>
               )}
             </div>
-          </>
-        )}
+            ) : null}
       </section>
     );
 
