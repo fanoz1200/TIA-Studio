@@ -29,7 +29,7 @@ export type QualityLedgerEntry = Pick<ScheduleQualityAssessment, "scheduleFinger
 const validRelationshipTypes: RelationshipType[] = ["FS", "SS", "FF", "SF"];
 
 function fingerprint(schedule: Schedule) {
-  const raw = [schedule.id, schedule.startDate, schedule.dataDate ?? "", schedule.activities.map((activity) => `${activity.id}:${activity.duration}:${activity.wbsId ?? activity.wbs ?? ""}:${activity.calendarId ?? ""}:${activity.constraint?.type ?? ""}:${activity.constraint?.date ?? ""}:${(activity.constraintAudit ?? []).map(item => `${item.slot}:${item.code}:${item.rawDate ?? ""}:${item.status}`).join(",")}`).join("|"), schedule.relationships.map((relationship) => `${relationship.predecessorId}>${relationship.successorId}:${relationship.type}:${relationship.lag ?? 0}`).join("|")].join("#");
+  const raw = [schedule.id, schedule.startDate, schedule.dataDate ?? "", schedule.activities.map((activity) => `${activity.id}:${activity.duration}:${activity.wbsId ?? activity.wbs ?? ""}:${activity.calendarId ?? ""}:${activity.constraint?.type ?? ""}:${activity.constraint?.date ?? ""}:${activity.percentComplete ?? ""}:${activity.remainingDuration ?? ""}:${activity.actualStart ?? ""}:${activity.actualFinish ?? ""}:${(activity.constraintAudit ?? []).map(item => `${item.slot}:${item.code}:${item.rawDate ?? ""}:${item.status}`).join(",")}`).join("|"), schedule.relationships.map((relationship) => `${relationship.predecessorId}>${relationship.successorId}:${relationship.type}:${relationship.lag ?? 0}`).join("|")].join("#");
   let hash = 2166136261;
   for (let index = 0; index < raw.length; index += 1) {
     hash ^= raw.charCodeAt(index);
@@ -147,6 +147,10 @@ export function assessScheduleQuality(schedule: Schedule, xerSummary?: XerImport
         ? rule("SQ-017", "قيود P6 السفلية المقروءة", "warning", `طُبق ${supportedConstraints} قيد SNET/FNET محدود في التمرير الأمامي فقط.`, "طابق التواريخ والـfloat والمسار الحرج بعد F9 داخل نسخة P6 غير إنتاجية.", supportedConstraints)
         : rule("SQ-017", "قيود P6", "pass", "لم يقرأ المستورد قيداً يحتاج محاكاة محلية من الحقول المتاحة.", "يبقى فحص القيود داخل P6 مطلوباً عند أي شك في اكتمال التصدير."));
     rules.push(rule("SQ-018", "افتراض تحويل ساعات XER", "warning", "حُولت المدد والـlag من ساعات إلى أيام على أساس 8 ساعات/يوم؛ لا يستبدل ذلك ساعات تقويم P6 الفعلية.", "راجع ساعات اليوم والتقاويم والاستثناءات داخل P6 قبل اعتماد النتائج."));
+    const progressBearingActivities = xerSummary.activitiesWithProgress ?? activities.filter((activity) => activity.percentComplete !== undefined || activity.remainingDuration !== undefined || activity.actualStart || activity.actualFinish).length;
+    rules.push(progressBearingActivities
+      ? rule("SQ-019", "تحديث P6 وحالة الإنجاز", "blocker", `قرأ المستورد حالة تقدم أو Actual/Remaining Duration لـ${progressBearingActivities} نشاطاً، لكنه يحتفظ بها للمراجعة فقط ولا يعيد جدولة Update كما يفعل P6/F9.`, "نفّذ Calculate Schedule داخل نسخة P6 غير إنتاجية، ثم طابق Data Date والتقويم والـfloat والمسار الحرج قبل اعتماد Update أو TIA.", progressBearingActivities)
+      : rule("SQ-019", "تحديث P6 وحالة الإنجاز", "pass", "لا توجد حالة تقدم أو Actual/Remaining Duration مقروءة تستلزم إعادة جدولة Update.", "عند استيراد Update فعلي، راجع هذه القاعدة قبل اعتماد النتيجة."));
   }
 
   const summary = rules.reduce((current, item) => {

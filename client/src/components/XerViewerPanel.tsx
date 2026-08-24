@@ -41,6 +41,7 @@ function ScheduleFacts({ schedule, summary }: { schedule: Schedule; summary?: Xe
       <div><dt>أيام العمل</dt><dd>{calendar?.workingWeekdays?.length ?? 0} أيام/أسبوع</dd></div>
       <div><dt>تقويمات الأنشطة</dt><dd>{summary ? `${summary.taskCalendarCount ?? summary.taskCalendarIds?.length ?? 0} معرف` : "غير مقروء"}</dd></div>
       <div><dt>قيود XER</dt><dd>{summary ? `${summary.supportedConstraintsRead ?? 0} محسوب · ${summary.unsupportedConstraintsRead ?? 0} مراجعة` : "غير مقروء"}</dd></div>
+      <div><dt>حالة التحديث</dt><dd>{summary ? `${summary.activitiesWithProgress ?? 0} نشاط — محفوظة للمراجعة، لا F9 محلي` : "غير مقروء"}</dd></div>
     </dl>
   );
 }

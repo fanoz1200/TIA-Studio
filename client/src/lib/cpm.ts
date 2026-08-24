@@ -471,9 +471,11 @@ export function runCPM(schedule: Schedule): CpmResult {
   const appliedConstraints = activities.filter((activity) => activity.constraint).length;
   const reviewConstraints = activities.flatMap((activity) => activity.constraintAudit ?? []).filter((item) => item.status === "review-required").length;
   const taskCalendarIds = Array.from(new Set(activities.map((activity) => activity.calendarId).filter((value): value is string => Boolean(value))));
+  const activitiesWithUpdateState = activities.filter((activity) => activity.percentComplete !== undefined || activity.remainingDuration !== undefined || activity.actualStart || activity.actualFinish).length;
   if (appliedConstraints) warnings.push(`طُبق ${appliedConstraints} قيد/قيود سفلية فقط في التمرير الأمامي المحلي؛ راجع النتيجة داخل P6.`);
   if (reviewConstraints) warnings.push(`يوجد ${reviewConstraints} قيد/قيود XER غير محسوبة محلياً؛ لا تعتمد نتيجة CPM قبل مراجعتها.`);
   if (taskCalendarIds.length > 1) warnings.push(`يستخدم الملف ${taskCalendarIds.length} معرفات تقويم على مستوى النشاط، بينما الحساب المحلي يطبق تقويماً واحداً فقط.`);
+  if (activitiesWithUpdateState) warnings.push(`حُفظت حالة تحديث لـ${activitiesWithUpdateState} نشاطاً (Actuals/Remaining/Progress)، لكن CPM المحلي لا يعيد جدولة تحديث P6 أو يحاكي F9؛ لا تستخدم النتيجة كتحديث مكافئ لـPrimavera.`);
 
   return { scheduleId: schedule.id, scheduleName: schedule.name, projectDuration, completionDate: addWorkingDays(schedule.startDate, projectDuration, calendar), calendar, activities, relationships: schedule.relationships, topologicalOrder, criticalActivityIds: activities.filter((activity) => activity.isCritical).map((activity) => activity.id), warnings };
 }

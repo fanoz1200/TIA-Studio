@@ -83,6 +83,19 @@ describe("CPM engine", () => {
     expect(result.warnings.join(" ")).toContain("غير محسوبة محلياً");
   });
 
+  it("preserves update metadata but warns that it is not a Primavera F9 reschedule", () => {
+    const result = runCPM({
+      id: "update-state-warning",
+      name: "حالة تحديث محفوظة",
+      startDate: "2026-01-05",
+      activities: [{ id: "UPD", name: "نشاط محدّث", duration: 5, percentComplete: 40, remainingDuration: 3, actualStart: "2026-01-05" }],
+      relationships: [],
+    });
+
+    expect(result.projectDuration).toBe(5);
+    expect(result.warnings.join(" ")).toContain("لا يعيد جدولة تحديث P6");
+  });
+
   it("rejects logical cycles instead of producing misleading dates", () => {
     expect(() =>
       runCPM({

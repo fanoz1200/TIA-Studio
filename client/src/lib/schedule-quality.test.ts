@@ -52,4 +52,11 @@ describe("schedule quality gate", () => {
     expect(assessment.rules.find((item) => item.id === "SQ-016")?.severity).toBe("blocker");
     expect(assessment.rules.find((item) => item.id === "SQ-017")?.severity).toBe("blocker");
   });
+
+  it("blocks equivalence claims for imported update progress that has not been rescheduled like P6", () => {
+    const assessment = assessScheduleQuality(baseSchedule, { projectName: "x", activitiesRead: 2, relationshipsRead: 1, relationshipsSkipped: 0, wbsRead: 1, resourcesRead: 0, resourceAssignmentsRead: 0, resourceAssignmentsSkipped: 0, assignmentsWithCosts: 0, activitiesWithProgress: 1, calendarName: "Standard", taskCalendarIds: ["CAL-01"], taskCalendarCount: 1, supportedConstraintsRead: 0, unsupportedConstraintsRead: 0, warnings: [], tablesFound: ["PROJECT", "TASK", "TASKPRED"] });
+
+    expect(assessment.analysisReadiness).toBe("blocked");
+    expect(assessment.rules.find((item) => item.id === "SQ-019")).toMatchObject({ severity: "blocker", affectedCount: 1 });
+  });
 });
