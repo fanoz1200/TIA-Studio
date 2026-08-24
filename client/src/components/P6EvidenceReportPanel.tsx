@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { startLogin } from "@/const";
+import { useAppLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { importP6XmlSchedule, type P6XmlImportSummary } from "@/lib/p6-xml";
 import {
@@ -138,6 +139,9 @@ export function P6EvidenceReportPanel({
   isAuthenticated: boolean;
   onScheduleImported: (schedule: Schedule, summary: P6XmlImportSummary) => void;
 }) {
+  const { language: interfaceLanguage, direction } = useAppLanguage();
+  const txt = (ar: string, en: string) =>
+    interfaceLanguage === "en" ? en : ar;
   const xmlInput = useRef<HTMLInputElement>(null);
   const evidenceInput = useRef<HTMLInputElement>(null);
   const [xmlSummary, setXmlSummary] = useState<P6XmlImportSummary | null>(null);
@@ -508,18 +512,17 @@ export function P6EvidenceReportPanel({
     );
   if (view === "schedule")
     return (
-      <section className="p6-ops-panel">
+      <section className="p6-ops-panel" dir={direction}>
         <div className="p6-ops-copy">
           <p className="eyebrow">P6 EXTENDED IMPORT</p>
-          <h2>بيانات التقدم وWBS من Primavera</h2>
-          <p>
-            يدعم المستورد P6 XML عناصر Project وActivity وRelationship وWBS،
-            ويعرض النسب كما وردت دون تحويلها إلى حكم استحقاق.
-          </p>
+          <h2>{txt("بيانات التقدم وWBS من Primavera", "Progress data and WBS from Primavera")}</h2>
+          <p>{txt(
+            "يدعم المستورد P6 XML عناصر Project وActivity وRelationship وWBS، ويعرض النسب كما وردت دون تحويلها إلى حكم استحقاق.",
+            "The P6 XML importer supports Project, Activity, Relationship and WBS records and displays progress as received without turning it into an entitlement finding."
+          )}</p>
           <p className="context-tip">
             <CircleHelp size={15} />
-            ابدأ بنسخة برنامج معتمدة، ثم راجع أعداد الأنشطة والعلاقات وWBS
-            المعروضة بعد الاستيراد قبل تشغيل TIA.
+            {txt("ابدأ بنسخة برنامج معتمدة، ثم راجع أعداد الأنشطة والعلاقات وWBS المعروضة بعد الاستيراد قبل تشغيل TIA.", "Start from an approved programme, then review the displayed activity, relationship and WBS counts before running TIA.")}
           </p>
         </div>
         <div className="p6-ops-actions">
@@ -527,7 +530,7 @@ export function P6EvidenceReportPanel({
             variant="outline"
             className="outline-action"
             disabled={isImporting}
-            title="تُقرأ البيانات محلياً في المتصفح؛ لا يُرفع ملف P6 إلى خدمة تحليل خارجية."
+            title={txt("تُقرأ البيانات محلياً في المتصفح؛ لا يُرفع ملف P6 إلى خدمة تحليل خارجية.", "The data is read locally in the browser; no P6 file is uploaded to an external analysis service.")}
             onClick={() => xmlInput.current?.click()}
           >
             {isImporting ? (
@@ -535,7 +538,7 @@ export function P6EvidenceReportPanel({
             ) : (
               <FileCode2 size={16} />
             )}
-            {isImporting ? "جارِ قراءة الملف…" : "استيراد P6 XML"}
+            {isImporting ? txt("جارِ قراءة الملف…", "Reading file…") : txt("استيراد P6 XML", "Import P6 XML")}
           </Button>
           <input
             ref={xmlInput}
@@ -551,13 +554,13 @@ export function P6EvidenceReportPanel({
           {isImporting ? (
             <div className="operation-progress" role="status">
               <span />
-              يُفكك الهيكل والعلاقات وبيانات الموارد…
+              {txt("يُفكك الهيكل والعلاقات وبيانات الموارد…", "Parsing structure, relationships and resource data…")}
             </div>
           ) : null}
           <div className="p6-stat">
             <FolderTree size={18} />
             <span>
-              <b>{schedule.wbsNodes?.length ?? 0}</b> عناصر WBS
+              <b>{schedule.wbsNodes?.length ?? 0}</b> {txt("عناصر WBS", "WBS items")}
             </span>
           </div>
           <div className="p6-stat">
@@ -570,17 +573,17 @@ export function P6EvidenceReportPanel({
                   ).length
                 }
               </b>{" "}
-              نسب إنجاز
+              {txt("نسب إنجاز", "progress values")}
             </span>
           </div>
         </div>
         {xmlSummary ? (
           <div className="p6-summary">
-            <b>آخر استيراد XML: {xmlSummary.projectName}</b>
+            <b>{txt("آخر استيراد XML", "Latest XML import")}: {xmlSummary.projectName}</b>
             <span>
-              {xmlSummary.activitiesRead} نشاط · {xmlSummary.relationshipsRead}{" "}
-              علاقة · {xmlSummary.wbsRead} WBS ·{" "}
-              {xmlSummary.activitiesWithProgress} نسبة إنجاز
+              {xmlSummary.activitiesRead} {txt("نشاط", "activities")} · {xmlSummary.relationshipsRead}{" "}
+              {txt("علاقة", "relationships")} · {xmlSummary.wbsRead} WBS ·{" "}
+              {xmlSummary.activitiesWithProgress} {txt("نسبة إنجاز", "progress values")}
             </span>
           </div>
         ) : null}
@@ -589,15 +592,15 @@ export function P6EvidenceReportPanel({
 
   if (view === "event")
     return (
-      <section className="evidence-panel">
+      <section className="evidence-panel" dir={direction}>
         <div className="evidence-header">
           <div>
             <p className="eyebrow">EVIDENCE REGISTER</p>
-            <h2>أدلة حدث التأخير</h2>
+            <h2>{txt("أدلة حدث التأخير", "Delay-event evidence")}</h2>
             <p>
               {selectedEvent
-                ? `ربط الوثائق بالحدث ${selectedEvent.id}: ${selectedEvent.title}`
-                : "اختر حدثاً من سجل التحليل لربط الأدلة به."}
+                ? `${txt("ربط الوثائق بالحدث", "Link documents to event")} ${selectedEvent.id}: ${selectedEvent.title}`
+                : txt("اختر حدثاً من سجل التحليل لربط الأدلة به.", "Select an event from the analysis register to link its evidence.")}
             </p>
           </div>
           <Paperclip size={22} />
@@ -606,29 +609,26 @@ export function P6EvidenceReportPanel({
           <div className="evidence-login">
             <LogIn size={18} />
             <div>
-              <b>يلزم تسجيل الدخول لحفظ الأدلة</b>
-              <p>
-                تُحفظ المرفقات المرتبطة بالأحداث في مساحة خاصة بحسابك، ولا يبدأ
-                أي رفع قبل تسجيل الدخول.
-              </p>
+              <b>{txt("يلزم تسجيل الدخول لحفظ الأدلة", "Sign in to save evidence")}</b>
+              <p>{txt("تُحفظ المرفقات المرتبطة بالأحداث في مساحة خاصة بحسابك، ولا يبدأ أي رفع قبل تسجيل الدخول.", "Event attachments are saved in a private account workspace; no upload begins before sign-in.")}</p>
             </div>
             <Button className="run-button" onClick={startLogin}>
-              تسجيل الدخول
+              {txt("تسجيل الدخول", "Sign in")}
             </Button>
           </div>
         ) : selectedEvent ? (
           <>
             <div className="evidence-form">
               <div>
-                <Label>عنوان الدليل</Label>
+                <Label>{txt("عنوان الدليل", "Evidence title")}</Label>
                 <Input
                   value={evidenceTitle}
                   onChange={event => setEvidenceTitle(event.target.value)}
-                  placeholder="مثال: خطاب اعتماد الرسومات"
+                  placeholder={txt("مثال: خطاب اعتماد الرسومات", "Example: drawing approval letter")}
                 />
               </div>
               <div>
-                <Label>نوع الدليل</Label>
+                <Label>{txt("نوع الدليل", "Evidence type")}</Label>
                 <Select
                   value={evidenceType}
                   onValueChange={value =>
@@ -639,18 +639,18 @@ export function P6EvidenceReportPanel({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="correspondence">مراسلة</SelectItem>
-                    <SelectItem value="instruction">تعليمات</SelectItem>
-                    <SelectItem value="drawing">رسومات</SelectItem>
-                    <SelectItem value="programme">برنامج</SelectItem>
-                    <SelectItem value="photo">صورة</SelectItem>
-                    <SelectItem value="report">تقرير</SelectItem>
-                    <SelectItem value="other">آخر</SelectItem>
+                    <SelectItem value="correspondence">{txt("مراسلة", "Correspondence")}</SelectItem>
+                    <SelectItem value="instruction">{txt("تعليمات", "Instruction")}</SelectItem>
+                    <SelectItem value="drawing">{txt("رسومات", "Drawing")}</SelectItem>
+                    <SelectItem value="programme">{txt("برنامج", "Programme")}</SelectItem>
+                    <SelectItem value="photo">{txt("صورة", "Photo")}</SelectItem>
+                    <SelectItem value="report">{txt("تقرير", "Report")}</SelectItem>
+                    <SelectItem value="other">{txt("آخر", "Other")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>تاريخ الاستلام</Label>
+                <Label>{txt("تاريخ الاستلام", "Date received")}</Label>
                 <Input
                   type="date"
                   dir="ltr"
@@ -659,7 +659,7 @@ export function P6EvidenceReportPanel({
                 />
               </div>
               <div className="evidence-form-wide">
-                <Label>وصف وسبب الصلة بالحدث</Label>
+                <Label>{txt("وصف وسبب الصلة بالحدث", "Description and relevance to the event")}</Label>
                 <Textarea
                   rows={2}
                   value={evidenceDescription}
@@ -669,8 +669,7 @@ export function P6EvidenceReportPanel({
             </div>
             <div className="evidence-upload-row">
               <p>
-                تحفظ الملفات في مساحة مرفقات آمنة مرتبطة بحسابك. الحد الأقصى
-                للملف 10 MB.
+                {txt("تحفظ الملفات في مساحة مرفقات آمنة مرتبطة بحسابك. الحد الأقصى للملف 10 MB.", "Files are stored in a secure attachment space linked to your account. Maximum file size: 10 MB.")}
               </p>
               <Button
                 className="run-button"
@@ -678,7 +677,7 @@ export function P6EvidenceReportPanel({
                 onClick={() => evidenceInput.current?.click()}
               >
                 <Upload size={16} />
-                إرفاق مستند
+                {txt("إرفاق مستند", "Attach document")}
               </Button>
               <input
                 ref={evidenceInput}
@@ -694,7 +693,7 @@ export function P6EvidenceReportPanel({
             </div>
             <div className="evidence-list">
               {evidence.isLoading ? (
-                <span>جار تحميل سجل الأدلة…</span>
+                <span>{txt("جار تحميل سجل الأدلة…", "Loading evidence register…")}</span>
               ) : evidence.data?.length ? (
                 evidence.data.map(item => (
                   <div className="evidence-row" key={item.id}>
@@ -710,15 +709,15 @@ export function P6EvidenceReportPanel({
                       ) : null}
                     </div>
                     <a href={item.storageUrl} target="_blank" rel="noreferrer">
-                      فتح
+                      {txt("فتح", "Open")}
                     </a>
                     <button onClick={() => remove.mutate({ id: item.id })}>
-                      حذف
+                      {txt("حذف", "Delete")}
                     </button>
                   </div>
                 ))
               ) : (
-                <span>لا توجد مستندات مربوطة بهذا الحدث بعد.</span>
+                <span>{txt("لا توجد مستندات مربوطة بهذا الحدث بعد.", "No documents are linked to this event yet.")}</span>
               )}
             </div>
           </>
@@ -728,20 +727,15 @@ export function P6EvidenceReportPanel({
 
   if (view === "report")
     return (
-      <section className="claim-export-panel">
+      <section className="claim-export-panel" dir={direction}>
         <div className="claim-export-header">
           <div>
             <p className="eyebrow">CLAIM OUTPUT</p>
-            <h2>قالب المطالبة وتصدير التقرير</h2>
-            <p>
-              حرّر القالب ثم صدّر Full Claim ثابتاً بصيغة Word أو PDF أو التقرير
-              النهائي Excel متعدد الأوراق، أو Fact Pack محلي JSON. يُدرج التقرير
-              السرد ونتائج TIA وسجل الأحداث وأدلة الحدث المحدد، ويظهر أي نقص بوضوح.
-            </p>
+            <h2>{txt("قالب المطالبة وتصدير التقرير", "Claim template and report export")}</h2>
+            <p>{txt("حرّر القالب ثم صدّر Full Claim ثابتاً بصيغة Word أو PDF أو التقرير النهائي Excel متعدد الأوراق، أو Fact Pack محلي JSON. يُدرج التقرير السرد ونتائج TIA وسجل الأحداث وأدلة الحدث المحدد، ويظهر أي نقص بوضوح.", "Edit the template, then export a fixed Full Claim in Word or PDF, a multi-sheet Excel final report, or a local JSON Fact Pack. The report includes the narrative, TIA results, event register and selected-event evidence, and clearly shows any gap.")}</p>
             <p className="context-tip">
               <CircleHelp size={15} />
-              ملف المطابقة ليس بديلاً عن Primavera: شغّل TIA أولاً، ثم قارنه مع
-              P6 أو مدقق مستقل قبل وصف النتائج بأنها متطابقة.
+              {txt("ملف المطابقة ليس بديلاً عن Primavera: شغّل TIA أولاً، ثم قارنه مع P6 أو مدقق مستقل قبل وصف النتائج بأنها متطابقة.", "The reconciliation file is not a substitute for Primavera: run TIA first, then compare it with P6 or an independent checker before describing results as equivalent.")}
             </p>
           </div>
           <FileText size={22} />
@@ -749,7 +743,7 @@ export function P6EvidenceReportPanel({
         <WorkflowQualityGate checks={workflowChecks} />
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
           <Label htmlFor="document-language" className="font-semibold">
-            لغة المخرجات / Output language
+            {txt("لغة المخرجات", "Output language")}
           </Label>
           <Select
             value={documentLanguage}
@@ -767,12 +761,12 @@ export function P6EvidenceReportPanel({
             </SelectContent>
           </Select>
           <p className="text-sm text-muted-foreground">
-            ينطبق الاختيار على Word وPDF وExcel وFact Pack. البيانات التي كتبتها تظل كما سجلتها.
+            {txt("ينطبق الاختيار على Word وPDF وExcel وFact Pack. البيانات التي كتبتها تظل كما سجلتها.", "The choice applies to Word, PDF, Excel and Fact Pack. The data you entered remains exactly as recorded.")}
           </p>
         </div>
         <div className="claim-template-grid">
           <div>
-            <Label>اسم القالب</Label>
+            <Label>{txt("اسم القالب", "Template name")}</Label>
             <Input
               value={template.title}
               onChange={event =>
@@ -781,7 +775,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div>
-            <Label>المخاطب</Label>
+            <Label>{txt("المخاطب", "Recipient")}</Label>
             <Input
               value={template.recipient}
               onChange={event =>
@@ -790,7 +784,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>مرجع العقد</Label>
+            <Label>{txt("مرجع العقد", "Contract reference")}</Label>
             <Input
               value={template.contractReference}
               onChange={event =>
@@ -802,7 +796,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>التمهيد</Label>
+            <Label>{txt("التمهيد", "Introduction")}</Label>
             <Textarea
               rows={3}
               value={template.introduction}
@@ -812,7 +806,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>الموقف التعاقدي</Label>
+            <Label>{txt("الموقف التعاقدي", "Contract position")}</Label>
             <Textarea
               rows={3}
               value={template.entitlementPosition}
@@ -825,7 +819,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>التمديد/الإغاثة المطلوبة</Label>
+            <Label>{txt("التمديد/الإغاثة المطلوبة", "Extension / relief requested")}</Label>
             <Textarea
               rows={3}
               value={template.reliefRequested}
@@ -838,7 +832,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>الخاتمة</Label>
+            <Label>{txt("الخاتمة", "Closing")}</Label>
             <Textarea
               rows={2}
               value={template.closing}

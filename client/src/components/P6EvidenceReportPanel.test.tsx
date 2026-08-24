@@ -3,6 +3,7 @@ import React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Fragnet, Schedule } from "@/lib/cpm";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const mocks = vi.hoisted(() => ({
   importXml: vi.fn(),
@@ -53,8 +54,13 @@ const activeResult = {
   totalImpactDays: 3,
 } as never;
 
-function renderPanel(view: "schedule" | "report", onScheduleImported = vi.fn()) {
-  return render(<P6EvidenceReportPanel view={view} schedule={schedule} events={view === "report" ? [event] : []} selectedEvent={view === "report" ? event : null} activeResult={view === "report" ? activeResult : null} narrative="سرد اختبار" isAuthenticated={false} onScheduleImported={onScheduleImported} />);
+function renderPanel(view: "schedule" | "report", onScheduleImported = vi.fn(), language: "ar" | "en" = "ar") {
+  window.localStorage.setItem("tia-studio-interface-language", language);
+  return render(
+    <LanguageProvider>
+      <P6EvidenceReportPanel view={view} schedule={schedule} events={view === "report" ? [event] : []} selectedEvent={view === "report" ? event : null} activeResult={view === "report" ? activeResult : null} narrative="سرد اختبار" isAuthenticated={false} onScheduleImported={onScheduleImported} />
+    </LanguageProvider>
+  );
 }
 
 describe("واجهة استيراد P6 وتصدير التقرير", () => {
@@ -65,6 +71,7 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
     vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { callback(0); return 1; });
   });
 
@@ -95,7 +102,7 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     mocks.exportDocx.mockImplementation(() => new Promise<void>((resolve) => { completeExport = resolve; }));
     renderPanel("report");
 
-    expect(screen.getByText("لغة المخرجات / Output language")).toBeTruthy();
+    expect(screen.getByText("لغة المخرجات")).toBeTruthy();
     expect((screen.getByRole("button", { name: "ملف مطابقة P6 (JSON)" }) as HTMLButtonElement).disabled).toBe(true);
     const excelButton = screen.getByRole("button", { name: "تصدير التقرير النهائي Excel" }) as HTMLButtonElement;
     expect(excelButton.disabled).toBe(false);
@@ -121,5 +128,12 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     fireEvent.click(screen.getByRole("option", { name: "English — LTR" }));
     fireEvent.click(screen.getByRole("button", { name: "تصدير التقرير النهائي Excel" }));
     expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ language: "en" }));
+  });
+
+  it("يعرض مسار التقرير بالإنجليزية واتجاه LTR عندما تختار لغة الواجهة English", () => {
+    const { container } = renderPanel("report", vi.fn(), "en");
+    expect(container.querySelector(".claim-export-panel")?.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByText("Claim template and report export")).toBeTruthy();
+    expect(screen.getByText("Output language")).toBeTruthy();
   });
 });
