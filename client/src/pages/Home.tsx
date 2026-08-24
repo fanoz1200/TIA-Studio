@@ -40,6 +40,7 @@ import {
   X,
   Zap,
   ClipboardList,
+  Scale,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -92,6 +93,7 @@ import { ProjectResourcesPanel } from "@/components/ProjectResourcesPanel";
 import { KnowledgeCentrePanel } from "@/components/KnowledgeCentrePanel";
 import { ClaimContinuityPanel } from "@/components/ClaimContinuityPanel";
 import { IssueLogPanel } from "@/components/IssueLogPanel";
+import { ClaimConsolePanel } from "@/components/ClaimConsolePanel";
 import {
   ActivityDataTable,
   RelationshipDataTable,
@@ -135,7 +137,8 @@ type ViewKey =
   | "xerViewer"
   | "resources"
   | "learning"
-  | "issues";
+  | "issues"
+  | "claimConsole";
 type CsvActivity = Activity;
 
 const baseSchedule: Schedule = {
@@ -255,6 +258,7 @@ const navItems: { key: ViewKey; label: string; icon: typeof Network }[] = [
   { key: "schedule", label: "2. ارفع برنامج P6", icon: Network },
   { key: "quality", label: "2.1 فحص جودة الجدول", icon: ShieldCheck },
   { key: "issues", label: "3. سجّل الواقعة", icon: ClipboardList },
+  { key: "claimConsole", label: "Claim Console", icon: Scale },
   { key: "event", label: "4. نمذجة الحدث (Fragnet)", icon: Zap },
   { key: "analysis", label: "5. نتيجة التحليل", icon: ScanSearch },
   { key: "report", label: "6. تقرير المطالبة", icon: TextQuote },
@@ -1381,7 +1385,7 @@ export default function Home() {
           <StatusBadge result={activeResult} />
         </section>
         <ClaimContinuityPanel
-          view={view === "guide" || view === "xerViewer" ? "guided" : view}
+          view={view === "guide" || view === "xerViewer" || view === "claimConsole" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedWindow={selectedWindow}
@@ -1389,14 +1393,21 @@ export default function Home() {
           onActiveClaimChange={handleActiveClaimChange}
         />
         <IssueLogPanel
-          view={view === "guide" || view === "xerViewer" ? "guided" : view}
+          view={view === "guide" || view === "xerViewer" || view === "claimConsole" ? "guided" : view}
           schedule={schedule}
           existingEvents={events}
           isAuthenticated={isAuthenticated}
           onApplyFragnet={applyIssueFragnet}
         />
+        <ClaimConsolePanel
+          view={view}
+          schedule={schedule}
+          isAuthenticated={isAuthenticated}
+          onNavigate={next => setView(next)}
+          onActiveClaimChange={handleActiveClaimChange}
+        />
         <P6EvidenceReportPanel
-          view={view === "guide" || view === "xerViewer" ? "guided" : view}
+          view={view === "guide" || view === "xerViewer" || view === "claimConsole" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedEvent={selectedEvent}
@@ -1414,7 +1425,7 @@ export default function Home() {
           }}
         />
         <FinancialNoticeReviewPanel
-          view={view === "guide" || view === "xerViewer" ? "guided" : view}
+          view={view === "guide" || view === "xerViewer" || view === "claimConsole" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedEvent={selectedEvent}

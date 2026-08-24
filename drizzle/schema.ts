@@ -200,6 +200,106 @@ export const plannerIssueLogs = mysqlTable("planner_issue_logs", {
   index("planner_issue_logs_owner_project_date_idx").on(table.ownerUserId, table.projectKey, table.occurrenceDate),
 ]);
 
+/**
+ * أساس عقدي يعرّفه المستخدم لكل مشروع. لا يستنتج التطبيق البنود أو القانون
+ * الحاكم أو المدد؛ وتظل جميع هذه الحقول نقاط مراجعة قبل إعداد أي Notice.
+ */
+export const projectContractProfiles = mysqlTable("project_contract_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  contractTitle: varchar("contractTitle", { length: 255 }),
+  contractForm: varchar("contractForm", { length: 255 }),
+  contractEdition: varchar("contractEdition", { length: 160 }),
+  specialConditionsReference: varchar("specialConditionsReference", { length: 255 }),
+  governingLaw: varchar("governingLaw", { length: 255 }),
+  claimClauseReference: varchar("claimClauseReference", { length: 255 }),
+  noticeTriggerDescription: text("noticeTriggerDescription"),
+  sourceReference: text("sourceReference"),
+  sourceStatus: mysqlEnum("sourceStatus", ["sourced", "to_enrich", "review_required", "rejected"]).notNull().default("to_enrich"),
+  reviewNotes: text("reviewNotes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("project_contract_profiles_owner_project_uq").on(table.ownerUserId, table.projectKey),
+]);
+
+/** سجل مخاطر قبل حدوث الواقعة؛ ينقلها المستخدم إلى Issue قائم بعد التحقق، ولا يقرر مسؤولية أو استحقاق. */
+export const claimRisks = mysqlTable("claim_risks", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  riskKey: varchar("riskKey", { length: 128 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  identifiedDate: timestamp("identifiedDate"),
+  ownerRole: varchar("ownerRole", { length: 120 }),
+  sourceReference: text("sourceReference"),
+  sourceStatus: mysqlEnum("sourceStatus", ["sourced", "to_enrich", "review_required", "rejected"]).notNull().default("to_enrich"),
+  status: mysqlEnum("status", ["open", "monitoring", "escalated", "closed"]).notNull().default("open"),
+  linkedPlannerIssueId: int("linkedPlannerIssueId").references(() => plannerIssueLogs.id, { onDelete: "set null" }),
+  reviewNotes: text("reviewNotes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("claim_risks_owner_project_key_uq").on(table.ownerUserId, table.projectKey, table.riskKey),
+  index("claim_risks_owner_project_status_idx").on(table.ownerUserId, table.projectKey, table.status),
+]);
+
+/**
+ * جسر تدقيقي بين المخاطرة والواقعة الفنية والمطالبة المتتابعة. وجوده لا يثبت
+ * أن الواقعة منشئة للمطالبة ولا أن البيانات كافية أو أن الحق قائم.
+ */
+export const claimCandidates = mysqlTable("claim_candidates", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  candidateKey: varchar("candidateKey", { length: 128 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  riskId: int("riskId").references(() => claimRisks.id, { onDelete: "set null" }),
+  plannerIssueLogId: int("plannerIssueLogId").references(() => plannerIssueLogs.id, { onDelete: "set null" }),
+  claimChainId: int("claimChainId").references(() => claimChains.id, { onDelete: "set null" }),
+  contractClauseReference: varchar("contractClauseReference", { length: 255 }),
+  basisSummary: text("basisSummary").notNull(),
+  sourceReference: text("sourceReference"),
+  sourceStatus: mysqlEnum("sourceStatus", ["sourced", "to_enrich", "review_required", "rejected"]).notNull().default("to_enrich"),
+  status: mysqlEnum("status", ["draft", "under_review", "ready_for_notice", "linked_to_claim", "closed"]).notNull().default("draft"),
+  reviewNotes: text("reviewNotes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("claim_candidates_owner_project_key_uq").on(table.ownerUserId, table.projectKey, table.candidateKey),
+  index("claim_candidates_owner_project_status_idx").on(table.ownerUserId, table.projectKey, table.status),
+]);
+
+/**
+ * متابعة مواعيد يحدد مصدرها المستخدم أو فريق العقود. لا تعني "overdue" سقوط
+ * الحق ولا تحوّل القاعدة إلى مهلة FIDIC تلقائية؛ الوضع دائماً إشعار مراجعة.
+ */
+export const claimDeadlineTrackers = mysqlTable("claim_deadline_trackers", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerUserId: int("ownerUserId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectKey: varchar("projectKey", { length: 128 }).notNull(),
+  claimCandidateId: int("claimCandidateId").notNull().references(() => claimCandidates.id, { onDelete: "cascade" }),
+  deadlineKey: varchar("deadlineKey", { length: 128 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  deadlineKind: mysqlEnum("deadlineKind", ["notice", "particulars", "substantiation", "other"]).notNull().default("notice"),
+  calculationMode: mysqlEnum("calculationMode", ["manual_date", "calendar_days"]).notNull().default("manual_date"),
+  referenceDate: timestamp("referenceDate"),
+  calendarDays: int("calendarDays"),
+  dueDate: timestamp("dueDate"),
+  ruleDescription: text("ruleDescription").notNull(),
+  sourceReference: text("sourceReference"),
+  sourceStatus: mysqlEnum("sourceStatus", ["sourced", "to_enrich", "review_required", "rejected"]).notNull().default("to_enrich"),
+  status: mysqlEnum("status", ["unconfigured", "tracking", "review_required", "completed", "superseded"]).notNull().default("unconfigured"),
+  reviewNotes: text("reviewNotes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("claim_deadline_trackers_candidate_key_uq").on(table.claimCandidateId, table.deadlineKey),
+  index("claim_deadline_trackers_owner_project_due_idx").on(table.ownerUserId, table.projectKey, table.dueDate),
+]);
+
 /** Metadata only: evidence bytes remain in private object storage. */
 export const evidenceDocuments = mysqlTable("evidence_documents", {
   id: int("id").autoincrement().primaryKey(),

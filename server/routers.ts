@@ -7,6 +7,7 @@ import { claimReviewRouter, noticeRouter, projectInvitationRouter, projectMember
 import { knowledgeCentreRouter } from "./knowledgeCentreRouter";
 import { claimContinuityRouter } from "./claimContinuityRouter";
 import { issueLogRouter } from "./issueLogRouter";
+import { claimConsoleRouter } from "./claimConsoleRouter";
 import { trainingReferenceRouter } from "./trainingReferenceRouter";
 
 export const appRouter = router({
@@ -32,6 +33,7 @@ export const appRouter = router({
   knowledgeCentre: knowledgeCentreRouter,
   claimContinuity: claimContinuityRouter,
   issueLog: issueLogRouter,
+  claimConsole: claimConsoleRouter,
   trainingReference: trainingReferenceRouter,
 });
 
