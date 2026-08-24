@@ -29,7 +29,8 @@
     "content:audit": "node scripts/audit-duplicate-user-claim-sources.mjs && node scripts/compare-master-claim-source-versions.mjs",
     "content:master-claim": "node scripts/inventory-master-claim-intelligence.mjs && node scripts/generate-master-claim-intelligence.mjs",
     "content:workshop": "node scripts/inventory-workshop-training.mjs",
-    "verify:workshop": "tsx scripts/verify-workshop-no8-engine.mjs"
+    "verify:workshop": "tsx scripts/verify-workshop-no8-engine.mjs",
+    "continuity:package": "node scripts/create-continuity-package.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
