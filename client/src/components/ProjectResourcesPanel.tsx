@@ -20,9 +20,9 @@ const resources = [
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
   { title: "حزمة المصدر والاستمرارية — 1.0.7", description: "أرشيف TAR.GZ نظيف من المصدر والأدلة والأمثلة. يشمل تقويم مصر الافتراضي بستة أيام، بوابة الجودة المبكرة، عارض XER وقالب الأحداث المهني. لا يضم ملفات P6 أو Excel الأصلية للمستخدم.", href: "/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz", icon: HardDriveDownload, kind: "TAR.GZ · Source + Handoff" },
   { title: "دليل استمرارية المشروع وتسليمه", description: "خطوات حفظ المصدر، استعادة العمل، متابعة التطوير عبر GitHub أو من حزمة المصدر، وحدود ما يلزم اختباره قبل أي إصدار جديد.", href: "/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md", icon: GitBranch, kind: "Markdown · Continuity" },
-  { title: "نسخة سطح المكتب — Windows 1.0.10 Setup (الموصى بها)", description: "مثبّت Windows x64 يتضمن Claim Console وتدقيق تقاويم/قيود وحالة Update في XER: اضغط Download ثم شغّل ملف Setup مرة واحدة. يضيف اختصاراً في Start ويثبت التطبيق في مكانه الطبيعي؛ لا تحتاج Node.js أو فك ضغط. الحزمة غير موقّعة رقمياً: افحصها قبل التشغيل من هذا الرابط الرسمي فقط.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.10/TIA-Studio-1.0.10-Windows-x64-Setup.exe", icon: HardDriveDownload, kind: "Windows x64 · Setup" },
-  { title: "نسخة سطح المكتب — Windows 1.0.10 المحمولة", description: "ملف EXE مباشر يتضمن Claim Console وتدقيق تقاويم/قيود وحالة Update في XER ولا يثبت شيئاً ولا يضيف أيقونة Start؛ شغّله من مجلد تختاره أنت. مناسب للتجربة أو عند منع التثبيت في جهاز العمل، لكنه لا يوفر تثبيتاً مركزياً أو تحديثاً تلقائياً.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.10/TIA-Studio-1.0.10-Windows-x64-Portable.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
-  { title: "بصمات Windows 1.0.10 — SHA-256", description: "ملف بصمات Setup وPortable. نزّله ثم طابق البصمة قبل التشغيل، ولا تخلط ملفاً من إصدار أو مصدر تنزيل مختلف.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.10/TIA-Studio-1.0.10-Windows-x64-SHA256SUMS.txt", icon: ShieldCheck, kind: "SHA-256" },
+  { title: "نسخة سطح المكتب — Windows 1.0.11 Setup (الموصى بها)", description: "مثبّت Windows x64 يتضمن Claim Console وتدقيق تقاويم/قيود وحالة Update في XER: اضغط Download ثم شغّل ملف Setup مرة واحدة. يضيف اختصاراً في Start ويثبت التطبيق في مكانه الطبيعي؛ لا تحتاج Node.js أو فك ضغط. الحزمة غير موقّعة رقمياً: افحصها قبل التشغيل من هذا الرابط الرسمي فقط.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.11/TIA-Studio-1.0.11-Windows-x64-Setup.exe", icon: HardDriveDownload, kind: "Windows x64 · Setup" },
+  { title: "نسخة سطح المكتب — Windows 1.0.11 المحمولة", description: "ملف EXE مباشر يتضمن Claim Console وتدقيق تقاويم/قيود وحالة Update في XER ولا يثبت شيئاً ولا يضيف أيقونة Start؛ شغّله من مجلد تختاره أنت. مناسب للتجربة أو عند منع التثبيت في جهاز العمل، لكنه لا يوفر تثبيتاً مركزياً أو تحديثاً تلقائياً.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.11/TIA-Studio-1.0.11-Windows-x64-Portable.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
+  { title: "بصمات Windows 1.0.11 — SHA-256", description: "ملف بصمات Setup وPortable. نزّله ثم طابق البصمة قبل التشغيل، ولا تخلط ملفاً من إصدار أو مصدر تنزيل مختلف.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.11/TIA-Studio-1.0.11-Windows-x64-SHA256SUMS.txt", icon: ShieldCheck, kind: "SHA-256" },
   { title: "نسخة سطح المكتب — Linux 1.0.7", description: "ملف AppImage واحد لـ Linux x64، ويشمل الحساب المحلي وفحوص الاستيراد وميزات 1.0.7 من دون ملفات P6 أو Excel الأصلية. امنحه صلاحية التنفيذ مرة واحدة، ثم جرّبه على مشروع تدريبي قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
@@ -60,6 +60,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     if (choice.outcome === "accepted") setInstalled(true);
     setInstallEvent(null);
   };
+  const windowsSetupHref = resolveResourceDownloadHref(resources[7].href);
 
   return <div className="view-stack resources-view">
     <section className="page-heading resources-hero">
@@ -69,7 +70,11 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
         <p>كل الأدلة وملفات التدريب محفوظة داخل نسخة المشروع وقابلة للتنزيل. استخدم الأمثلة قبل العمل على برنامج حقيقي، واحتفظ بملفات P6 الأصلية خارج التطبيق كسجل مرجعي.</p>
       </div>
       <div className="heading-actions">
-        <Button className="run-button" disabled={!installEvent || installed} onClick={requestInstall} title="يظهر الزر عند دعم المتصفح لتثبيت التطبيق."><HardDriveDownload size={16} />{installed ? "تم التثبيت" : installEvent ? "تثبيت على الجهاز" : "التثبيت من المتصفح"}</Button>
+        {installEvent || installed ? (
+          <Button className="run-button" disabled={!installEvent || installed} onClick={requestInstall} title="تثبيت PWA اختياري من المتصفح عند دعمه."><HardDriveDownload size={16} />{installed ? "تم التثبيت" : "تثبيت من المتصفح"}</Button>
+        ) : (
+          <Button className="run-button" asChild title="المتصفح لا يوفّر تثبيت PWA هنا؛ نزّل ملف Windows Setup بدلاً من ذلك."><a href={windowsSetupHref} target="_blank" rel="noreferrer"><HardDriveDownload size={16} />تحميل Setup لـ Windows</a></Button>
+        )}
       </div>
     </section>
 
@@ -81,8 +86,8 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="desktop-download-quick" aria-label="تنزيل نسخة الكمبيوتر">
       <div><HardDriveDownload size={24} /><div><b>حمّل نسخة الكمبيوتر الآن</b><p>على Windows حمّل Setup أولاً للتثبيت الطبيعي وأيقونة Start. استخدم النسخة المحمولة فقط لو جهازك يمنع التثبيت.</p></div></div>
       <div className="desktop-download-quick__actions">
-        <a className="desktop-download-quick__primary" href={resolveResourceDownloadHref(resources[7].href)} download><Download size={17} />Windows 1.0.10 — Setup</a>
-        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} download><Download size={17} />Windows 1.0.10 — محمول</a>
+        <a className="desktop-download-quick__primary" href={windowsSetupHref} target="_blank" rel="noreferrer"><Download size={17} />Windows 1.0.11 — Setup</a>
+        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} target="_blank" rel="noreferrer"><Download size={17} />Windows 1.0.11 — محمول</a>
       </div>
     </section>
 
@@ -104,7 +109,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     </section>
 
     <section className="resources-grid" aria-label="ملفات التوثيق والتنزيل">
-      {resources.map((resource) => { const Icon = resource.icon; return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{resource.title}</h2><p>{resource.description}</p></div><a className="resource-download" href={resolveResourceDownloadHref(resource.href)} download><Download size={16} />تنزيل</a></article>; })}
+      {resources.map((resource) => { const Icon = resource.icon; const href = resolveResourceDownloadHref(resource.href); const isExternal = /^https?:\/\//i.test(href); return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{resource.title}</h2><p>{resource.description}</p></div><a className="resource-download" href={href} download={isExternal ? undefined : true} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noreferrer" : undefined}><Download size={16} />تنزيل</a></article>; })}
     </section>
 
     <section className="panel examples-panel">

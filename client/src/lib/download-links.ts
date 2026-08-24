@@ -7,6 +7,10 @@
 export const PUBLIC_DOWNLOAD_ORIGIN = "https://tiadelaytool-aq6zdeih.manus.space";
 
 export function resolveResourceDownloadHref(path: string, hostname?: string): string {
+  // GitHub Release links are already public absolute URLs. Prefixing them with
+  // the Manus origin in Electron produces an invalid URL such as
+  // https://site/https://github.com/... and makes the Windows button appear dead.
+  if (/^https?:\/\//i.test(path)) return path;
   const activeHost = hostname ?? (typeof window === "undefined" ? "" : window.location.hostname);
   return activeHost === "127.0.0.1" ? `${PUBLIC_DOWNLOAD_ORIGIN}${path}` : path;
 }

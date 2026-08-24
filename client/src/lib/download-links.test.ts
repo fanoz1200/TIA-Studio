@@ -12,4 +12,9 @@ describe("resolveResourceDownloadHref", () => {
     expect(resolveResourceDownloadHref(packagePath, "tiadelaytool-aq6zdeih.manus.space")).toBe(packagePath);
     expect(resolveResourceDownloadHref(packagePath, "localhost")).toBe(packagePath);
   });
+
+  it("لا يفسد رابط GitHub Release الكامل عند تشغيل Electron محلياً", () => {
+    const releaseUrl = "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.10/TIA-Studio-1.0.10-Windows-x64-Setup.exe";
+    expect(resolveResourceDownloadHref(releaseUrl, "127.0.0.1")).toBe(releaseUrl);
+  });
 });

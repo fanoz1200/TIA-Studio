@@ -12,26 +12,30 @@
 
 | النظام | رابط التنزيل الرسمي | تستخدمه إمتى؟ |
 |---|---|---|
-| Windows x64 — **Setup 1.0.10 (موصى به)** | [`TIA-Studio-1.0.10-Windows-x64-Setup.exe`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.10/TIA-Studio-1.0.10-Windows-x64-Setup.exe) | للتثبيت الحقيقي مع Claim Console وتدقيق XER: ينشئ مدخلاً في Start وقائمة إزالة التثبيت. حمّله فقط لو ستثبّت البرنامج. |
-| Windows x64 — **Portable 1.0.10** | [`TIA-Studio-1.0.10-Windows-x64-Portable.exe`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.10/TIA-Studio-1.0.10-Windows-x64-Portable.exe) | للتجربة أو التشغيل المباشر بلا تثبيت. افتحه بالنقر المزدوج ولا يتوقع منه إنشاء أيقونة Start. |
-| بصمات Windows 1.0.10 | [`TIA-Studio-1.0.10-Windows-x64-SHA256SUMS.txt`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.10/TIA-Studio-1.0.10-Windows-x64-SHA256SUMS.txt) | ملف البصمات للحزمتين؛ نزّله من مصدر الملف نفسه وطابقه قبل التشغيل. |
+| Windows x64 — **Setup 1.0.11 (موصى به)** | [`TIA-Studio-1.0.11-Windows-x64-Setup.exe`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.11/TIA-Studio-1.0.11-Windows-x64-Setup.exe) | للتثبيت الحقيقي مع Claim Console وتدقيق XER: ينشئ مدخلاً في Start وقائمة إزالة التثبيت. حمّله فقط لو ستثبّت البرنامج. |
+| Windows x64 — **Portable 1.0.11** | [`TIA-Studio-1.0.11-Windows-x64-Portable.exe`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.11/TIA-Studio-1.0.11-Windows-x64-Portable.exe) | للتجربة أو التشغيل المباشر بلا تثبيت. افتحه بالنقر المزدوج ولا يتوقع منه إنشاء أيقونة Start. |
+| بصمات Windows 1.0.11 | [`TIA-Studio-1.0.11-Windows-x64-SHA256SUMS.txt`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.11/TIA-Studio-1.0.11-Windows-x64-SHA256SUMS.txt) | ملف البصمات للحزمتين؛ نزّله من مصدر الملف نفسه وطابقه قبل التشغيل. |
 | Linux x64 | [`TIA-Studio-1.0.7-Linux-x64.AppImage`](/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage) | تشغيل محلي بعد جعله قابلاً للتنفيذ. |
 | المصدر والتسليم | [`TIA-Studio-1.0.7-Source.tar.gz`](/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz) | أرشيف للمصدر والأدلة، من دون XER/XLSX خام أو أسرار. |
 
 > الحزم غير موقعة رقمياً. لا تعطل الحماية بشكل عام ولا تستخدم رابطاً مجهولاً. افحص الملف ببرنامج الحماية ثم افتحه. لو ظهر SmartScreen على Windows، تحقق من اسم الملف والبصمة أدناه ومن مصدر التنزيل قبل اتخاذ أي قرار.
 
-توجد أيضاً أصول النسخة نفسها في [GitHub Release v1.0.10](https://github.com/fanoz1200/TIA-Studio/releases/tag/v1.0.10)، وتشمل Setup وPortable وملف `SHA256SUMS`. استخدم **مصدر تنزيل واحداً** لكل ملف، ثم طابق البصمة أدناه قبل التشغيل؛ لا تجمع ملفات من روابط أو إصدارات مختلفة.
+توجد أيضاً أصول النسخة نفسها في [GitHub Release v1.0.11](https://github.com/fanoz1200/TIA-Studio/releases/tag/v1.0.11)، وتشمل Setup وPortable وملف `SHA256SUMS`. استخدم **مصدر تنزيل واحداً** لكل ملف، ثم طابق البصمة أدناه قبل التشغيل؛ لا تجمع ملفات من روابط أو إصدارات مختلفة.
 
 | الملف | SHA-256 |
 |---|---|
-| Windows Setup 1.0.10 | `7a5695d754886bf1e9808849855e252d2a788fa2c091c8fc81983bae14f65cf0` |
-| Windows Portable 1.0.10 | `39a0142256317cbf271d669c9e40e581447de8281d5395d3b1efb823ac1cfa56` |
+| Windows Setup 1.0.11 | `5d559d8e2023700e8c1ae73214b04349220aaf02cc7563a2f95d183663b0d2d4` |
+| Windows Portable 1.0.11 | `e2414f43307d338f7e7d97ea5b3988d7714633e4c57e0c420784d9e97c8b1527` |
 | Linux AppImage | `3668d4ef09e192ec4e2ba9f7b50bf89aab999bdc6ce8e72f0284dbab480249b6` |
 | Source TAR.GZ | `fde9dbadea904b5142594eccdfff8ef8ab95f8dad4f225af43f1b5217f3b3d4d` |
 
 > **فهم النسخة الظاهرة في Start:** وجود أيقونة في Start ونافذة مستقلة يرجّح أن النسخة المثبتة تطبيق سطح مكتب أو تطبيق ويب مثبّت، لكنه لا يثبت نوعها بدقة من الصورة وحدها. لو النسخة الحالية تعمل عندك، فهي مسار تشغيل قائم، لكن لا تحذفها قبل تجربة Setup الجديد أو تأكيد عمل النسخة المحمولة الجديدة.
 
 في Linux اجعل الملف قابلاً للتشغيل مرة واحدة، ثم افتحه بالنقر المزدوج. عند إغلاق النافذة يتوقف الخادم المحلي؛ لا توجد خدمة دائمة في الخلفية.
+
+## ما أضيف في 1.0.11
+
+صار مركز الموارد يفتح روابط تنزيل GitHub الخارجية كما هي حتى عند تشغيل البرنامج محلياً على `127.0.0.1`؛ فلا تتحول إلى رابط محلي مكسور. وإذا لم يعرض المتصفح خيار تثبيت تطبيق ويب، تظهر للمستخدم وصلة واضحة لتحميل **Windows Setup** بدلاً من زر تثبيت معطّل. تثبيت المتصفح اختياري ولا يمثل تنزيل نسخة Windows.
 
 ## ما أضيف في 1.0.10
 
@@ -55,11 +59,11 @@
 
 ## التحقق الذي تم
 
-إصدار 1.0.10 اجتاز بوابة الاختبارات الكاملة، وفحص TypeScript، وبناء الإنتاج، وفحص حزمة Windows Portable المعزول. بدأ Portable 1.0.10 خادمه المحلي واستجاب من المنفذ **4317** داخل Wine/Xvfb. كما بُني Setup 1.0.10 بصيغة NSIS داخل بيئة Wine نظيفة.
+إصدار 1.0.11 يضم إصلاح روابط التنزيل وبُنيت له حزم Setup وPortable. بدأ Portable 1.0.11 خادمه المحلي واستجاب من المنفذ **4317** داخل Wine/Xvfb، كما بُني Setup 1.0.11 بصيغة NSIS داخل بيئة Wine نظيفة. تبقى بوابة الاختبار الكاملة وفحص TypeScript وبناء الإنتاج شرطاً قبل إتاحة أصول الإصدار.
 
 الإصلاح السابق يعالج خطأ `Cannot find package 'vite'` عند تشغيل الحزمة المحمولة من `%LocalAppData%\Temp`؛ صار خادم الإنتاج منفصلاً عن Vite الذي يخص التطوير فقط. أكد مالك المشروع نجاح Setup 1.0.7 على جهاز Windows حقيقي. أما 1.0.9 فيضيف تدقيق XER/CPM المحدود المبيّن أعلاه واجتاز فحص الإقلاع المعزول؛ استخدم **Setup** أو **Portable** المذكورين في الجدول فقط.
 
-هذا فحص إقلاع وعرض محلي فقط، وهو تحقق **تجريبي محدود النطاق** وليس اعتماداً مهنياً أو فحص توافق لكل خصائص Windows. فحص Portable 1.0.10 نجح داخل Wine؛ أما تثبيت Setup 1.0.10 على جهاز Windows حقيقي فيبقى خطوة قبول عملية منفصلة، تشمل SmartScreen والحماية والطباعة وفتح مشروع تدريبي واستيراده وتشغيل TIA وتصدير التقرير وExcel.
+هذا فحص إقلاع وعرض محلي فقط، وهو تحقق **تجريبي محدود النطاق** وليس اعتماداً مهنياً أو فحص توافق لكل خصائص Windows. فحص Portable 1.0.11 نجح داخل Wine؛ أما تثبيت Setup 1.0.11 على جهاز Windows حقيقي فيبقى خطوة قبول عملية منفصلة، تشمل SmartScreen والحماية والطباعة وفتح مشروع تدريبي واستيراده وتشغيل TIA وتصدير التقرير وExcel.
 
 ## حدود Primavera والمطالبات
 
