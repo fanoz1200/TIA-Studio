@@ -38,6 +38,7 @@ import {
 } from "@/lib/cpm";
 import {
   exportClaimDocx,
+  exportFullClaimFactPack,
   exportClaimPdf,
   type ClaimReportPayload,
   type ClaimTemplateDraft,
@@ -423,6 +424,15 @@ export function P6EvidenceReportPanel({
     toast.success("تم إنشاء التقرير النهائي Excel متعدد الأوراق.");
   }
 
+  function exportFactPack() {
+    const output = payload();
+    if (!output) return;
+    exportFullClaimFactPack(output);
+    toast.success(
+      "تم تنزيل Fact Pack منظم محلياً؛ لا يتضمن مستندات خاماً أو استحقاقاً غير موثق."
+    );
+  }
+
   function exportReconciliationManifest() {
     if (!activeResult || !("impactDays" in activeResult)) {
       toast.error(
@@ -703,9 +713,9 @@ export function P6EvidenceReportPanel({
             <p className="eyebrow">CLAIM OUTPUT</p>
             <h2>قالب المطالبة وتصدير التقرير</h2>
             <p>
-              حرّر القالب ثم صدّر تقريراً بصيغة Word أو PDF أو التقرير النهائي
-              Excel متعدد الأوراق، أو ملف مطابقة محلي JSON. يُدرج التقرير السرد
-              ونتائج TIA وسجل الأحداث وأدلة الحدث المحدد.
+              حرّر القالب ثم صدّر Full Claim ثابتاً بصيغة Word أو PDF أو التقرير
+              النهائي Excel متعدد الأوراق، أو Fact Pack محلي JSON. يُدرج التقرير
+              السرد ونتائج TIA وسجل الأحداث وأدلة الحدث المحدد، ويظهر أي نقص بوضوح.
             </p>
             <p className="context-tip">
               <CircleHelp size={15} />
@@ -838,10 +848,19 @@ export function P6EvidenceReportPanel({
           </Button>
           <Button
             variant="outline"
+            title="ينزّل Fact Pack منظم من بيانات التحليل الحالية للمراجعة أو التوسعة الموثقة، من دون ملفات العميل الخام."
+            disabled={exportingFormat !== null || !activeResult}
+            onClick={exportFactPack}
+          >
+            <FileCode2 size={16} />
+            تنزيل Fact Pack (JSON)
+          </Button>
+          <Button
+            variant="outline"
             title={
               exportBlocked
                 ? "عالج الموانع في قائمة التحقق قبل التصدير."
-                : "ينشئ ملفاً قابلاً للتحرير ويشمل لقطات النتائج الحالية."
+                : "ينشئ Full Claim قابلاً للتحرير بغلاف وفهرس وسجل أدلة ونواقص معلنة."
             }
             disabled={exportingFormat !== null || exportBlocked}
             onClick={() => exportReport("docx")}
@@ -851,7 +870,7 @@ export function P6EvidenceReportPanel({
             ) : (
               <Download size={16} />
             )}
-            {exportingFormat === "docx" ? "جارِ تجهيز Word…" : "تصدير Word"}
+            {exportingFormat === "docx" ? "جارِ تجهيز Full Claim…" : "تصدير Full Claim (Word)"}
           </Button>
           <Button
             className="run-button"

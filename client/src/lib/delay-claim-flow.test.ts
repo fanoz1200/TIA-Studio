@@ -57,9 +57,9 @@ describe("delay-claim end-to-end flow", () => {
       review: { currentStage: "contract_review", status: "in_review", auditCount: 2, participants: [{ stage: "contract_review", reviewerId: 41 }] },
     };
     const sections = claimReportSections(reportPayload);
-    expect(sections.map(section => section.heading)).toEqual(expect.arrayContaining(["ملخص الأثر المالي التشغيلي", "سجل الإشعارات المرتبطة", "حالة المراجعة الإلكترونية"]));
-    expect(sections.find(section => section.heading === "سجل الإشعارات المرتبطة")?.body).toContain("AUTO-EV-101");
-    expect(sections.find(section => section.heading === "حالة المراجعة الإلكترونية")?.body).toContain("المستخدم رقم 41");
+    expect(sections.map(section => section.heading)).toEqual(expect.arrayContaining(["5. سجل الإشعارات المرتبطة", "8. ملخص الأثر المالي التشغيلي", "9. حالة المراجعة الإلكترونية"]));
+    expect(sections.find(section => section.heading === "5. سجل الإشعارات المرتبطة")?.body).toContain("AUTO-EV-101");
+    expect(sections.find(section => section.heading === "9. حالة المراجعة الإلكترونية")?.body).toContain("المستخدم رقم 41");
 
     const docx = await buildClaimDocxBlob(reportPayload);
     expect(new TextDecoder().decode((await docx.arrayBuffer()).slice(0, 2))).toBe("PK");

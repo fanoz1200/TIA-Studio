@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildClaimDocxBlob, buildClaimPdfBlob, claimReportSections, type ClaimReportPayload } from "./claim-export";
+import { buildClaimDocxBlob, buildClaimPdfBlob, buildFullClaimFactPack, claimReportSections, type ClaimReportPayload } from "./claim-export";
 
 const payload: ClaimReportPayload = {
   projectName: "مشروع المحطة المركزية",
@@ -24,12 +24,12 @@ afterEach(() => { globalThis.fetch = originalFetch; vi.restoreAllMocks(); });
 describe("claim report exporters", () => {
   it("creates ordered claim sections containing schedule, narrative, events, and evidence", () => {
     const sections = claimReportSections(payload);
-    expect(sections.map((section) => section.heading)).toContain("السرد التحليلي");
-    expect(sections.find((section) => section.heading === "ملخص المطالبة")?.body).toContain("+9 يوم عمل");
-    expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("تسعة أيام");
-    expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("WIN-004");
-    expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("mixed");
-    expect(sections.find((section) => section.heading === "السرد التحليلي")?.body).toContain("apportioned");
+    expect(sections.map((section) => section.heading)).toContain("6. السرد التحليلي — Delay Analysis Narrative");
+    expect(sections.find((section) => section.heading === "3. منهج تحليل التأخير والنتيجة")?.body).toContain("+9 يوم عمل");
+    expect(sections.find((section) => section.heading === "6. السرد التحليلي — Delay Analysis Narrative")?.body).toContain("تسعة أيام");
+    expect(sections.find((section) => section.heading === "6. السرد التحليلي — Delay Analysis Narrative")?.body).toContain("WIN-004");
+    expect(sections.find((section) => section.heading === "6. السرد التحليلي — Delay Analysis Narrative")?.body).toContain("mixed");
+    expect(sections.find((section) => section.heading === "6. السرد التحليلي — Delay Analysis Narrative")?.body).toContain("apportioned");
   });
 
   it("includes financial exposure, notices, and review status when the claim has them", () => {
@@ -39,10 +39,10 @@ describe("claim report exporters", () => {
       notices: [{ noticeNo: "N-001", eventKey: "D-01", status: "under_review", narrative: "إشعار أولي مع حفظ الحقوق. EV-001 × EV-002 — نافذة WIN-004، من 2026-05-09 إلى 2026-05-12؛ المسؤولية: mixed؛ المعالجة: apportioned.", timeImpactDays: 9, costImpact: 3060, noticeDueDate: "2026-03-17" }],
       review: { currentStage: "contract_review", status: "in_review", auditCount: 3 },
     });
-    expect(sections.find((section) => section.heading === "ملخص الأثر المالي التشغيلي")?.body).toContain("٣٬٠٦٠");
-    expect(sections.find((section) => section.heading === "سجل الإشعارات المرتبطة")?.body).toContain("N-001");
-    expect(sections.find((section) => section.heading === "سجل الإشعارات المرتبطة")?.body).toContain("WIN-004");
-    expect(sections.find((section) => section.heading === "حالة المراجعة الإلكترونية")?.body).toContain("contract_review");
+    expect(sections.find((section) => section.heading === "8. ملخص الأثر المالي التشغيلي")?.body).toContain("٣٬٠٦٠");
+    expect(sections.find((section) => section.heading === "5. سجل الإشعارات المرتبطة")?.body).toContain("N-001");
+    expect(sections.find((section) => section.heading === "5. سجل الإشعارات المرتبطة")?.body).toContain("WIN-004");
+    expect(sections.find((section) => section.heading === "9. حالة المراجعة الإلكترونية")?.body).toContain("contract_review");
   });
 
   it("adds the auditable schedule-quality summary and result-source limits when supplied", () => {
@@ -57,7 +57,16 @@ describe("claim report exporters", () => {
     });
     expect(sections.find((section) => section.heading === "بوابة جودة البرنامج الزمني")?.body).toContain("SQ-010");
     expect(sections.find((section) => section.heading === "بوابة جودة البرنامج الزمني")?.body).toContain("يتطلب مراجعة مهنية");
-    expect(sections.find((section) => section.heading === "مصادر النتائج وحدودها")?.body).toContain("CPM محلي");
+    expect(sections.find((section) => section.heading === "4. مصادر النتائج وحدودها")?.body).toContain("CPM محلي");
+  });
+
+  it("creates a fact pack that identifies missing claim materials instead of inventing them", () => {
+    const factPack = buildFullClaimFactPack({ ...payload, evidence: [], notices: [] });
+    expect(factPack.schemaVersion).toBe("1.0");
+    expect(factPack.analysis.impactDays).toBe(9);
+    expect(factPack.missingItems.join(" ")).toContain("فهرس الأدلة");
+    expect(factPack.missingItems.join(" ")).toContain("الإشعارات");
+    expect(factPack.professionalLimits.join(" ")).toContain("ليست رأياً قانونياً");
   });
 
   it("generates a valid DOCX package", async () => {

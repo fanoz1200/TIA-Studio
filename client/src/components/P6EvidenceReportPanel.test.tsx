@@ -7,6 +7,7 @@ import type { Fragnet, Schedule } from "@/lib/cpm";
 const mocks = vi.hoisted(() => ({
   importXml: vi.fn(),
   exportDocx: vi.fn(),
+  exportFactPack: vi.fn(),
   exportPdf: vi.fn(),
   exportExcel: vi.fn(),
   toastSuccess: vi.fn(),
@@ -17,7 +18,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("sonner", () => ({ toast: { success: mocks.toastSuccess, error: mocks.toastError } }));
 vi.mock("@/lib/p6-xml", () => ({ importP6XmlSchedule: mocks.importXml }));
-vi.mock("@/lib/claim-export", () => ({ exportClaimDocx: mocks.exportDocx, exportClaimPdf: mocks.exportPdf }));
+vi.mock("@/lib/claim-export", () => ({ exportClaimDocx: mocks.exportDocx, exportFullClaimFactPack: mocks.exportFactPack, exportClaimPdf: mocks.exportPdf }));
 vi.mock("@/lib/analysis-excel", () => ({ exportAnalysisExcel: mocks.exportExcel }));
 vi.mock("@/lib/trpc", () => ({
   trpc: {
@@ -89,7 +90,7 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  it("يصدر ملف التقرير النهائي Excel ويعرض حالة تجهيز Word ويعطل PDF حتى يكتمل التصدير", async () => {
+  it("يصدر Excel وFact Pack ويعرض حالة تجهيز Full Claim ويعطل PDF حتى يكتمل التصدير", async () => {
     let completeExport: (() => void) | undefined;
     mocks.exportDocx.mockImplementation(() => new Promise<void>((resolve) => { completeExport = resolve; }));
     renderPanel("report");
@@ -100,10 +101,12 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     fireEvent.click(excelButton);
     expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ schedule, analysis: activeResult, events: [event], narrative: "سرد اختبار" }));
     expect(mocks.toastSuccess).toHaveBeenCalledWith("تم إنشاء التقرير النهائي Excel متعدد الأوراق.");
-    fireEvent.click(screen.getByRole("button", { name: "تصدير Word" }));
+    fireEvent.click(screen.getByRole("button", { name: "تنزيل Fact Pack (JSON)" }));
+    expect(mocks.exportFactPack).toHaveBeenCalledWith(expect.objectContaining({ impactDays: 3, events: [expect.objectContaining({ id: "EV-01", title: "تأخر اعتماد" })], methodology: expect.any(String) }));
+    fireEvent.click(screen.getByRole("button", { name: "تصدير Full Claim (Word)" }));
     await waitFor(() => expect(screen.getByRole("status")).toBeTruthy());
     expect(screen.getByText(/ملف المطابقة ليس بديلاً عن Primavera/)).toBeTruthy();
-    expect((screen.getByRole("button", { name: /جارِ تجهيز Word/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: /جارِ تجهيز Full Claim/ }) as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByRole("button", { name: "تصدير PDF" }) as HTMLButtonElement).disabled).toBe(true);
 
     completeExport?.();
