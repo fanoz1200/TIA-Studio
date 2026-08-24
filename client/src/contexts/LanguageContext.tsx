@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import React from "react";
 import { type AppLanguage, languageDirection } from "@/lib/language";
 
 const STORAGE_KEY = "tia-studio-interface-language";

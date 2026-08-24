@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ClaimConsolePanel } from "./ClaimConsolePanel";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -21,15 +22,26 @@ const schedule = { id: "test-project", name: "مشروع اختبار", startDat
 
 describe("Claim Console", () => {
   it("لا يعرض سجلاً أو بيانات افتراضية لغير المسجل، ويوضح شرط الحفظ المشترك", () => {
-    render(<ClaimConsolePanel view="claimConsole" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} />);
+    window.localStorage.removeItem("tia-studio-interface-language");
+    render(<LanguageProvider><ClaimConsolePanel view="claimConsole" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
 
     expect(screen.getByText("ملف العقد وسجل المخاطر")).toBeTruthy();
     expect(screen.getByText(/سجّل الدخول لحفظ هذا السجل/)).toBeTruthy();
     expect(screen.queryByText("إضافة مخاطرة")).toBeNull();
   });
 
+  it("يعرض Claim Console غير المسجل بالإنجليزية واتجاه LTR عند اختيار English", () => {
+    window.localStorage.setItem("tia-studio-interface-language", "en");
+    const { container } = render(<LanguageProvider><ClaimConsolePanel view="claimConsole" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
+
+    expect(screen.getByText("Contract profile and risk register")).toBeTruthy();
+    expect(screen.getByText(/Sign in to save this register/)).toBeTruthy();
+    expect(container.querySelector("section")?.getAttribute("dir")).toBe("ltr");
+  });
+
   it("لا يظهر خارج تبويبه المخصص", () => {
-    const { container } = render(<ClaimConsolePanel view="guided" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} />);
+    window.localStorage.removeItem("tia-studio-interface-language");
+    const { container } = render(<LanguageProvider><ClaimConsolePanel view="guided" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
     expect(container.innerHTML).toBe("");
   });
 });

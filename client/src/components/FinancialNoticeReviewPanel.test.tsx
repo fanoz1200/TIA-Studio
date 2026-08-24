@@ -27,6 +27,7 @@ vi.mock("@/lib/trpc", () => ({
 }));
 
 import { FinancialNoticeReviewPanel } from "./FinancialNoticeReviewPanel";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const schedule: Schedule = {
   id: "notice-test",
@@ -87,6 +88,7 @@ describe("تنزيل مسودة Notice محلية", () => {
     });
 
     render(
+      <LanguageProvider>
       <FinancialNoticeReviewPanel
         view="notices"
         schedule={schedule}
@@ -95,6 +97,7 @@ describe("تنزيل مسودة Notice محلية", () => {
         activeImpactDays={3}
         isAuthenticated={false}
       />
+      </LanguageProvider>
     );
 
     expect(screen.getByText(/تقدر تجهز وتنزل مسودة محلية من غير حساب/)).toBeTruthy();
@@ -109,5 +112,29 @@ describe("تنزيل مسودة Notice محلية", () => {
     expect(generatedBlob?.type).toBe("text/plain;charset=utf-8");
     expect(String(generatedBlob?.parts.join(""))).toContain("تأخر اعتماد رسم");
     expect(mocks.toastSuccess).toHaveBeenCalledWith("تم تنزيل مسودة Notice محلية. راجعها وعدّلها قبل أي إرسال.");
+  });
+
+  it("ينزّل مسودة English محلية منفصلة ولا يبدأ إرسال بريد", () => {
+    let generatedBlob: { parts: unknown[] } | undefined;
+    class LocalBlob {
+      parts: unknown[];
+      constructor(parts: unknown[]) { this.parts = parts; }
+    }
+    vi.stubGlobal("Blob", LocalBlob);
+    vi.stubGlobal("URL", { createObjectURL: vi.fn(blob => { generatedBlob = blob as { parts: unknown[] }; return "blob:notice-en"; }), revokeObjectURL: vi.fn() });
+    let download = "";
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) { download = this.download; });
+
+    render(<LanguageProvider><FinancialNoticeReviewPanel view="notices" schedule={schedule} events={[event]} selectedEvent={event} activeImpactDays={3} isAuthenticated={false} /></LanguageProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "تجهيز مسودة قابلة للتحرير" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "لغة مسودة التنزيل" }));
+    fireEvent.click(screen.getByRole("option", { name: "English" }));
+    fireEvent.click(screen.getByRole("button", { name: "تنزيل مسودة Notice محلية" }));
+
+    expect(mocks.startLogin).not.toHaveBeenCalled();
+    expect(download).toBe("TIA-Notice-N-001.txt");
+    expect(String(generatedBlob?.parts.join(""))).toContain("TIA Studio — Editable Notice Draft");
+    expect(String(generatedBlob?.parts.join(""))).toContain("This is a local draft.");
+    expect(mocks.toastSuccess).toHaveBeenCalledWith("The local Notice draft was downloaded. Review and edit it before any sending.");
   });
 });

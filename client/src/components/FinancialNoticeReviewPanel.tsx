@@ -24,12 +24,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { startLogin } from "@/const";
+import { useAppLanguage } from "@/contexts/LanguageContext";
 import {
   calculateFinancialImpact,
   resourceAssignmentsForEvent,
   type Fragnet,
   type Schedule,
 } from "@/lib/cpm";
+import type { AppLanguage } from "@/lib/language";
 import { trpc } from "@/lib/trpc";
 import { ProjectMembersPanel } from "@/components/ProjectMembersPanel";
 
@@ -99,6 +101,7 @@ export function FinancialNoticeReviewPanel({
   claimKey?: string;
   unifiedNarrative?: string;
 }) {
+  const { language: interfaceLanguage } = useAppLanguage();
   const [noticeNo, setNoticeNo] = useState("N-001");
   const [noticeEventKey, setNoticeEventKey] = useState("");
   const [sender, setSender] = useState("");
@@ -110,6 +113,7 @@ export function FinancialNoticeReviewPanel({
   const [noticeStatus, setNoticeStatus] = useState<NoticeStatus>("draft");
   const [noticeNarrative, setNoticeNarrative] = useState("");
   const [noticePeriodDays, setNoticePeriodDays] = useState(7);
+  const [noticeDraftLanguage, setNoticeDraftLanguage] = useState<AppLanguage>("ar");
   const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<string[]>([]);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewerIds, setReviewerIds] = useState<Record<string, string>>({});
@@ -245,7 +249,9 @@ export function FinancialNoticeReviewPanel({
     setNoticeEventKey(next.id);
     setAwarenessDate(next.occurrenceDate);
     setNoticeNarrative(
-      `إشعار أولي بواقعة «${next.title}» المؤرخة في ${next.occurrenceDate}، مع حفظ الحقوق التعاقدية لحين اكتمال المراجعة الفنية.${concurrencyExcerpt ? `\n\nملخص التزامن الفني المرتبط بالمطالبة:\n${concurrencyExcerpt}` : ""}`
+      noticeDraftLanguage === "en"
+        ? `Preliminary notice of the event “${next.title}” dated ${next.occurrenceDate}, with contractual rights reserved pending completion of the technical review.${concurrencyExcerpt ? `\n\nTechnical concurrency summary linked to the claim:\n${concurrencyExcerpt}` : ""}`
+        : `إشعار أولي بواقعة «${next.title}» المؤرخة في ${next.occurrenceDate}، مع حفظ الحقوق التعاقدية لحين اكتمال المراجعة الفنية.${concurrencyExcerpt ? `\n\nملخص التزامن الفني المرتبط بالمطالبة:\n${concurrencyExcerpt}` : ""}`
     );
     setNoticeNo(
       `N-${String((notices.data?.length ?? 0) + 1).padStart(3, "0")}`
@@ -260,28 +266,57 @@ export function FinancialNoticeReviewPanel({
       toast.error("اكتب وصف الواقعة أو اضغط «تجهيز مسودة قابلة للتحرير» الأول.");
       return;
     }
-    const text = [
-      "TIA Studio — مسودة Notice للتعديل",
-      "هذه مسودة محلية لا تُرسل ولا تثبت استحقاقاً تعاقدياً. راجعها مع العقد والفريق المختص قبل الإرسال.",
-      "",
-      `رقم الإشعار: ${noticeNo.trim() || "غير محدد"}`,
-      `المرسل: ${sender.trim() || "غير محدد"}`,
-      `المرسل إليه: ${recipient.trim() || "غير محدد"}`,
-      `البند التعاقدي: ${contractClause.trim() || "يُراجع"}`,
-      `واقعة التأخير: ${selectedNoticeEvent.id} — ${selectedNoticeEvent.title}`,
-      `تاريخ الواقعة / العلم: ${awarenessDate || selectedNoticeEvent.occurrenceDate || "يُراجع"}`,
-      `تاريخ استحقاق الإشعار: ${noticeDueDate || "غير محدد — راجعه حسب العقد"}`,
-      `الأثر الزمني المبدئي: ${Math.max(0, activeImpactDays)} يوم`,
-      `الأثر المالي المبدئي: ${money(financial.extensionCost)} وحدة نقدية`,
-      "",
-      "النص المقترح:",
-      noticeNarrative.trim(),
-      "",
-      "ملاحظات قبل الإرسال:",
-      "- راجع تاريخ العلم وموعد الإشعار والبند التعاقدي.",
-      "- أضف مراجع الأدلة والمرفقات من سجل الأدلة عند الحاجة.",
-      "- الملف مسودة للعمل والتعديل، وليس قراراً قانونياً أو إرسالاً تلقائياً.",
-    ].join("\n");
+    const isEnglishDraft = noticeDraftLanguage === "en";
+    const unspecified = isEnglishDraft ? "Not specified" : "غير محدد";
+    const reviewRequired = isEnglishDraft ? "Review required" : "يُراجع";
+    const moneyText = new Intl.NumberFormat(isEnglishDraft ? "en-GB" : "ar-EG", {
+      maximumFractionDigits: 2,
+    }).format(financial.extensionCost);
+    const text = isEnglishDraft
+      ? [
+          "TIA Studio — Editable Notice Draft",
+          "This is a local draft. It is not sent and does not establish contractual entitlement. Review it against the contract with the relevant team before sending.",
+          "",
+          `Notice no.: ${noticeNo.trim() || unspecified}`,
+          `Sender: ${sender.trim() || unspecified}`,
+          `Recipient: ${recipient.trim() || unspecified}`,
+          `Contract clause: ${contractClause.trim() || reviewRequired}`,
+          `Delay event: ${selectedNoticeEvent.id} — ${selectedNoticeEvent.title}`,
+          `Event / awareness date: ${awarenessDate || selectedNoticeEvent.occurrenceDate || reviewRequired}`,
+          `Notice due date: ${noticeDueDate || "Not specified — review against the contract"}`,
+          `Preliminary time impact: ${Math.max(0, activeImpactDays)} day(s)`,
+          `Preliminary financial exposure: ${moneyText} currency units`,
+          "",
+          "Proposed text:",
+          noticeNarrative.trim(),
+          "",
+          "Review checklist before sending:",
+          "- Review the awareness date, notice due date, and contract clause.",
+          "- Add evidence and attachment references from the evidence register where needed.",
+          "- This file is an editable working draft, not a legal conclusion or automatic transmission.",
+        ].join("\n")
+      : [
+          "TIA Studio — مسودة Notice للتعديل",
+          "هذه مسودة محلية لا تُرسل ولا تثبت استحقاقاً تعاقدياً. راجعها مع العقد والفريق المختص قبل الإرسال.",
+          "",
+          `رقم الإشعار: ${noticeNo.trim() || unspecified}`,
+          `المرسل: ${sender.trim() || unspecified}`,
+          `المرسل إليه: ${recipient.trim() || unspecified}`,
+          `البند التعاقدي: ${contractClause.trim() || reviewRequired}`,
+          `واقعة التأخير: ${selectedNoticeEvent.id} — ${selectedNoticeEvent.title}`,
+          `تاريخ الواقعة / العلم: ${awarenessDate || selectedNoticeEvent.occurrenceDate || reviewRequired}`,
+          `تاريخ استحقاق الإشعار: ${noticeDueDate || "غير محدد — راجعه حسب العقد"}`,
+          `الأثر الزمني المبدئي: ${Math.max(0, activeImpactDays)} يوم`,
+          `الأثر المالي المبدئي: ${moneyText} وحدة نقدية`,
+          "",
+          "النص المقترح:",
+          noticeNarrative.trim(),
+          "",
+          "ملاحظات قبل الإرسال:",
+          "- راجع تاريخ العلم وموعد الإشعار والبند التعاقدي.",
+          "- أضف مراجع الأدلة والمرفقات من سجل الأدلة عند الحاجة.",
+          "- الملف مسودة للعمل والتعديل، وليس قراراً قانونياً أو إرسالاً تلقائياً.",
+        ].join("\n");
     const file = new Blob([text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(file);
     const link = document.createElement("a");
@@ -291,7 +326,11 @@ export function FinancialNoticeReviewPanel({
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    toast.success("تم تنزيل مسودة Notice محلية. راجعها وعدّلها قبل أي إرسال.");
+    toast.success(
+      isEnglishDraft
+        ? "The local Notice draft was downloaded. Review and edit it before any sending."
+        : "تم تنزيل مسودة Notice محلية. راجعها وعدّلها قبل أي إرسال."
+    );
   };
   const toggleEvidence = (id: string) =>
     setSelectedEvidenceIds(current =>
@@ -509,6 +548,33 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div>
+                <Label>
+                  {interfaceLanguage === "en"
+                    ? "Draft language"
+                    : "لغة مسودة التنزيل"}
+                </Label>
+                <Select
+                  value={noticeDraftLanguage}
+                  onValueChange={value =>
+                    setNoticeDraftLanguage(value as AppLanguage)
+                  }
+                >
+                  <SelectTrigger
+                    aria-label={
+                      interfaceLanguage === "en"
+                        ? "Draft language"
+                        : "لغة مسودة التنزيل"
+                    }
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ar">العربية</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>المرسل</Label>
                 <Input
                   value={sender}
@@ -630,7 +696,9 @@ export function FinancialNoticeReviewPanel({
                   onClick={downloadLocalNoticeDraft}
                 >
                   <Download size={16} />
-                  تنزيل مسودة Notice محلية
+                  {interfaceLanguage === "en"
+                    ? "Download local Notice draft"
+                    : "تنزيل مسودة Notice محلية"}
                 </Button>
                 {isAuthenticated ? (
                   <>
