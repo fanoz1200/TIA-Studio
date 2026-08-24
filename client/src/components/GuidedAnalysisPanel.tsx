@@ -50,7 +50,6 @@ export function GuidedAnalysisPanel({ schedule, xerSummary, journeyPath, journey
   const laterUpdates = updateSnapshots.filter(item => item.stage === "later-update");
   const target = schedule.activities.find(item => item.id === activityId);
   const p6Source = baselineSnapshot?.schedule.source === "xer" || baselineSnapshot?.schedule.source === "p6-xml";
-
   useEffect(() => {
     setActivityId(current => schedule.activities.some(item => item.id === current) ? current : schedule.activities[0]?.id ?? "");
     setOccurrenceDate(schedule.dataDate ?? schedule.startDate);
@@ -64,13 +63,18 @@ export function GuidedAnalysisPanel({ schedule, xerSummary, journeyPath, journey
     } catch (error) { return { fragnet: null as Fragnet | null, error: error instanceof Error ? error.message : "تعذر إعداد معاينة التقسيم." }; }
   }, [schedule, target?.id, title, description, cause, occurrenceDate, duration]);
 
+  const nextRequirement = useMemo(() => {
+    if (journeyStep === 1 && !journeyPath) return { toast: "اختر مسار سجل القضايا أو التحليل المباشر.", detail: "اختار: سجل القضايا لو عندك أكتر من واقعة، أو تحليل مباشر لو هتبدأ بواقعة واحدة." };
+    if (journeyStep === 3 && !baselineSnapshot) return { toast: "رفع Baseline إلزامي قبل بدء تحليل TIA.", detail: "ارفع ملف Baseline المعتمد الأول. البرنامج هيقرأه فقط ومش هيعدّل الملف الأصلي." };
+    if (journeyStep === 4 && !preEventUpdate) return { toast: "ارفع آخر Update قبل الحدث؛ فهو نسخة Pre-TIA اللازمة للقياس.", detail: "ارفع آخر Update قبل الواقعة. ده هو ملف Pre-TIA اللي هنقيس منه الأثر." };
+    if (journeyStep === 4 && p6Source && !p6GateApproved) return { toast: "أقرّ بمراجعة تقويم P6 وData Date قبل متابعة التحليل.", detail: "علّم مربع مراجعة تقويم P6 وData Date بعد ما تراجعهم في الملف المستورد." };
+    if (journeyStep === 5 && !rows.length) return { toast: "أدخل واقعة واحدة أو ارفع Excel صحيحاً قبل النمذجة.", detail: "أضف واقعة من النموذج تحت، أو ارفع Excel من قالب سجل القضايا." };
+    if (journeyStep === 6 && !splitPreview.fragnet) return { toast: splitPreview.error, detail: splitPreview.error };
+    return null;
+  }, [journeyStep, journeyPath, baselineSnapshot, preEventUpdate, p6Source, p6GateApproved, rows.length, splitPreview]);
+
   function next() {
-    if (journeyStep === 1 && !journeyPath) return toast.error("اختر مسار سجل القضايا أو التحليل المباشر.");
-    if (journeyStep === 3 && !baselineSnapshot) return toast.error("رفع Baseline إلزامي قبل بدء تحليل TIA.");
-    if (journeyStep === 4 && !preEventUpdate) return toast.error("ارفع آخر Update قبل الحدث؛ فهو نسخة Pre-TIA اللازمة للقياس.");
-    if (journeyStep === 4 && p6Source && !p6GateApproved) return toast.error("أقرّ مراجعة تقويم P6 وData Date قبل متابعة التحليل.");
-    if (journeyStep === 5 && !rows.length) return toast.error("أدخل واقعة واحدة أو ارفع Excel صحيحاً قبل النمذجة.");
-    if (journeyStep === 6 && !splitPreview.fragnet) return toast.error(splitPreview.error);
+    if (nextRequirement) return toast.error(nextRequirement.toast);
     onJourneyStepChange(Math.min(7, journeyStep + 1));
   }
 
@@ -111,6 +115,6 @@ export function GuidedAnalysisPanel({ schedule, xerSummary, journeyPath, journey
 
     {journeyStep === 7 && <div className="guided-content"><div className="guided-hero-card guided-hero-card--ready"><ShieldCheck size={28} /><div><h3>النسخة التحليلية جاهزة للحساب</h3><p>تمت مراجعة الملفات والواقعة والتقسيم. سينشئ المحرك نسختين مستقلتين Pre-TIA وPost-TIA، ثم يحسب أثر الزمن محلياً.</p><Button type="button" onClick={() => { if (!splitPreview.fragnet) return toast.error(splitPreview.error); onPrepareSplit({ activityId, title, description, occurrenceDate, duration: Number(duration), cause }); onNavigate("event"); }}>افتح الحساب وإنشاء الحدث <ChevronLeft size={16} /></Button></div></div></div>}
 
-    <footer className="guided-footer"><Button type="button" variant="outline" disabled={journeyStep === 1} onClick={() => onJourneyStepChange(Math.max(1, journeyStep - 1))}><ChevronRight size={16} />السابق</Button>{journeyStep < 7 ? <Button type="button" onClick={next}>التالي <ChevronLeft size={16} /></Button> : <Button type="button" variant="outline" onClick={() => onNavigate("analysis")}>عرض النتائج</Button>}</footer>
+    <footer className="guided-footer"><Button type="button" variant="outline" disabled={journeyStep === 1} onClick={() => onJourneyStepChange(Math.max(1, journeyStep - 1))}><ChevronRight size={16} />السابق</Button><div id="journey-next-hint" className={`guided-footer__guidance ${nextRequirement ? "is-blocked" : "is-ready"}`} role="status">{nextRequirement ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}<div><strong>{nextRequirement ? "قبل ما تدوس التالي" : journeyStep === 7 ? "الخطوة الجاية" : "جاهز تكمل"}</strong><span>{nextRequirement ? nextRequirement.detail : journeyStep === 7 ? "افتح الحساب، راجع Fragnet، وبعدها شغّل التحليل من شاشة النتائج." : "كل المطلوب في الخطوة دي متسجل. دوس التالي."}</span></div></div>{journeyStep < 7 ? <Button type="button" disabled={Boolean(nextRequirement)} aria-describedby="journey-next-hint" onClick={next}>التالي <ChevronLeft size={16} /></Button> : <Button type="button" variant="outline" onClick={() => onNavigate("analysis")}>عرض النتائج</Button>}</footer>
   </section>;
 }

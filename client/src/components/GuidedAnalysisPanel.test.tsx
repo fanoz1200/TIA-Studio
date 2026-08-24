@@ -47,6 +47,8 @@ describe("معالج رحلة TIA وفق Workshop 8", () => {
     fireEvent.click(screen.getByRole("button", { name: "التالي" }));
     expect(props.onJourneyStepChange).not.toHaveBeenCalled();
     expect(screen.getByRole("heading", { name: "ارفع Baseline المعتمد" })).toBeTruthy();
+    expect(screen.getByText(/ارفع ملف Baseline المعتمد الأول/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "التالي" }).hasAttribute("disabled")).toBe(true);
   });
 
   it("يعرض بوابة P6 وتحذيرات الاستيراد مع Update قبل الحدث", () => {

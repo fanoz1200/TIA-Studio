@@ -65,9 +65,15 @@ vi.mock("@/lib/trpc", () => ({
   },
 }));
 
+function openLibrarySection(name: RegExp) {
+  fireEvent.click(screen.getByRole("tab", { name }));
+}
+
 describe("مكتبة المنهجيات والحالات العملية", () => {
   it("يعرض فهرس الحالات الحقيقي والبحث والحالة المرجعية المختارة للقراءة فقط", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    openLibrarySection(/بدور على حالة شبه مشكلتي/);
 
     expect(screen.getByRole("heading", { name: "مكتبة المنهجيات والحالات العملية" })).toBeTruthy();
     expect(screen.getByText(/سجل مفهرس/)).toBeTruthy();
@@ -82,13 +88,38 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     const onBeginGuidedAnalysis = vi.fn();
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated onBeginGuidedAnalysis={onBeginGuidedAnalysis} />);
 
+    openLibrarySection(/بدور على حالة شبه مشكلتي/);
+
     fireEvent.click(screen.getByRole("button", { name: /طبّق هذه الحالة الآن/ }));
     expect(onBeginGuidedAnalysis).toHaveBeenCalledWith(expect.objectContaining({ caseId: "D-001", method: "tia", journeyPath: "direct" }));
     expect(screen.getByRole("button", { name: /جاري فتح رحلة التحليل/ })).toBeTruthy();
   });
 
+  it("يحوّل شجرة القرار إلى مسار تحليل عملي حسب إجابة المستخدم", () => {
+    const onBeginGuidedAnalysis = vi.fn();
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated onBeginGuidedAnalysis={onBeginGuidedAnalysis} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "واقعة واحدة بتاريخ معروف" }));
+    fireEvent.click(screen.getByRole("button", { name: "أيوه، معايا" }));
+    expect(screen.getByText("المناسب كبداية: TIA")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /افتح الخطوات المناسبة/ }));
+    expect(onBeginGuidedAnalysis).toHaveBeenCalledWith(expect.objectContaining({ method: "tia", journeyPath: "direct", caseId: "decision-tree-route" }));
+  });
+
+  it("يرشح تحليل النوافذ للحالات المتتابعة ويفتح سجل الوقائع", () => {
+    const onBeginGuidedAnalysis = vi.fn();
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated onBeginGuidedAnalysis={onBeginGuidedAnalysis} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "تأخيرات متتابعة أو متزامنة" }));
+    expect(screen.getByText("المناسب كبداية: تحليل النوافذ")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /افتح الخطوات المناسبة/ }));
+    expect(onBeginGuidedAnalysis).toHaveBeenCalledWith(expect.objectContaining({ method: "windows", journeyPath: "issue" }));
+  });
+
   it("يعرض الفيديو التدريبي لمسار Workshop 8 من أصل التطبيق الدائم", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    openLibrarySection(/عايز المراجع والقوالب/);
 
     const video = screen.getAllByLabelText("فيديو توضيحي لمسار تحليل الأثر الزمني TIA").at(-1) as HTMLVideoElement;
     const source = video.querySelector("source");
@@ -98,6 +129,8 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
 
   it("يقرأ السجلات التفصيلية من ملف Excel الجديد ويعرض قوانينها وأدلتها وحلولها", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    openLibrarySection(/بدور على حالة شبه مشكلتي/);
 
     expect(screen.getAllByText("70 سجل Excel تفصيلي").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/55 حالة من سلسلة D/).length).toBeGreaterThan(0);
@@ -109,6 +142,8 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
 
   it("يفصل حالات D عن السجلات الداعمة ويتيح عرض سجلات DIS/CON/VAR/RES الفعلية", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    openLibrarySection(/بدور على حالة شبه مشكلتي/);
 
     expect(screen.getAllByText("70 سجلاً فعلياً من ملفك").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/15 سجلاً مرتبطاً فعلياً/).length).toBeGreaterThan(0);
@@ -122,13 +157,17 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
   it("يعرض أوراق الدعم الثمانية والروابط الداخلية المنسوخة من ملف Excel", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
 
+    openLibrarySection(/عايز المراجع والقوالب/);
+
     expect(screen.getAllByRole("heading", { name: "إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات" }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("tab").length).toBe(8);
+    expect(screen.getAllByRole("tab").length).toBe(11);
     expect(screen.getAllByText("الروابط الداخلية الواردة في المصدر").length).toBeGreaterThan(0);
   });
 
   it("يعرض دليلي التدريب النصيين لرفع P6 وإدخال Excel إلى حين توفر الفيديوهين المستقلين", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    openLibrarySection(/عايز المراجع والقوالب/);
 
     expect(screen.getAllByRole("heading", { name: "دليل سريع حتى يتاح الفيديوان المستقلان" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("heading", { name: "Baseline ثم Update قبل الحدث" }).length).toBeGreaterThan(0);
@@ -137,6 +176,8 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
 
   it("يعرض روابط التنزيل الدائمة لحزمة البرومبتات ومشروعي التدريب المصطنعين", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    openLibrarySection(/عايز المراجع والقوالب/);
 
     expect(screen.getAllByRole("heading", { name: "حزمة آمنة للتجربة وإنتاج الفيديو خارج المنصة" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /تنزيل حزمة البرومبتات/ }).at(-1)?.getAttribute("href")).toBe("/manus-storage/google-video-prompts-ar_8d21a82e.md");
@@ -147,6 +188,8 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
   it("يعرض مرجع FIDIC المستخرج مستقلاً عن حالات D مع سجلاته وإجراءاته العملية", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
 
+    openLibrarySection(/عايز المراجع والقوالب/);
+
     expect(screen.getAllByRole("heading", { name: "مرجع بنود FIDIC 2017 للمخطط والمطالبة" }).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/27 بنداً موثقاً من ملفك/).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("button", { name: /FIDIC 1.9/ }).length).toBeGreaterThan(0);
@@ -156,6 +199,8 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
 
   it("يعرض السيناريوهات الخمسة المستخرجة كتمارين تدريب مستقلة", () => {
     render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    openLibrarySection(/عايز المراجع والقوالب/);
 
     expect(screen.getAllByRole("heading", { name: "خمسة سيناريوهات لتدريب عين المخطط" }).length).toBeGreaterThan(0);
     expect(screen.getAllByText("سيناريو 1").length).toBeGreaterThan(0);

@@ -99,6 +99,7 @@ import {
   FirstRunGuide,
   shouldShowFirstRunGuide,
 } from "@/components/FirstRunGuide";
+import { UserGuidePanel } from "@/components/UserGuidePanel";
 import "./home-mobile-nav.css";
 
 const logoUrl = "/manus-storage/tia-studio-symbol_a5a70021.png";
@@ -109,6 +110,7 @@ const reportTextureUrl =
 
 type ViewKey =
   | "guided"
+  | "guide"
   | "overview"
   | "schedule"
   | "quality"
@@ -234,6 +236,7 @@ function defaultWindow(schedule: Schedule): AnalysisWindow {
 
 const navItems: { key: ViewKey; label: string; icon: typeof Network }[] = [
   { key: "guided", label: "1. ابدأ التحليل", icon: Play },
+  { key: "guide", label: "دليل بالصور", icon: CircleHelp },
   { key: "overview", label: "لوحة المتابعة", icon: BarChart3 },
   { key: "schedule", label: "2. ارفع برنامج P6", icon: Network },
   { key: "quality", label: "2.1 فحص جودة الجدول", icon: ShieldCheck },
@@ -251,6 +254,13 @@ const navItems: { key: ViewKey; label: string; icon: typeof Network }[] = [
   { key: "learning", label: "التدريب والشرح", icon: BookOpenCheck },
   { key: "methods", label: "الموسوعة العلمية (SCL)", icon: LibraryBig },
 ];
+
+function getInitialView(): ViewKey {
+  const requested = new URLSearchParams(window.location.search).get("screen");
+  return navItems.some(item => item.key === requested)
+    ? (requested as ViewKey)
+    : "guided";
+}
 
 const causeLabel: Record<DelayCause, string> = {
   employer: "صاحب العمل",
@@ -457,8 +467,9 @@ export default function Home() {
   // nonce cookie and must run only at the moment of navigation.
   let { user, loading, error, isAuthenticated, logout } = useAuth();
 
-  const [view, setView] = useState<ViewKey>("guided");
+  const [view, setView] = useState<ViewKey>(getInitialView);
   const [showFirstRunGuide, setShowFirstRunGuide] = useState(() =>
+    new URLSearchParams(window.location.search).get("skipIntro") !== "1" &&
     shouldShowFirstRunGuide()
   );
   const [invitationToken] = useState(() =>
@@ -1192,7 +1203,12 @@ export default function Home() {
             <Button
               variant="outline"
               className="outline-action"
-              onClick={() => setShowFirstRunGuide(true)}
+              onClick={() => {
+                setView("guide");
+                window.requestAnimationFrame(() =>
+                  window.scrollTo({ top: 0, behavior: "smooth" })
+                );
+              }}
             >
               <CircleHelp size={16} />
               شرح الاستخدام
@@ -1226,7 +1242,17 @@ export default function Home() {
                   toast.success(
                     "تم تحديث الحساب باستخدام التقويم والبيانات الحالية."
                   );
-                } else toast.error("أضف حدثاً أو نافذة تحليل أولاً.");
+                } else {
+                  setJourneyPath(null);
+                  setJourneyStep(1);
+                  setView("guided");
+                  toast.message(
+                    "هنبدأ بالرحلة المرقمة: اختار نوع الحالة ثم ارفع النسخ وسجّل الواقعة."
+                  );
+                  window.requestAnimationFrame(() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  );
+                }
               }}
             >
               <Play size={16} fill="currentColor" />
@@ -1261,7 +1287,7 @@ export default function Home() {
           <StatusBadge result={activeResult} />
         </section>
         <ClaimContinuityPanel
-          view={view}
+          view={view === "guide" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedWindow={selectedWindow}
@@ -1269,14 +1295,14 @@ export default function Home() {
           onActiveClaimChange={handleActiveClaimChange}
         />
         <IssueLogPanel
-          view={view}
+          view={view === "guide" ? "guided" : view}
           schedule={schedule}
           existingEvents={events}
           isAuthenticated={isAuthenticated}
           onApplyFragnet={applyIssueFragnet}
         />
         <P6EvidenceReportPanel
-          view={view}
+          view={view === "guide" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedEvent={selectedEvent}
@@ -1294,7 +1320,7 @@ export default function Home() {
           }}
         />
         <FinancialNoticeReviewPanel
-          view={view}
+          view={view === "guide" ? "guided" : view}
           schedule={schedule}
           events={events}
           selectedEvent={selectedEvent}
@@ -1325,6 +1351,15 @@ export default function Home() {
             setJourneyPath(route.journeyPath);
             setJourneyStep(2);
             setView("guided");
+            window.requestAnimationFrame(() =>
+              window.scrollTo({ top: 0, behavior: "smooth" })
+            );
+          }}
+        />
+        <UserGuidePanel
+          view={view}
+          onNavigate={next => {
+            setView(next);
             window.requestAnimationFrame(() =>
               window.scrollTo({ top: 0, behavior: "smooth" })
             );
@@ -2670,7 +2705,15 @@ export default function Home() {
                   {method.id === "tia" && (
                     <Button
                       className="run-button"
-                      onClick={() => setView("event")}
+                      onClick={() => {
+                        setGuidedMethod("TIA");
+                        setJourneyPath("direct");
+                        setJourneyStep(1);
+                        setView("guided");
+                        toast.message(
+                          "هتبدأ رحلة TIA من أول خطوة عشان ما يفوتكش رفع النسخ أو تسجيل الواقعة."
+                        );
+                      }}
                     >
                       <Zap size={15} />
                       افتح محرك TIA

@@ -11,10 +11,13 @@ import { masterClaimIntelligenceCases, masterClaimIntelligenceSource, masterClai
 import { claimTrainingScenarios, fidicClaimReferences } from "@/lib/user-claim-references";
 import "./knowledge-centre.css";
 import "./knowledge-centre-record-filters.css";
+import "./knowledge-decision-tree.css";
 import "./training-video.css";
 
 export type AnalysisMethod = "tia" | "windows" | "disruption" | "quantity";
 type WorkbookRecordFamily = "all" | "delay" | "support";
+type DecisionChoice = "single" | "period" | "disruption" | "quantity" | null;
+type LibrarySection = "start" | "cases" | "references";
 export type KnowledgeRoute = {
   method: AnalysisMethod;
   journeyPath: "issue" | "direct";
@@ -68,6 +71,9 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const [isApplying, setIsApplying] = useState(false);
   const [selectedFidicClause, setSelectedFidicClause] = useState(fidicClaimReferences[0]?.clause ?? "");
   const [selectedSupportSheetId, setSelectedSupportSheetId] = useState(masterClaimSupportSheets[0]?.id ?? "");
+  const [decisionChoice, setDecisionChoice] = useState<DecisionChoice>(null);
+  const [hasPreEventUpdate, setHasPreEventUpdate] = useState<boolean | null>(null);
+  const [librarySection, setLibrarySection] = useState<LibrarySection>("start");
 
   const libraryCases = workbookCases;
   const verifiedWorkbookCaseCount = masterClaimIntelligenceSource.caseCount;
@@ -81,6 +87,28 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const selectedMethodInfo = methods.find(item => item.id === selectedMethod) ?? methods[0];
   const selectedFidicReference = fidicClaimReferences.find(item => item.clause === selectedFidicClause) ?? fidicClaimReferences[0];
   const selectedSupportSheet = masterClaimSupportSheets.find(sheet => sheet.id === selectedSupportSheetId) ?? masterClaimSupportSheets[0];
+  const decisionResult = decisionChoice === "single"
+    ? hasPreEventUpdate === null ? null : {
+      method: "tia" as AnalysisMethod,
+      title: hasPreEventUpdate ? "المناسب كبداية: TIA" : "جهّز تحديث قريب من تاريخ الحدث ثم ابدأ TIA",
+      detail: hasPreEventUpdate ? "عندك واقعة محددة ونسخة قبلها؛ هتدخل رحلة TIA المباشرة." : "تقدر تفتح رحلة TIA دلوقتي، لكن لازم تحدد Update قريب قبل الحدث وتراجع Data Date قبل الحساب.",
+    }
+    : decisionChoice === "period" ? {
+      method: "windows" as AnalysisMethod,
+      title: "المناسب كبداية: تحليل النوافذ",
+      detail: "عندك فترة أو أكتر من واقعة. ابدأ بسجل القضايا ثم رتّب التحديثات والنوافذ.",
+    }
+    : decisionChoice === "disruption" ? {
+      method: "disruption" as AnalysisMethod,
+      title: "المناسب كبداية: تحليل التعطيل",
+      detail: "ركز على الإنتاجية والسجلات اليومية والموارد؛ البرنامج لا يحوّل انخفاض الإنتاجية لأيام تلقائياً من غير أدلة.",
+    }
+    : decisionChoice === "quantity" ? {
+      method: "quantity" as AnalysisMethod,
+      title: "المناسب كبداية: زيادة كميات أو نطاق",
+      detail: "سجّل أمر التغيير والكميات والنشاط المتأثر، وبعدها راجع الأثر الزمني والمالي كل واحد في مساره.",
+    }
+    : null;
 
   const matchingCases = useMemo(() => {
     const terms = normalize(query).split(" ").filter(Boolean);
@@ -136,6 +164,17 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
     window.setTimeout(() => setIsApplying(false), 500);
   };
 
+  const beginDecisionRoute = () => {
+    if (!decisionResult || !onBeginGuidedAnalysis) return;
+    onBeginGuidedAnalysis({
+      method: decisionResult.method,
+      journeyPath: journeyFor(decisionResult.method),
+      caseId: "decision-tree-route",
+      caseTitle: decisionResult.title,
+    });
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  };
+
   if (view !== "learning") return null;
 
   return (
@@ -155,6 +194,41 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
       </article>
       <p className="case-source-note" aria-live="polite"><b>حالة الفهرسة:</b> الملف يحتوي {verifiedDCaseCount} حالة من سلسلة D و{verifiedRelatedCaseCount} سجلاً مرتبطاً فعلياً (DIS/CON/VAR/RES). لا يظهر فيه D-056 إلى D-088 كسجلات منظمة؛ تبقى {pendingDCaseCount} حالة من سلسلة D معلقة إلى أن يصل مصدر موثق، ولن تُنشأ بدائل عنها.</p>
 
+      <section className="library-start-menu" aria-label="اختار أنت محتاج إيه من الموسوعة">
+        <div><p className="eyebrow">خدها خطوة خطوة</p><h3>إنت داخل تعمل إيه دلوقتي؟</h3><p>اختار حاجة واحدة، والباقي هيفضل بعيد عنك لحد ما تحتاجه.</p></div>
+        <div className="library-start-menu__choices" role="tablist" aria-label="أقسام الموسوعة المبسطة">
+          <button type="button" role="tab" aria-selected={librarySection === "start"} className={librarySection === "start" ? "selected" : ""} onClick={() => setLibrarySection("start")}><BookOpenCheck size={18} /><span><b>مش عارف أبدأ</b><small>جاوب سؤالين وأنا أرشح لك الطريق</small></span></button>
+          <button type="button" role="tab" aria-selected={librarySection === "cases"} className={librarySection === "cases" ? "selected" : ""} onClick={() => setLibrarySection("cases")}><Search size={18} /><span><b>بدور على حالة شبه مشكلتي</b><small>ابحث وشوف الأدلة والخطوة اللي بعدها</small></span></button>
+          <button type="button" role="tab" aria-selected={librarySection === "references"} className={librarySection === "references" ? "selected" : ""} onClick={() => setLibrarySection("references")}><FileText size={18} /><span><b>عايز المراجع والقوالب</b><small>FIDIC والسيناريوهات وأوراق الدعم</small></span></button>
+        </div>
+      </section>
+
+      {librarySection === "start" ? <>
+      <section className="interactive-decision-tree" aria-labelledby="interactive-decision-tree-title">
+        <div className="interactive-decision-tree__heading">
+          <BookOpenCheck size={22} />
+          <div><p className="eyebrow">ابدأ من سؤالك الحقيقي</p><h3 id="interactive-decision-tree-title">مش عارف أبدأ بأي طريقة؟ جاوب سؤالين بس</h3><p>دي أداة توجيه، مش حكم تعاقدي. بعد الإجابة هتفتح لك الرحلة المناسبة في البرنامج بدل ما تدخل في جداول كتير.</p></div>
+        </div>
+        <div className="decision-question">
+          <b>١) طبيعة المشكلة إيه؟</b>
+          <div className="decision-options" role="group" aria-label="طبيعة المشكلة">
+            <button type="button" className={decisionChoice === "single" ? "selected" : ""} onClick={() => { setDecisionChoice("single"); setHasPreEventUpdate(null); }}>واقعة واحدة بتاريخ معروف</button>
+            <button type="button" className={decisionChoice === "period" ? "selected" : ""} onClick={() => { setDecisionChoice("period"); setHasPreEventUpdate(null); }}>تأخيرات متتابعة أو متزامنة</button>
+            <button type="button" className={decisionChoice === "disruption" ? "selected" : ""} onClick={() => { setDecisionChoice("disruption"); setHasPreEventUpdate(null); }}>إنتاجية وقعت أو التسلسل اتلخبط</button>
+            <button type="button" className={decisionChoice === "quantity" ? "selected" : ""} onClick={() => { setDecisionChoice("quantity"); setHasPreEventUpdate(null); }}>زيادة كميات أو تغيير نطاق</button>
+          </div>
+        </div>
+        {decisionChoice === "single" ? <div className="decision-question decision-question--followup"><b>٢) معاك Update قريب قبل تاريخ الحدث؟</b><div className="decision-options" role="group" aria-label="وجود تحديث قبل الحدث"><button type="button" className={hasPreEventUpdate === true ? "selected" : ""} onClick={() => setHasPreEventUpdate(true)}>أيوه، معايا</button><button type="button" className={hasPreEventUpdate === false ? "selected" : ""} onClick={() => setHasPreEventUpdate(false)}>لأ، محتاج أجهزه</button></div></div> : null}
+        {decisionResult ? <div className="decision-result" aria-live="polite"><CheckCircle2 size={22} /><div><b>{decisionResult.title}</b><p>{decisionResult.detail}</p></div><Button onClick={beginDecisionRoute} disabled={!onBeginGuidedAnalysis}>افتح الخطوات المناسبة <ArrowLeft size={16} /></Button></div> : <p className="decision-empty">اختار وصف المشكلة الأول، وبعدها هقول لك تمشي في أنهي طريق جوه البرنامج.</p>}
+      </section>
+      <section className="library-next-step" aria-label="بعد اختيار المسار">
+        <h3>بعد ما تختار الطريق</h3>
+        <ol><li>افتح رحلة التحليل المناسبة من الزر الأخضر.</li><li>ارفع النسخة الأساسية والـUpdate القريب من الواقعة.</li><li>وثّق الواقعة والأدلة، وبعدها اطلع التقرير للمراجعة.</li></ol>
+        <Button type="button" variant="outline" onClick={() => setLibrarySection("cases")}>أو دور على حالة من المكتبة <ArrowLeft size={16} /></Button>
+      </section>
+      </> : null}
+
+      {librarySection === "references" ? <>
       <section className="fidic-reference-library" aria-label="مرجع بنود FIDIC 2017">
         <div className="reference-library-heading">
           <FileText size={20} />
@@ -178,6 +252,9 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         </article> : null}
       </section>
 
+      </> : null}
+
+      {librarySection === "cases" ? <>
       <article className="case-search-gate master-case-catalog">
         <div className="case-search-header">
           <span><Search size={18} />ابحث في العناوين والوصف والأدلة والمساندات</span>
@@ -234,7 +311,9 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
           <Button className="run-button" type="button" onClick={applyCase} disabled={isApplying} aria-busy={isApplying}>{isApplying ? "جاري فتح رحلة التحليل…" : "طبّق هذه الحالة الآن"} <ArrowLeft size={16} /></Button>
         </div>
       </article>
+      </> : null}
 
+      {librarySection === "references" ? <>
       {selectedSupportSheet ? <section className="master-support-sheets" aria-label="أوراق الدعم من ملف Master Claim Intelligence">
         <div className="reference-library-heading"><FileText size={20} /><div><p className="eyebrow">MASTER CLAIM INTELLIGENCE · SUPPORT SHEETS</p><h3>إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات</h3><p>هذه الأوراق الثمانية مستنسخة للقراءة من الملف المرفوع مع أسماء الروابط الداخلية كما وردت فيه. الصفوف معروضة داخل مساحة تمرير مستقلة للحفاظ على قراءة الهاتف.</p></div></div>
         <div className="support-sheet-tabs" role="tablist" aria-label="اختيار ورقة دعم">{masterClaimSupportSheets.map(sheet => <button key={sheet.id} type="button" role="tab" aria-selected={sheet.id === selectedSupportSheet.id} className={sheet.id === selectedSupportSheet.id ? "selected" : ""} onClick={() => setSelectedSupportSheetId(sheet.id)}>{sheet.title}</button>)}</div>
@@ -311,6 +390,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
           متصفحك لا يدعم تشغيل الفيديو.
         </video>
       </article>
+      </> : null}
     </section>
   );
 }
