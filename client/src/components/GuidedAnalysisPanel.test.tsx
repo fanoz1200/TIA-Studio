@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { GuidedAnalysisPanel, type ScheduleSnapshot } from "./GuidedAnalysisPanel";
 import { fiveDayCalendar, type Schedule } from "@/lib/cpm";
 import { parseIssueRegisterExcel } from "@/lib/issue-excel";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 vi.mock("@/lib/issue-excel", () => ({
   downloadIssueImportTemplate: vi.fn(),
@@ -20,13 +21,14 @@ const summary = { projectName: "Training P6", activitiesRead: 2, relationshipsRe
 const baseline: ScheduleSnapshot = { id: "BL-1", stage: "baseline", fileName: "baseline.xer", schedule: importedSchedule, summary };
 const preUpdate: ScheduleSnapshot = { id: "UP-1", stage: "pre-event-update", fileName: "update-before-event.xer", schedule: importedSchedule, summary };
 
-function renderPanel(overrides: Partial<React.ComponentProps<typeof GuidedAnalysisPanel>> = {}) {
+function renderPanel(overrides: Partial<React.ComponentProps<typeof GuidedAnalysisPanel>> = {}, interfaceLanguage: "ar" | "en" = "ar") {
+  window.localStorage.setItem("tia-studio-interface-language", interfaceLanguage);
   const props: React.ComponentProps<typeof GuidedAnalysisPanel> = {
     schedule: importedSchedule, xerSummary: summary, journeyStep: 1, journeyPath: null, p6GateApproved: false, qualityGateApproved: false, isXerImporting: false, baselineSnapshot: null, updateSnapshots: [],
     onJourneyPathChange: vi.fn(), onJourneyStepChange: vi.fn(), onP6GateApprovedChange: vi.fn(), onQualityGateApprovedChange: vi.fn(), onScheduleUpload: vi.fn().mockResolvedValue(undefined), onApplyIssueExcel: vi.fn(), onPrepareSplit: vi.fn(), onNavigate: vi.fn(),
     ...overrides,
   };
-  render(<GuidedAnalysisPanel {...props} />);
+  render(<LanguageProvider><GuidedAnalysisPanel {...props} /></LanguageProvider>);
   return props;
 }
 
@@ -104,5 +106,14 @@ describe("معالج رحلة TIA وفق Workshop 8", () => {
     expect(await screen.findByText(/جاهز للمراجعة: 1 واقعة منظمة/)).toBeTruthy();
     expect(parseIssueRegisterExcel).toHaveBeenCalled();
     expect(props.onApplyIssueExcel).toHaveBeenCalledWith([reviewedRow]);
+  });
+
+  it("يعرض رحلة English باتجاه LTR مع إبقاء بيانات النشاط المستوردة كما هي", () => {
+    const props = renderPanel({ journeyStep: 5, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [preUpdate] }, "en");
+    const panel = screen.getByRole("heading", { name: "Structured event register — Workshop 8" }).closest("section");
+    expect(panel?.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByRole("button", { name: "Add event to the form" })).toBeTruthy();
+    expect(screen.getByText("A100 — الحفر")).toBeTruthy();
+    expect(props.onApplyIssueExcel).not.toHaveBeenCalled();
   });
 });
