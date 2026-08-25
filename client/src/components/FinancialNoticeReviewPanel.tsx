@@ -76,6 +76,18 @@ export function getNoticeValidationText(
   return uiText(language, ar, en);
 }
 
+export function formatNoticeDraftLanguageOption(
+  interfaceLanguage: AppLanguage,
+  draftLanguage: AppLanguage
+) {
+  const labels = {
+    ar: ["العربية", "Arabic"],
+    en: ["الإنجليزية", "English"],
+  } as const;
+  const [ar, en] = labels[draftLanguage];
+  return uiText(interfaceLanguage, ar, en);
+}
+
 const resourceLabels: Record<AppLanguage, Record<string, string>> = {
   ar: {
     labor: "عمالة",
@@ -691,8 +703,12 @@ export function FinancialNoticeReviewPanel({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ar">العربية</SelectItem>
-                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="ar">
+                      {formatNoticeDraftLanguageOption(interfaceLanguage, "ar")}
+                    </SelectItem>
+                    <SelectItem value="en">
+                      {formatNoticeDraftLanguageOption(interfaceLanguage, "en")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

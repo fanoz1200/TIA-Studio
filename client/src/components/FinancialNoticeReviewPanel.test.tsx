@@ -26,7 +26,11 @@ vi.mock("@/lib/trpc", () => ({
   },
 }));
 
-import { FinancialNoticeReviewPanel, getNoticeValidationText } from "./FinancialNoticeReviewPanel";
+import {
+  FinancialNoticeReviewPanel,
+  formatNoticeDraftLanguageOption,
+  getNoticeValidationText,
+} from "./FinancialNoticeReviewPanel";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const schedule: Schedule = {
@@ -129,7 +133,7 @@ describe("تنزيل مسودة Notice محلية", () => {
     render(<LanguageProvider><FinancialNoticeReviewPanel view="notices" schedule={schedule} events={[event]} selectedEvent={event} activeImpactDays={3} isAuthenticated={false} /></LanguageProvider>);
     fireEvent.click(screen.getByRole("button", { name: "تجهيز مسودة قابلة للتحرير" }));
     fireEvent.click(screen.getByRole("combobox", { name: "لغة مسودة التنزيل" }));
-    fireEvent.click(screen.getByRole("option", { name: "English" }));
+    fireEvent.click(screen.getByRole("option", { name: "الإنجليزية" }));
     fireEvent.click(screen.getByRole("button", { name: "تنزيل مسودة Notice محلية" }));
 
     expect(mocks.startLogin).not.toHaveBeenCalled();
@@ -171,5 +175,12 @@ describe("تنزيل مسودة Notice محلية", () => {
     );
     expect(schedule.name).toBe("برنامج اختبار Notice");
     expect(event.title).toBe("تأخر اعتماد رسم");
+  });
+
+  it("يعرض أسماء لغات المسودة حسب لغة الواجهة مع إبقاء قيم الاختيار منفصلة", () => {
+    expect(formatNoticeDraftLanguageOption("ar", "en")).toBe("الإنجليزية");
+    expect(formatNoticeDraftLanguageOption("en", "ar")).toBe("Arabic");
+    expect("en").toBe("en");
+    expect("ar").toBe("ar");
   });
 });
