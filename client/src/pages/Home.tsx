@@ -431,6 +431,117 @@ export function formatHomeOverview(language: AppLanguage) {
       };
 }
 
+/**
+ * Translates only the fixed import and calendar workspace chrome. Imported file
+ * names, schedule/calendar names, XER summary values, holiday values, and CPM/TIA
+ * results remain caller-owned source values and are never translated here.
+ */
+export function formatScheduleWorkspaceCopy(language: AppLanguage) {
+  return language === "en"
+    ? {
+        scheduleCalendar: "SCHEDULE + CALENDAR",
+        scheduleHeading: "Baseline schedule and calendar",
+        scheduleDescription:
+          "Import a JSON, CSV, or XER schedule. Before calculation, make the calendar and holidays applied to the dates clear and reviewable.",
+        loadSample: "Load training sample",
+        downloadJson: "Download JSON",
+        xerImportTitle: "Import Primavera P6 XER",
+        xerImportScope: "PROJECT, TASK, TASKPRED, and CALENDAR where available.",
+        xerImportTip:
+          "Import is local; review activities, relationships, and the calendar in the summary before running TIA.",
+        xerInputTitle:
+          "The XER file is read in the browser and is not sent to an external analysis service.",
+        xerChoose: "Choose XER",
+        xerReading: "Reading…",
+        xerProgress: "Reading the XER network, calendar, and resources…",
+        jsonImportTitle: "Import complete JSON",
+        jsonImportFields: "name, startDate, activities, relationships.",
+        choose: "Choose",
+        activitiesCsvTitle: "1. Activities CSV",
+        activityCsvFields: "id, name, duration, wbs, owner",
+        upload: "Upload",
+        relationshipsCsvTitle: "2. Relationships CSV",
+        relationshipCsvFields: "predecessorId, successorId, type, lag",
+        xerSummaryTitle: "XER import summary:",
+        activities: "activities",
+        relationships: "relationships",
+        noCalendarRecord: "No calendar record",
+        xerSummaryNote:
+          "Review the working calendar and holidays, because the encoded P6 calendar pattern is not decoded automatically.",
+        workingCalendar: "WORKING CALENDAR",
+        calendarDays: "Calendar days",
+        calendarEngineText:
+          "The engine displays ES/EF in working days and converts the completion date with this calendar.",
+        projectCountry: "Project country",
+        selectProjectCountry: "Select project country",
+        customProjectCalendar: "Custom project calendar",
+        holidayYear: "Holiday year",
+        updateHolidays: "Update holidays",
+        fiveDays: "5 days",
+        mondayFriday: "Monday–Friday",
+        sevenDays: "7 days",
+        exceptionalHoliday: "Exceptional holiday",
+        add: "Add",
+        noExceptionalHolidays: "No exceptional holidays entered.",
+        source: "Source:",
+        manualEntry: "Manual entry",
+        lastUpdated: "Last updated",
+        holidayReviewRequired:
+          "Review movable holidays and any transfer decision before approving the calculation.",
+      }
+    : {
+        scheduleCalendar: "SCHEDULE + CALENDAR",
+        scheduleHeading: "البرنامج المرجعي والتقويم",
+        scheduleDescription:
+          "استورد جدولاً من JSON أو CSV أو XER. قبل الحساب، اجعل التقويم والعطل المطبقة على التاريخ واضحة وقابلة للمراجعة.",
+        loadSample: "تحميل نموذج الاختبار",
+        downloadJson: "تنزيل JSON",
+        xerImportTitle: "استيراد Primavera P6 XER",
+        xerImportScope: "PROJECT, TASK, TASKPRED وCALENDAR حيث تتوافر.",
+        xerImportTip:
+          "المستورد محلي؛ راجع النشاط والعلاقات والتقويم في الملخص قبل تشغيل TIA.",
+        xerInputTitle:
+          "تتم قراءة ملف XER داخل المتصفح ولا يتم إرساله لخدمة تحليل خارجية.",
+        xerChoose: "اختيار XER",
+        xerReading: "جارِ القراءة…",
+        xerProgress: "جارِ قراءة شبكة XER والتقويم والموارد…",
+        jsonImportTitle: "استيراد JSON كامل",
+        jsonImportFields: "name, startDate, activities, relationships.",
+        choose: "اختيار",
+        activitiesCsvTitle: "1. CSV الأنشطة",
+        activityCsvFields: "id, name, duration, wbs, owner",
+        upload: "تحميل",
+        relationshipsCsvTitle: "2. CSV العلاقات",
+        relationshipCsvFields: "predecessorId, successorId, type, lag",
+        xerSummaryTitle: "ملخص استيراد XER:",
+        activities: "نشاط",
+        relationships: "علاقة",
+        noCalendarRecord: "بدون سجل تقويم",
+        xerSummaryNote:
+          "راجع جدول العمل والعطل، لأن نمط تقويم P6 المشفر لا يُفك تلقائياً.",
+        workingCalendar: "WORKING CALENDAR",
+        calendarDays: "أيام تقويمية",
+        calendarEngineText:
+          "المحرك يعرض ES/EF بأيام العمل ويحّول تاريخ الإكمال بهذا التقويم.",
+        projectCountry: "بلد المشروع",
+        selectProjectCountry: "اختَر بلد المشروع",
+        customProjectCalendar: "تقويم مشروع مخصص",
+        holidayYear: "سنة الإجازات",
+        updateHolidays: "تحديث الإجازات",
+        fiveDays: "5 أيام",
+        mondayFriday: "الإثنين–الجمعة",
+        sevenDays: "7 أيام",
+        exceptionalHoliday: "عطلة استثنائية",
+        add: "إضافة",
+        noExceptionalHolidays: "لا توجد عطل استثنائية مدخلة.",
+        source: "المصدر:",
+        manualEntry: "إدخال يدوي",
+        lastUpdated: "آخر تحديث",
+        holidayReviewRequired:
+          "راجع العيد المتغير وقرار الترحيل قبل اعتماد الحساب.",
+      };
+}
+
 const baseSchedule: Schedule = {
   id: "baseline-building-envelope",
   name: "برج النخيل — تحديث البرنامج رقم 04",
@@ -1553,6 +1664,7 @@ export default function Home() {
 
   const chrome = formatHomeChrome(language);
   const overview = formatHomeOverview(language);
+  const scheduleWorkspace = formatScheduleWorkspaceCopy(language);
   const qualityItems = [
     {
       ok: Boolean(baseline),
@@ -2051,12 +2163,9 @@ export default function Home() {
           <div className="view-stack schedule-view">
             <section className="page-heading">
               <div>
-                <p className="eyebrow">SCHEDULE + CALENDAR</p>
-                <h1>البرنامج المرجعي والتقويم</h1>
-                <p>
-                  استورد جدولاً من JSON أو CSV أو XER. قبل الحساب، اجعل التقويم
-                  والعطل المطبقة على التاريخ واضحة وقابلة للمراجعة.
-                </p>
+                <p className="eyebrow">{scheduleWorkspace.scheduleCalendar}</p>
+                <h1>{scheduleWorkspace.scheduleHeading}</h1>
+                <p>{scheduleWorkspace.scheduleDescription}</p>
               </div>
               <div className="heading-actions">
                 <Button
@@ -2065,11 +2174,11 @@ export default function Home() {
                   onClick={loadDemo}
                 >
                   <Sparkles size={16} />
-                  تحميل نموذج الاختبار
+                  {scheduleWorkspace.loadSample}
                 </Button>
                 <Button className="run-button" onClick={exportSchedule}>
                   <Download size={16} />
-                  تنزيل JSON
+                  {scheduleWorkspace.downloadJson}
                 </Button>
               </div>
             </section>
@@ -2077,19 +2186,18 @@ export default function Home() {
               <div className="import-card primary-import">
                 <FileCode2 size={21} />
                 <div>
-                  <b>استيراد Primavera P6 XER</b>
-                  <p>PROJECT, TASK, TASKPRED وCALENDAR حيث تتوافر.</p>
+                  <b>{scheduleWorkspace.xerImportTitle}</b>
+                  <p>{scheduleWorkspace.xerImportScope}</p>
                   <p className="import-tip">
                     <CircleHelp size={13} />
-                    المستورد محلي؛ راجع النشاط والعلاقات والتقويم في الملخص قبل
-                    تشغيل TIA.
+                    {scheduleWorkspace.xerImportTip}
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   className="tiny-button"
                   disabled={isXerImporting}
-                  title="تتم قراءة ملف XER داخل المتصفح ولا يتم إرساله لخدمة تحليل خارجية."
+                  title={scheduleWorkspace.xerInputTitle}
                   onClick={() => xerFileRef.current?.click()}
                 >
                   {isXerImporting ? (
@@ -2097,7 +2205,9 @@ export default function Home() {
                   ) : (
                     <Upload size={15} />
                   )}
-                  {isXerImporting ? "جارِ القراءة…" : "اختيار XER"}
+                  {isXerImporting
+                    ? scheduleWorkspace.xerReading
+                    : scheduleWorkspace.xerChoose}
                 </Button>
                 <input
                   ref={xerFileRef}
@@ -2113,15 +2223,15 @@ export default function Home() {
                 {isXerImporting ? (
                   <div className="operation-progress" role="status">
                     <span />
-                    جارِ قراءة شبكة XER والتقويم والموارد…
+                    {scheduleWorkspace.xerProgress}
                   </div>
                 ) : null}
               </div>
               <div className="import-card">
                 <FileText size={21} />
                 <div>
-                  <b>استيراد JSON كامل</b>
-                  <p>name, startDate, activities, relationships.</p>
+                  <b>{scheduleWorkspace.jsonImportTitle}</b>
+                  <p>{scheduleWorkspace.jsonImportFields}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -2129,7 +2239,7 @@ export default function Home() {
                   onClick={() => jsonFileRef.current?.click()}
                 >
                   <Upload size={15} />
-                  اختيار
+                  {scheduleWorkspace.choose}
                 </Button>
                 <input
                   ref={jsonFileRef}
@@ -2146,8 +2256,8 @@ export default function Home() {
               <div className="import-card">
                 <FileSpreadsheet size={21} />
                 <div>
-                  <b>1. CSV الأنشطة</b>
-                  <p>id, name, duration, wbs, owner</p>
+                  <b>{scheduleWorkspace.activitiesCsvTitle}</b>
+                  <p>{scheduleWorkspace.activityCsvFields}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -2155,7 +2265,7 @@ export default function Home() {
                   onClick={() => activityFileRef.current?.click()}
                 >
                   <Upload size={15} />
-                  تحميل
+                  {scheduleWorkspace.upload}
                 </Button>
                 <input
                   ref={activityFileRef}
@@ -2172,8 +2282,8 @@ export default function Home() {
               <div className="import-card">
                 <GitBranch size={21} />
                 <div>
-                  <b>2. CSV العلاقات</b>
-                  <p>predecessorId, successorId, type, lag</p>
+                  <b>{scheduleWorkspace.relationshipsCsvTitle}</b>
+                  <p>{scheduleWorkspace.relationshipCsvFields}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -2181,7 +2291,7 @@ export default function Home() {
                   onClick={() => relationshipFileRef.current?.click()}
                 >
                   <Upload size={15} />
-                  تحميل
+                  {scheduleWorkspace.upload}
                 </Button>
                 <input
                   ref={relationshipFileRef}
@@ -2200,16 +2310,17 @@ export default function Home() {
               <section className="import-result">
                 <FileCode2 size={18} />
                 <div>
-                  <b>ملخص استيراد XER: {xerSummary.projectName}</b>
+                  <b>
+                    {scheduleWorkspace.xerSummaryTitle} {xerSummary.projectName}
+                  </b>
                   <span>
-                    {xerSummary.activitiesRead} نشاط ·{" "}
-                    {xerSummary.relationshipsRead} علاقة ·{" "}
-                    {xerSummary.calendarName ?? "بدون سجل تقويم"}
+                    {xerSummary.activitiesRead} {scheduleWorkspace.activities} ·{" "}
+                    {xerSummary.relationshipsRead} {scheduleWorkspace.relationships} ·{" "}
+                    {xerSummary.calendarName ?? scheduleWorkspace.noCalendarRecord}
                   </span>
                 </div>
                 <small>
-                  راجع جدول العمل والعطل، لأن نمط تقويم P6 المشفر لا يُفك
-                  تلقائياً.
+                  {scheduleWorkspace.xerSummaryNote}
                 </small>
               </section>
             )}
@@ -2217,19 +2328,18 @@ export default function Home() {
               <div className="panel calendar-panel">
                 <div className="panel-heading">
                   <div>
-                    <p className="eyebrow">WORKING CALENDAR</p>
-                    <h2>{schedule.calendar?.name ?? "أيام تقويمية"}</h2>
-                    <span>
-                      المحرك يعرض ES/EF بأيام العمل ويحّول تاريخ الإكمال بهذا
-                      التقويم.
-                    </span>
+                    <p className="eyebrow">{scheduleWorkspace.workingCalendar}</p>
+                    <h2>{schedule.calendar?.name ?? scheduleWorkspace.calendarDays}</h2>
+                    <span>{scheduleWorkspace.calendarEngineText}</span>
                   </div>
                   <CalendarDays size={21} />
                 </div>
                 <div className="calendar-presets">
                   <div className="calendar-regional-controls">
                     <div>
-                      <Label htmlFor="calendar-country">بلد المشروع</Label>
+                      <Label htmlFor="calendar-country">
+                        {scheduleWorkspace.projectCountry}
+                      </Label>
                       <Select
                         value={schedule.calendar?.countryCode ?? "custom"}
                         onValueChange={value => {
@@ -2237,10 +2347,14 @@ export default function Home() {
                         }}
                       >
                         <SelectTrigger id="calendar-country" className="mt-1">
-                          <SelectValue placeholder="اختَر بلد المشروع" />
+                          <SelectValue
+                            placeholder={scheduleWorkspace.selectProjectCountry}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="custom">تقويم مشروع مخصص</SelectItem>
+                          <SelectItem value="custom">
+                            {scheduleWorkspace.customProjectCalendar}
+                          </SelectItem>
                           {regionalCalendarCountries.map(country => (
                             <SelectItem key={country.code} value={country.code}>
                               {country.label}
@@ -2250,7 +2364,9 @@ export default function Home() {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="holiday-year">سنة الإجازات</Label>
+                      <Label htmlFor="holiday-year">
+                        {scheduleWorkspace.holidayYear}
+                      </Label>
                       <Input
                         id="holiday-year"
                         type="number"
@@ -2273,7 +2389,7 @@ export default function Home() {
                       ) : (
                         <Download size={15} />
                       )}
-                      تحديث الإجازات
+                      {scheduleWorkspace.updateHolidays}
                     </Button>
                   </div>
                   <button
@@ -2284,9 +2400,9 @@ export default function Home() {
                         : "calendar-preset"
                     }
                   >
-                    5 أيام
+                    {scheduleWorkspace.fiveDays}
                     <br />
-                    <small>الإثنين–الجمعة</small>
+                    <small>{scheduleWorkspace.mondayFriday}</small>
                   </button>
                   <button
                     onClick={() => setCalendarPreset("calendar")}
@@ -2296,9 +2412,9 @@ export default function Home() {
                         : "calendar-preset"
                     }
                   >
-                    7 أيام
+                    {scheduleWorkspace.sevenDays}
                     <br />
-                    <small>أيام تقويمية</small>
+                    <small>{scheduleWorkspace.calendarDays}</small>
                   </button>
                 </div>
                 <div className="weekday-grid">
@@ -2320,7 +2436,9 @@ export default function Home() {
                 </div>
                 <div className="holiday-entry">
                   <div>
-                    <Label htmlFor="holiday">عطلة استثنائية</Label>
+                    <Label htmlFor="holiday">
+                      {scheduleWorkspace.exceptionalHoliday}
+                    </Label>
                     <Input
                       id="holiday"
                       type="date"
@@ -2335,7 +2453,7 @@ export default function Home() {
                     onClick={addHoliday}
                   >
                     <Plus size={15} />
-                    إضافة
+                    {scheduleWorkspace.add}
                   </Button>
                 </div>
                 <div className="holiday-list">
@@ -2352,18 +2470,19 @@ export default function Home() {
                       </button>
                     ))
                   ) : (
-                    <span>لا توجد عطل استثنائية مدخلة.</span>
+                    <span>{scheduleWorkspace.noExceptionalHolidays}</span>
                   )}
                 </div>
                 <div className="calendar-review-note" role="note">
                   <ShieldCheck size={15} />
                   <span>
-                    المصدر: {schedule.calendar?.holidaySource ?? "إدخال يدوي"}
+                    {scheduleWorkspace.source}{" "}
+                    {schedule.calendar?.holidaySource ?? scheduleWorkspace.manualEntry}
                     {schedule.calendar?.holidaysLastCheckedAt
-                      ? ` · آخر تحديث ${new Date(schedule.calendar.holidaysLastCheckedAt).toLocaleDateString("ar-EG")}`
+                      ? ` · ${scheduleWorkspace.lastUpdated} ${new Date(schedule.calendar.holidaysLastCheckedAt).toLocaleDateString("ar-EG")}`
                       : ""}
                     {schedule.calendar?.holidayReviewRequired
-                      ? " · راجع العيد المتغير وقرار الترحيل قبل اعتماد الحساب."
+                      ? ` · ${scheduleWorkspace.holidayReviewRequired}`
                       : ""}
                   </span>
                 </div>

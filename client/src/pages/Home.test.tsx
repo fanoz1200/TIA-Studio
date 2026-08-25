@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from "vitest";
-import { formatHomeChrome, formatHomeOverview, formatHomeStatus } from "./Home";
+import {
+  formatHomeChrome,
+  formatHomeOverview,
+  formatHomeStatus,
+  formatScheduleWorkspaceCopy,
+} from "./Home";
 
 describe("formatHomeStatus", () => {
   it("renders fixed import status chrome in English without translating the supplied schedule name", () => {
@@ -74,5 +79,28 @@ describe("formatHomeOverview", () => {
     expect(overview.currentTechnicalImpact).toBe("الأثر الفني الحالي");
     expect(overview.analysisReadiness).toBe("جاهزية التحليل");
     expect(overview.noEventsYet).toBe("لا توجد أحداث بعد. أضف Fragnet للبدء.");
+  });
+});
+
+describe("formatScheduleWorkspaceCopy", () => {
+  it("provides English import and calendar chrome while callers retain XER and calendar source values", () => {
+    const importedProjectName = "برنامج الأساسات — Update 04";
+    const importedCalendarName = "تقويم المشروع — مصر (6 أيام)";
+    const copy = formatScheduleWorkspaceCopy("en");
+
+    expect(copy.scheduleHeading).toBe("Baseline schedule and calendar");
+    expect(copy.xerChoose).toBe("Choose XER");
+    expect(copy.workingCalendar).toBe("WORKING CALENDAR");
+    expect(copy.holidayReviewRequired).toContain("movable holidays");
+    expect(importedProjectName).toBe("برنامج الأساسات — Update 04");
+    expect(importedCalendarName).toBe("تقويم المشروع — مصر (6 أيام)");
+  });
+
+  it("retains Arabic import and calendar chrome for the RTL interface", () => {
+    const copy = formatScheduleWorkspaceCopy("ar");
+
+    expect(copy.scheduleHeading).toBe("البرنامج المرجعي والتقويم");
+    expect(copy.updateHolidays).toBe("تحديث الإجازات");
+    expect(copy.noExceptionalHolidays).toBe("لا توجد عطل استثنائية مدخلة.");
   });
 });
