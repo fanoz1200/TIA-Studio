@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from "vitest";
-import { formatHomeChrome, formatHomeStatus } from "./Home";
+import { formatHomeChrome, formatHomeOverview, formatHomeStatus } from "./Home";
 
 describe("formatHomeStatus", () => {
   it("renders fixed import status chrome in English without translating the supplied schedule name", () => {
@@ -52,5 +52,27 @@ describe("formatHomeChrome", () => {
     expect(chrome.workspaceSubtitle).toBe("مساحة عمل تحليل التأخيرات");
     expect(chrome.expectedCompletion).toBe("الإكمال المتوقع");
     expect(chrome.mainNavigation).toBe("التنقل الرئيسي");
+  });
+});
+
+describe("formatHomeOverview", () => {
+  it("provides English overview guidance while callers retain imported schedule values", () => {
+    const importedScheduleName = "برنامج الأساسات — Update 04";
+    const importedCalendarName = "تقويم المشروع — مصر (6 أيام)";
+    const overview = formatHomeOverview("en");
+
+    expect(overview.decisionCentre).toBe("Delay decision centre");
+    expect(overview.modelNewEvent).toBe("Model a new event");
+    expect(overview.qualityFooter).toContain("qualified professional");
+    expect(importedScheduleName).toBe("برنامج الأساسات — Update 04");
+    expect(importedCalendarName).toBe("تقويم المشروع — مصر (6 أيام)");
+  });
+
+  it("retains Arabic overview chrome for the RTL interface", () => {
+    const overview = formatHomeOverview("ar");
+
+    expect(overview.currentTechnicalImpact).toBe("الأثر الفني الحالي");
+    expect(overview.analysisReadiness).toBe("جاهزية التحليل");
+    expect(overview.noEventsYet).toBe("لا توجد أحداث بعد. أضف Fragnet للبدء.");
   });
 });

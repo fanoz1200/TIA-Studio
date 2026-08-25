@@ -355,6 +355,82 @@ export function formatHomeChrome(language: AppLanguage) {
       };
 }
 
+/**
+ * Translates fixed overview guidance only. Schedule names, calendar names,
+ * event data, IDs, dates, import notes, and CPM/TIA results are rendered from
+ * their original values outside this dictionary.
+ */
+export function formatHomeOverview(language: AppLanguage) {
+  return language === "en"
+    ? {
+        decisionCentre: "Delay decision centre",
+        noWindow: "No window",
+        currentTechnicalImpact: "Current technical impact",
+        workingDaysOnCompletion: "working days on completion",
+        noCriticalImpact: "No calculated critical impact currently",
+        decisionBasisPrefix: "The decision is based on",
+        decisionBasisMiddle: "and calendar",
+        decisionBasisSuffix:
+          ". Explore the window, concurrency, and result narrative in one printable workflow.",
+        criticalRoute: "Critical route",
+        modelNewEvent: "Model a new event",
+        reviewWindowAndConcurrency: "Review window and concurrency",
+        liveAnalysisCanvas: "LIVE ANALYSIS CANVAS",
+        events: "EVENTS",
+        windows: "WINDOWS",
+        forecastFinish: "FORECAST FINISH",
+        baselineDate: "Baseline date",
+        basedOnApprovedCalendar: "Based on the approved calendar",
+        timeImpact: "Time impact",
+        currentWindowResult: "Current window result",
+        completionAfterAnalysis: "Completion after analysis",
+        afterFragnetsInserted: "After Fragnets are inserted",
+        concurrencyFindings: "Concurrency findings",
+        causationReviewRequired: "Causation review required",
+        delayRegister: "DELAY REGISTER",
+        eventRegister: "Event register",
+        newEvent: "New event",
+        noEventsYet: "No events yet. Add a Fragnet to start.",
+        qualityGate: "QUALITY GATE",
+        analysisReadiness: "Analysis readiness",
+        qualityFooter:
+          "Enter event evidence, then review the result with a qualified professional.",
+      }
+    : {
+        decisionCentre: "مركز قرار التأخير",
+        noWindow: "لا نافذة",
+        currentTechnicalImpact: "الأثر الفني الحالي",
+        workingDaysOnCompletion: "أيام عمل على الإكمال",
+        noCriticalImpact: "لا يوجد أثر حرج محسوب حالياً",
+        decisionBasisPrefix: "القرار مبني على",
+        decisionBasisMiddle: "وتقويم",
+        decisionBasisSuffix:
+          ". استكشف النافذة، التزامن، وسرد النتيجة في مسار واحد قابل للطباعة.",
+        criticalRoute: "المسار الحرج",
+        modelNewEvent: "نمذجة حدث جديد",
+        reviewWindowAndConcurrency: "فحص النافذة والتزامن",
+        liveAnalysisCanvas: "LIVE ANALYSIS CANVAS",
+        events: "EVENTS",
+        windows: "WINDOWS",
+        forecastFinish: "FORECAST FINISH",
+        baselineDate: "تاريخ الأساس",
+        basedOnApprovedCalendar: "حسب التقويم المعتمد",
+        timeImpact: "الأثر الزمني",
+        currentWindowResult: "نتيجة النافذة الحالية",
+        completionAfterAnalysis: "الإكمال بعد التحليل",
+        afterFragnetsInserted: "بعد إدراج الـ Fragnets",
+        concurrencyFindings: "مرشحات تزامن",
+        causationReviewRequired: "تحتاج تدقيق السببية",
+        delayRegister: "DELAY REGISTER",
+        eventRegister: "سجل الأحداث",
+        newEvent: "حدث جديد",
+        noEventsYet: "لا توجد أحداث بعد. أضف Fragnet للبدء.",
+        qualityGate: "QUALITY GATE",
+        analysisReadiness: "جاهزية التحليل",
+        qualityFooter: "أدخل دليل الحدث ثم راجع النتيجة مع المختص.",
+      };
+}
+
 const baseSchedule: Schedule = {
   id: "baseline-building-envelope",
   name: "برج النخيل — تحديث البرنامج رقم 04",
@@ -1476,6 +1552,7 @@ export default function Home() {
   }
 
   const chrome = formatHomeChrome(language);
+  const overview = formatHomeOverview(language);
   const qualityItems = [
     {
       ok: Boolean(baseline),
@@ -1785,22 +1862,21 @@ export default function Home() {
               <div className="hero-copy">
                 <p className="eyebrow">
                   <ActivityIcon size={15} />
-                  مركز قرار التأخير · {selectedWindow?.name ?? "لا نافذة"}
+                  {overview.decisionCentre} · {selectedWindow?.name ?? overview.noWindow}
                 </p>
-                <span className="finding-label">الأثر الفني الحالي</span>
+                <span className="finding-label">{overview.currentTechnicalImpact}</span>
                 <h1>
                   {activeImpact ? (
                     <>
-                      <b dir="ltr">+{activeImpact}</b> أيام عمل على الإكمال
+                      <b dir="ltr">+{activeImpact}</b> {overview.workingDaysOnCompletion}
                     </>
                   ) : (
-                    "لا يوجد أثر حرج محسوب حالياً"
+                    overview.noCriticalImpact
                   )}
                 </h1>
                 <p>
-                  القرار مبني على <b>{schedule.name}</b> وتقويم «
-                  {baseline?.calendar.name ?? "—"}». استكشف النافذة، التزامن،
-                  وسرد النتيجة في مسار واحد قابل للطباعة.
+                  {overview.decisionBasisPrefix} <b>{schedule.name}</b> {overview.decisionBasisMiddle} «
+                  {baseline?.calendar.name ?? "—"}»{overview.decisionBasisSuffix}
                 </p>
                 <div className="signature-path" dir="ltr">
                   {displayedCpm?.criticalActivityIds
@@ -1812,7 +1888,7 @@ export default function Home() {
                       </span>
                     ))}
                   <strong>{selectedEvent?.activities[0]?.id ?? "FR"}</strong>
-                  <em>Critical route</em>
+                  <em>{overview.criticalRoute}</em>
                 </div>
                 <div className="hero-actions">
                   <Button
@@ -1820,14 +1896,14 @@ export default function Home() {
                     onClick={() => setView("event")}
                   >
                     <Plus size={17} />
-                    نمذجة حدث جديد
+                    {overview.modelNewEvent}
                   </Button>
                   <Button
                     variant="ghost"
                     className="ghost-link"
                     onClick={() => setView("windows")}
                   >
-                    فحص النافذة والتزامن <ChevronLeft size={16} />
+                    {overview.reviewWindowAndConcurrency} <ChevronLeft size={16} />
                   </Button>
                 </div>
               </div>
@@ -1838,42 +1914,42 @@ export default function Home() {
                 }}
               >
                 <div className="hero-art-tag">
-                  <span>LIVE ANALYSIS CANVAS</span>
+                  <span>{overview.liveAnalysisCanvas}</span>
                   <b>
-                    {events.length} EVENTS · {windows.length} WINDOWS
+                    {events.length} {overview.events} · {windows.length} {overview.windows}
                   </b>
                 </div>
                 <div className="canvas-date">
-                  <small>FORECAST FINISH</small>
+                  <small>{overview.forecastFinish}</small>
                   <b dir="ltr">{displayedCpm?.completionDate ?? "—"}</b>
                 </div>
               </div>
             </section>
             <section className="metrics-grid">
               <MetricCard
-                label="تاريخ الأساس"
+                label={overview.baselineDate}
                 value={baseline?.completionDate ?? "—"}
-                helper="حسب التقويم المعتمد"
+                helper={overview.basedOnApprovedCalendar}
                 tone="graphite"
               />
               <MetricCard
-                label="الأثر الزمني"
+                label={overview.timeImpact}
                 value={`${activeImpact > 0 ? "+" : ""}${activeImpact} يوم`}
-                helper="نتيجة النافذة الحالية"
+                helper={overview.currentWindowResult}
                 tone={activeImpact > 0 ? "orange" : "green"}
                 featured
               />
               <MetricCard
-                label="الإكمال بعد التحليل"
+                label={overview.completionAfterAnalysis}
                 value={displayedCpm?.completionDate ?? "—"}
-                helper="بعد إدراج الـ Fragnets"
+                helper={overview.afterFragnetsInserted}
                 tone="blue"
                 featured
               />
               <MetricCard
-                label="مرشحات تزامن"
+                label={overview.concurrencyFindings}
                 value={`${windowResult?.concurrentFindings.length ?? 0}`}
-                helper="تحتاج تدقيق السببية"
+                helper={overview.causationReviewRequired}
                 tone="graphite"
               />
             </section>
@@ -1881,8 +1957,8 @@ export default function Home() {
               <div className="panel event-panel">
                 <div className="panel-heading">
                   <div>
-                    <p className="eyebrow">DELAY REGISTER</p>
-                    <h2>سجل الأحداث</h2>
+                    <p className="eyebrow">{overview.delayRegister}</p>
+                    <h2>{overview.eventRegister}</h2>
                   </div>
                   <Button
                     variant="outline"
@@ -1890,7 +1966,7 @@ export default function Home() {
                     onClick={() => setView("event")}
                   >
                     <Plus size={15} />
-                    حدث جديد
+                    {overview.newEvent}
                   </Button>
                 </div>
                 <div className="event-list">
@@ -1924,7 +2000,7 @@ export default function Home() {
                   ) : (
                     <div className="empty-inline">
                       <Zap size={19} />
-                      <span>لا توجد أحداث بعد. أضف Fragnet للبدء.</span>
+                      <span>{overview.noEventsYet}</span>
                     </div>
                   )}
                 </div>
@@ -1932,8 +2008,8 @@ export default function Home() {
               <div className="panel quality-panel">
                 <div className="panel-heading">
                   <div>
-                    <p className="eyebrow">QUALITY GATE</p>
-                    <h2>جاهزية التحليل</h2>
+                    <p className="eyebrow">{overview.qualityGate}</p>
+                    <h2>{overview.analysisReadiness}</h2>
                   </div>
                   <span className="quality-score">
                     {qualityItems.filter(item => item.ok).length}/4
@@ -1963,7 +2039,7 @@ export default function Home() {
                 ) : (
                   <div className="quality-footer">
                     <ShieldCheck size={16} />
-                    أدخل دليل الحدث ثم راجع النتيجة مع المختص.
+                    {overview.qualityFooter}
                   </div>
                 )}
               </div>
