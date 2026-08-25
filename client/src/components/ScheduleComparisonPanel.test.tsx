@@ -5,6 +5,7 @@ import React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
 import type { Schedule } from "@/lib/cpm";
 import { APP_LANGUAGE_STORAGE_KEY, LanguageProvider } from "@/contexts/LanguageContext";
 import { ScheduleComparisonPanel } from "./ScheduleComparisonPanel";
@@ -83,5 +84,16 @@ describe("واجهة مقارنة التحديثات", () => {
     expect(screen.getByRole("button", { name: "Changed" })).toBeTruthy();
     expect(screen.getByTestId("gantt-row-A200").textContent).toContain("A200");
     expect(screen.getByTestId("gantt-row-A200").textContent).toContain(sourceActivity?.name ?? "");
+  });
+
+  it("يصوغ إشعار تنزيل XER التجريبي بالـEnglish من دون ترجمة بيانات البرنامج", async () => {
+    const baseline = readExample("01-baseline-schedule.json");
+    renderComparison(baseline, "en");
+
+    await userEvent.setup().click(screen.getByRole("button", { name: "Download Pre-TIA XER" }));
+
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith(expect.stringContaining("Experimental Pre-TIA XER was downloaded after round-trip import validation:"));
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith(expect.stringContaining(" and "));
+    expect(baseline.activities.find(activity => activity.id === "A200")?.name).toBe("صب الأساسات");
   });
 });
