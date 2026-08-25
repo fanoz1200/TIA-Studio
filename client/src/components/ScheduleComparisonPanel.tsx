@@ -10,6 +10,7 @@ import { importXerSchedule } from "@/lib/xer";
 import { exportExperimentalXer, validateExperimentalXerRoundTrip } from "@/lib/xer-export";
 import { insertFragnet, type Fragnet, type Schedule } from "@/lib/cpm";
 import { assessScheduleQuality } from "@/lib/schedule-quality";
+import { useAppLanguage } from "@/contexts/LanguageContext";
 
 type SourceSlot = "baseline" | "update";
 
@@ -28,6 +29,22 @@ function parseSchedule(raw: string, name: string): Schedule {
 }
 
 export function ScheduleComparisonPanel({ currentSchedule, selectedEvent }: { currentSchedule: Schedule; selectedEvent?: Fragnet | null }) {
+  const { language, direction } = useAppLanguage();
+  const tx = language === "en" ? {
+    eyebrow: "UPDATE VARIANCE WORKSPACE", title: "Schedule update comparison", description: "Compare two defined schedules from your files, then review activity, duration, and completion-date variances. The comparison is technical and does not determine contractual entitlement by itself.",
+    context: "The XER downloads below are exchange-only and experimental: review them separately in Primavera and do not treat them as a source-file replacement.", useOpen: "Use the open schedule as baseline", preXer: "Download Pre-TIA XER", postXer: "Download Post-TIA XER",
+    baseline: "Baseline / previous schedule", update: "Update / later schedule", notLoaded: "Not loaded yet", activities: "activities", starts: "starts", support: "Supports XER, P6 XML, and JSON. Files do not leave the browser during comparison.",
+    loading: "Reading…", upload: "Upload file", remove: "Remove", transfer: "Compare the same project scope where possible", durationVariance: "Project duration variance", changedActivities: "Changed activities", scopeChanges: "Scope changes", from: "out of", inUpdate: "activities in the update", added: "added", removed: "removed", days: "days",
+    emptyTitle: "Load two schedules to start comparing", emptyDescription: "Choose a baseline version and then an update for the same project. You can use the open schedule as a baseline or load XER/XML/JSON.",
+    loadSuccess: "Loaded", openSuccess: "The open schedule was loaded as the baseline.", genericReadError: "Could not read the schedule file.", xerQualityBlocked: "XER download stopped: correct schedule-quality blockers first", xerRoundTripBlocked: "XER download stopped:", xerRoundTripFallback: "Round-trip import validation failed.", xerDownloadSuccess: "Experimental", xerDownloaded: "XER was downloaded after round-trip import validation:", relationships: "relationships", xerReview: "Review calendar constraints and unsupported P6 fields in the download message before using the file externally.",
+  } : {
+    eyebrow: "UPDATE VARIANCE WORKSPACE", title: "مقارنة تحديثات البرنامج", description: "قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.",
+    context: "تنزيل XER أدناه تبادلي وتجريبي: يُراجع في Primavera منفصل ولا يستبدل ملف المصدر.", useOpen: "استخدم البرنامج المفتوح كأساس", preXer: "تنزيل Pre-TIA XER", postXer: "تنزيل Post-TIA XER",
+    baseline: "البرنامج المرجعي / السابق", update: "تحديث البرنامج / اللاحق", notLoaded: "لم يُحمّل بعد", activities: "نشاط", starts: "يبدأ", support: "يدعم XER وP6 XML وJSON. لا تغادر الملفات المتصفح أثناء المقارنة.",
+    loading: "جارِ القراءة…", upload: "تحميل ملف", remove: "إزالة", transfer: "قارن نفس نطاق المشروع قدر الإمكان", durationVariance: "فرق مدة المشروع", changedActivities: "أنشطة مُعدّلة", scopeChanges: "تغييرات نطاق", from: "من أصل", inUpdate: "نشاط في التحديث", added: "مضاف", removed: "محذوف", days: "يوم",
+    emptyTitle: "حمّل برنامجين لبدء المقارنة", emptyDescription: "اختر نسخة مرجعية ثم تحديثاً لنفس المشروع. يمكنك استخدام البرنامج المفتوح كأساس أو تحميل XER/XML/JSON.",
+    loadSuccess: "تم تحميل", openSuccess: "حُمّل البرنامج المفتوح كبرنامج مرجعي.", genericReadError: "تعذر قراءة ملف البرنامج.", xerQualityBlocked: "أُوقف تنزيل XER: صحح موانع جودة البرنامج أولاً", xerRoundTripBlocked: "أُوقف تنزيل XER:", xerRoundTripFallback: "فشل فحص الاستيراد العكسي.", xerDownloadSuccess: "تم تنزيل", xerDownloaded: "التجريبي بعد فحص الاستيراد العكسي:", relationships: "علاقة", xerReview: "راجِع قيود التقويم وحقول P6 غير المدعومة في رسالة التنزيل قبل استخدام الملف خارجياً.",
+  };
   const [baseline, setBaseline] = useState<Schedule | null>(null);
   const [update, setUpdate] = useState<Schedule | null>(null);
   const [isReading, setIsReading] = useState<SourceSlot | null>(null);
@@ -41,8 +58,8 @@ export function ScheduleComparisonPanel({ currentSchedule, selectedEvent }: { cu
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
       const parsed = parseSchedule(await file.text(), file.name);
       if (slot === "baseline") setBaseline(parsed); else setUpdate(parsed);
-      toast.success(`تم تحميل ${slot === "baseline" ? "البرنامج المرجعي" : "تحديث البرنامج"}: ${parsed.name}`);
-    } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر قراءة ملف البرنامج."); }
+      toast.success(`${tx.loadSuccess} ${slot === "baseline" ? tx.baseline : tx.update}: ${parsed.name}`);
+    } catch (error) { toast.error(error instanceof Error ? error.message : tx.genericReadError); }
     finally { setIsReading(null); }
   }
 
@@ -52,31 +69,31 @@ export function ScheduleComparisonPanel({ currentSchedule, selectedEvent }: { cu
       const quality = assessScheduleQuality(source);
       if (quality.exportReadiness === "blocked") {
         const reasons = quality.rules.filter((rule) => rule.severity === "blocker").map((rule) => rule.title).join("، ");
-        toast.error(`أُوقف تنزيل XER: صحح موانع جودة البرنامج أولاً${reasons ? ` (${reasons})` : ""}.`);
+        toast.error(`${tx.xerQualityBlocked}${reasons ? ` (${reasons})` : ""}.`);
         return;
       }
       const output = exportExperimentalXer(source, snapshot);
       const roundTrip = validateExperimentalXerRoundTrip(output);
       if (roundTrip.state === "blocked") {
-        toast.error(`أُوقف تنزيل XER: ${roundTrip.messages[0] ?? "فشل فحص الاستيراد العكسي."}`);
+        toast.error(`${tx.xerRoundTripBlocked} ${roundTrip.messages[0] ?? tx.xerRoundTripFallback}`);
         return;
       }
       downloadText(output.fileName, output.content, "text/plain;charset=utf-8");
-      toast.success(`تم تنزيل ${snapshot === "post-tia" ? "Post-TIA" : "Pre-TIA"} التجريبي بعد فحص الاستيراد العكسي: ${roundTrip.activityCount} نشاط و${roundTrip.relationshipCount} علاقة.`);
-      if (roundTrip.state === "review") toast.warning("راجِع قيود التقويم وحقول P6 غير المدعومة في رسالة التنزيل قبل استخدام الملف خارجياً.");
+      toast.success(`${tx.xerDownloadSuccess} ${snapshot === "post-tia" ? "Post-TIA" : "Pre-TIA"} ${tx.xerDownloaded} ${roundTrip.activityCount} ${tx.activities} و${roundTrip.relationshipCount} ${tx.relationships}.`);
+      if (roundTrip.state === "review") toast.warning(tx.xerReview);
     } catch (error) { toast.error(error instanceof Error ? error.message : "تعذر إنشاء ملف XER التجريبي."); }
   }
 
   const slot = (kind: SourceSlot, title: string, value: Schedule | null, inputRef: RefObject<HTMLInputElement | null>) => <section className={`comparison-source ${value ? "is-ready" : ""}`}>
-    <div className="comparison-source-head"><span className="comparison-step">{kind === "baseline" ? "01" : "02"}</span><div><p>{title}</p><b>{value?.name ?? "لم يُحمّل بعد"}</b></div>{value ? <CheckCircle2 size={19} /> : <FileDiff size={19} />}</div>
-    <small>{value ? `${value.activities.length} نشاط · يبدأ ${value.startDate}` : "يدعم XER وP6 XML وJSON. لا تغادر الملفات المتصفح أثناء المقارنة."}</small>
-    <div className="comparison-source-actions"><Button variant="outline" size="sm" disabled={isReading !== null} onClick={() => inputRef.current?.click()}>{isReading === kind ? <LoaderCircle size={15} className="animate-spin" /> : <FileUp size={15} />}{isReading === kind ? "جارِ القراءة…" : "تحميل ملف"}</Button>{value ? <Button variant="ghost" size="sm" onClick={() => kind === "baseline" ? setBaseline(null) : setUpdate(null)}><Trash2 size={15} />إزالة</Button> : null}</div>
+    <div className="comparison-source-head"><span className="comparison-step">{kind === "baseline" ? "01" : "02"}</span><div><p>{title}</p><b>{value?.name ?? tx.notLoaded}</b></div>{value ? <CheckCircle2 size={19} /> : <FileDiff size={19} />}</div>
+    <small>{value ? `${value.activities.length} ${tx.activities} · ${tx.starts} ${value.startDate}` : tx.support}</small>
+    <div className="comparison-source-actions"><Button variant="outline" size="sm" disabled={isReading !== null} onClick={() => inputRef.current?.click()}>{isReading === kind ? <LoaderCircle size={15} className="animate-spin" /> : <FileUp size={15} />}{isReading === kind ? tx.loading : tx.upload}</Button>{value ? <Button variant="ghost" size="sm" onClick={() => kind === "baseline" ? setBaseline(null) : setUpdate(null)}><Trash2 size={15} />{tx.remove}</Button> : null}</div>
     <input ref={inputRef} type="file" accept=".xer,.xml,.json,text/plain,application/json,text/xml" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) readFile(kind, file); event.currentTarget.value = ""; }} />
   </section>;
 
-  return <div className="view-stack comparison-view" dir="rtl"><section className="page-heading"><div><p className="eyebrow">UPDATE VARIANCE WORKSPACE</p><h1>مقارنة تحديثات البرنامج</h1><p>قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.</p><p className="context-tip">تنزيل XER أدناه تبادلي وتجريبي: يُراجع في Primavera منفصل ولا يستبدل ملف المصدر.</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={() => { setBaseline(currentSchedule); toast.success("حُمّل البرنامج المفتوح كبرنامج مرجعي."); }}><Plus size={16} />استخدم البرنامج المفتوح كأساس</Button><Button variant="outline" className="outline-action" onClick={() => downloadXer("pre-tia")}><Download size={16} />تنزيل Pre-TIA XER</Button>{selectedEvent ? <Button variant="outline" className="outline-action" onClick={() => downloadXer("post-tia")}><Download size={16} />تنزيل Post-TIA XER</Button> : null}</div></section>
-    <section className="comparison-workspace">{slot("baseline", "البرنامج المرجعي / السابق", baseline, baselineRef)}<div className="comparison-transfer"><ArrowLeftRight size={22} /><span>قارن نفس نطاق المشروع قدر الإمكان</span></div>{slot("update", "تحديث البرنامج / اللاحق", update, updateRef)}</section>
-    {comparison ? <><section className="comparison-kpis"><div><small>فرق مدة المشروع</small><b className={comparison.completionDeltaDays > 0 ? "is-delay" : comparison.completionDeltaDays < 0 ? "is-gain" : ""}>{comparison.completionDeltaDays > 0 ? "+" : ""}{comparison.completionDeltaDays} يوم</b><span>{comparison.baseline.completionDate} ← {comparison.update.completionDate}</span></div><div><small>أنشطة مُعدّلة</small><b>{comparison.summary.changed}</b><span>من أصل {comparison.update.activityCount} نشاط في التحديث</span></div><div><small>تغييرات نطاق</small><b>{comparison.summary.added + comparison.summary.removed}</b><span>مضاف {comparison.summary.added} · محذوف {comparison.summary.removed}</span></div></section>
+  return <div className="view-stack comparison-view" dir={direction}><section className="page-heading"><div><p className="eyebrow">{tx.eyebrow}</p><h1>{tx.title}</h1><p>{tx.description}</p><p className="context-tip">{tx.context}</p></div><div className="heading-actions"><Button variant="outline" className="outline-action" onClick={() => { setBaseline(currentSchedule); toast.success(tx.openSuccess); }}><Plus size={16} />{tx.useOpen}</Button><Button variant="outline" className="outline-action" onClick={() => downloadXer("pre-tia")}><Download size={16} />{tx.preXer}</Button>{selectedEvent ? <Button variant="outline" className="outline-action" onClick={() => downloadXer("post-tia")}><Download size={16} />{tx.postXer}</Button> : null}</div></section>
+    <section className="comparison-workspace">{slot("baseline", tx.baseline, baseline, baselineRef)}<div className="comparison-transfer"><ArrowLeftRight size={22} /><span>{tx.transfer}</span></div>{slot("update", tx.update, update, updateRef)}</section>
+    {comparison ? <><section className="comparison-kpis"><div><small>{tx.durationVariance}</small><b className={comparison.completionDeltaDays > 0 ? "is-delay" : comparison.completionDeltaDays < 0 ? "is-gain" : ""}>{comparison.completionDeltaDays > 0 ? "+" : ""}{comparison.completionDeltaDays} {tx.days}</b><span>{comparison.baseline.completionDate} ← {comparison.update.completionDate}</span></div><div><small>{tx.changedActivities}</small><b>{comparison.summary.changed}</b><span>{tx.from} {comparison.update.activityCount} {tx.inUpdate}</span></div><div><small>{tx.scopeChanges}</small><b>{comparison.summary.added + comparison.summary.removed}</b><span>{tx.added} {comparison.summary.added} · {tx.removed} {comparison.summary.removed}</span></div></section>
       {comparison.summary.warnings.length ? <section className="comparison-warnings">{comparison.summary.warnings.map((warning) => <div key={warning}><AlertTriangle size={17} /><span>{warning}</span></div>)}</section> : null}
-      {baseline && update ? <GanttComparisonChart baseline={baseline} update={update} comparison={comparison} onExport={() => downloadText("tia-update-comparison.csv", comparisonToCsv(comparison), "text/csv;charset=utf-8")} /> : null}</> : <section className="comparison-empty"><FileDiff size={28} /><div><b>حمّل برنامجين لبدء المقارنة</b><p>اختر نسخة مرجعية ثم تحديثاً لنفس المشروع. يمكنك استخدام البرنامج المفتوح كأساس أو تحميل XER/XML/JSON.</p></div></section>}</div>;
+      {baseline && update ? <GanttComparisonChart baseline={baseline} update={update} comparison={comparison} onExport={() => downloadText("tia-update-comparison.csv", comparisonToCsv(comparison), "text/csv;charset=utf-8")} /> : null}</> : <section className="comparison-empty"><FileDiff size={28} /><div><b>{tx.emptyTitle}</b><p>{tx.emptyDescription}</p></div></section>}</div>;
 }

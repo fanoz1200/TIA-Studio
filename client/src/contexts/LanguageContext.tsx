@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import React from "react";
 import { type AppLanguage, languageDirection } from "@/lib/language";
 
-const STORAGE_KEY = "tia-studio-interface-language";
+export const APP_LANGUAGE_STORAGE_KEY = "tia-studio-interface-language";
 
 type LanguageContextValue = {
   language: AppLanguage;
@@ -14,7 +14,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 function initialLanguage(): AppLanguage {
   if (typeof window === "undefined") return "ar";
-  return window.localStorage.getItem(STORAGE_KEY) === "en" ? "en" : "ar";
+  return window.localStorage.getItem(APP_LANGUAGE_STORAGE_KEY) === "en" ? "en" : "ar";
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
@@ -22,7 +22,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const direction = languageDirection(language);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, language);
+    window.localStorage.setItem(APP_LANGUAGE_STORAGE_KEY, language);
     document.documentElement.lang = language;
     document.documentElement.dir = direction;
   }, [direction, language]);
