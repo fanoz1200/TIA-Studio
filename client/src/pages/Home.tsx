@@ -542,6 +542,96 @@ export function formatScheduleWorkspaceCopy(language: AppLanguage) {
       };
 }
 
+/**
+ * Translates only fixed event and Fragnet workflow chrome. Event titles and
+ * descriptions, activity IDs/names, relationship IDs, calendar names, and
+ * CPM/TIA output remain source values rendered by the caller unchanged.
+ */
+export function formatEventWorkspaceCopy(language: AppLanguage) {
+  return language === "en"
+    ? {
+        modelImpact: "MODEL THE IMPACT",
+        heading: "Add a delay event as a Fragnet",
+        description:
+          "Choose to insert the event on an existing relationship, or split an affected activity into pre-event, event, and post-event within an independent TIA copy.",
+        builder: "FRAGNET BUILDER",
+        eventDetails: "Event details",
+        eventTitle: "Event title",
+        occurrenceDate: "Occurrence date",
+        durationWorkingDays: "Event duration (working days)",
+        evidenceAssumption: "Evidence / assumption description",
+        causeClassification: "Cause classification",
+        modellingMethod: "Event modelling method",
+        insertBetweenRelationship: "Insert Fragnet between a relationship",
+        splitAffectedActivity: "Split affected activity: Pre / Event / Post",
+        affectedActivity: "Activity where the event occurred",
+        selectAffectedActivity: "Select affected activity",
+        replaceRelationship: "Relationship the Fragnet will replace",
+        selectRelationship: "Select relationship",
+        dayUnit: "days",
+        proposedLogicPath: "Proposed logic path before approval",
+        selectActivityPreview: "Select an affected activity to preview the split",
+        selectRelationshipPreview: "Select a logic relationship",
+        splitPostOnly: "The split is created only in Post-TIA and does not change the original XER.",
+        eventUsesCalendar: (calendarName: string) =>
+          `The event will use “${calendarName}” when converting the completion date.`,
+        timeImpactOnly:
+          "The tool measures time impact; it does not decide compensation or contractual entitlement on its own.",
+        approveAndRun: "Approve model and run TIA",
+        selectedCopy: "Selected copy",
+        selectedCopyText:
+          "Use an update suitable for the period before the event, with the known progress status.",
+        logicNotName: "Logic, not the name",
+        logicNotNameText:
+          "A small network with realistic links is better than one isolated activity.",
+        approveThenCalculate: "Approve, then calculate",
+        approveThenCalculateText:
+          "Review Pre/Event/Post or the relationship before building Post-TIA and reading the difference.",
+        calendar: "Calendar:",
+        calendarDays: "Calendar days",
+      }
+    : {
+        modelImpact: "نمذجة الأثر",
+        heading: "أضف حدث تأخير كـ Fragnet",
+        description:
+          "اختر إدراج الحدث على علاقة قائمة، أو قسّم نشاطاً متأثراً إلى ما قبل الحدث والحدث وما بعده داخل نسخة TIA مستقلة.",
+        builder: "منشئ Fragnet",
+        eventDetails: "بيانات الحدث",
+        eventTitle: "عنوان الحدث",
+        occurrenceDate: "تاريخ الحدوث",
+        durationWorkingDays: "مدة الحدث (أيام عمل)",
+        evidenceAssumption: "وصف الدليل/الافتراض",
+        causeClassification: "تصنيف السبب",
+        modellingMethod: "طريقة نمذجة الحدث",
+        insertBetweenRelationship: "إدراج Fragnet بين علاقة",
+        splitAffectedActivity: "تقسيم نشاط متأثر: Pre / Event / Post",
+        affectedActivity: "النشاط الذي وقع الحدث داخله",
+        selectAffectedActivity: "اختر النشاط المتأثر",
+        replaceRelationship: "العلاقة التي سيحل محلها الـ Fragnet",
+        selectRelationship: "اختر علاقة",
+        dayUnit: "يوم",
+        proposedLogicPath: "المسار المنطقي المقترح قبل الاعتماد",
+        selectActivityPreview: "اختر نشاطاً متأثراً لمعاينة التقسيم",
+        selectRelationshipPreview: "اختر علاقة منطقية",
+        splitPostOnly: "يُنشأ التقسيم في Post‑TIA فقط ولا يعدّل XER الأصلي.",
+        eventUsesCalendar: (calendarName: string) =>
+          `الحدث سيستخدم تقويم «${calendarName}» عند تحويل تاريخ الإكمال.`,
+        timeImpactOnly:
+          "الأداة تقيس الأثر الزمني؛ لا تحكم وحدها على التعويض أو الاستحقاق التعاقدي.",
+        approveAndRun: "اعتماد النموذج وتشغيل TIA",
+        selectedCopy: "النسخة المختارة",
+        selectedCopyText:
+          "استخدم تحديثاً مناسباً قبل الحدث، مع حالة التقدم المعروفة.",
+        logicNotName: "المنطق لا الاسم",
+        logicNotNameText: "شبكة صغيرة وروابط واقعية أفضل من نشاط واحد معزول.",
+        approveThenCalculate: "اعتمد ثم احسب",
+        approveThenCalculateText:
+          "راجع Pre/Event/Post أو العلاقة قبل بناء Post‑TIA وقراءة الفرق.",
+        calendar: "تقويم:",
+        calendarDays: "أيام تقويمية",
+      };
+}
+
 const baseSchedule: Schedule = {
   id: "baseline-building-envelope",
   name: "برج النخيل — تحديث البرنامج رقم 04",
@@ -1665,6 +1755,7 @@ export default function Home() {
   const chrome = formatHomeChrome(language);
   const overview = formatHomeOverview(language);
   const scheduleWorkspace = formatScheduleWorkspaceCopy(language);
+  const eventWorkspace = formatEventWorkspaceCopy(language);
   const qualityItems = [
     {
       ok: Boolean(baseline),
@@ -2526,12 +2617,9 @@ export default function Home() {
           <div className="view-stack event-view">
             <section className="page-heading">
               <div>
-                <p className="eyebrow">MODEL THE IMPACT</p>
-                <h1>أضف حدث تأخير كـ Fragnet</h1>
-                <p>
-                  اختر إدراج الحدث على علاقة قائمة، أو قسّم نشاطاً متأثراً إلى
-                  ما قبل الحدث والحدث وما بعده داخل نسخة TIA مستقلة.
-                </p>
+                <p className="eyebrow">{eventWorkspace.modelImpact}</p>
+                <h1>{eventWorkspace.heading}</h1>
+                <p>{eventWorkspace.description}</p>
               </div>
             </section>
             <section className="event-workspace">
@@ -2544,14 +2632,14 @@ export default function Home() {
               >
                 <div className="panel-heading">
                   <div>
-                    <p className="eyebrow">FRAGNET BUILDER</p>
-                    <h2>بيانات الحدث</h2>
+                    <p className="eyebrow">{eventWorkspace.builder}</p>
+                    <h2>{eventWorkspace.eventDetails}</h2>
                   </div>
                   <span className="form-step">01 / 02</span>
                 </div>
                 <div className="form-grid">
                   <div className="form-wide">
-                    <Label htmlFor="event-title">عنوان الحدث</Label>
+                    <Label htmlFor="event-title">{eventWorkspace.eventTitle}</Label>
                     <Input
                       id="event-title"
                       value={eventTitle}
@@ -2559,7 +2647,7 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="event-date">تاريخ الحدوث</Label>
+                    <Label htmlFor="event-date">{eventWorkspace.occurrenceDate}</Label>
                     <Input
                       id="event-date"
                       type="date"
@@ -2569,7 +2657,7 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="event-duration">مدة الحدث (أيام عمل)</Label>
+                    <Label htmlFor="event-duration">{eventWorkspace.durationWorkingDays}</Label>
                     <Input
                       id="event-duration"
                       type="number"
@@ -2581,7 +2669,7 @@ export default function Home() {
                     />
                   </div>
                   <div className="form-wide">
-                    <Label htmlFor="event-desc">وصف الدليل/الافتراض</Label>
+                    <Label htmlFor="event-desc">{eventWorkspace.evidenceAssumption}</Label>
                     <Textarea
                       id="event-desc"
                       value={eventDescription}
@@ -2592,7 +2680,7 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <Label>تصنيف السبب</Label>
+                    <Label>{eventWorkspace.causeClassification}</Label>
                     <Select
                       value={eventCause}
                       onValueChange={value =>
@@ -2612,7 +2700,7 @@ export default function Home() {
                     </Select>
                   </div>
                   <div>
-                    <Label>طريقة نمذجة الحدث</Label>
+                    <Label>{eventWorkspace.modellingMethod}</Label>
                     <Select
                       value={eventModel}
                       onValueChange={value =>
@@ -2626,29 +2714,29 @@ export default function Home() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="relationship">
-                          إدراج Fragnet بين علاقة
+                          {eventWorkspace.insertBetweenRelationship}
                         </SelectItem>
                         <SelectItem value="activity-split">
-                          تقسيم نشاط متأثر: Pre / Event / Post
+                          {eventWorkspace.splitAffectedActivity}
                         </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   {eventModel === "activity-split" ? (
                     <div className="form-wide">
-                      <Label>النشاط الذي وقع الحدث داخله</Label>
+                      <Label>{eventWorkspace.affectedActivity}</Label>
                       <Select
                         value={selectedActivityId}
                         onValueChange={setSelectedActivityId}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="اختر النشاط المتأثر" />
+                          <SelectValue placeholder={eventWorkspace.selectAffectedActivity} />
                         </SelectTrigger>
                         <SelectContent>
                           {schedule.activities.map(activity => (
                             <SelectItem value={activity.id} key={activity.id}>
                               <span dir="ltr">{activity.id}</span> ·{" "}
-                              {activity.name} · {activity.duration} يوم
+                              {activity.name} · {activity.duration} {eventWorkspace.dayUnit}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -2656,13 +2744,13 @@ export default function Home() {
                     </div>
                   ) : (
                     <div className="form-wide">
-                      <Label>العلاقة التي سيحل محلها الـ Fragnet</Label>
+                      <Label>{eventWorkspace.replaceRelationship}</Label>
                       <Select
                         value={selectedRelationshipId}
                         onValueChange={setSelectedRelationshipId}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="اختر علاقة" />
+                          <SelectValue placeholder={eventWorkspace.selectRelationship} />
                         </SelectTrigger>
                         <SelectContent>
                           {schedule.relationships.map(relationship => (
@@ -2685,7 +2773,7 @@ export default function Home() {
                 <div className="logic-preview">
                   <GitBranch size={18} />
                   <div>
-                    <small>المسار المنطقي المقترح قبل الاعتماد</small>
+                    <small>{eventWorkspace.proposedLogicPath}</small>
                     {eventModel === "activity-split" ? (
                       selectedActivity ? (
                         <b dir="ltr">
@@ -2694,7 +2782,7 @@ export default function Home() {
                           {selectedActivity.id}--post
                         </b>
                       ) : (
-                        <b>اختر نشاطاً متأثراً لمعاينة التقسيم</b>
+                        <b>{eventWorkspace.selectActivityPreview}</b>
                       )
                     ) : selectedRelationship ? (
                       <b dir="ltr">
@@ -2703,52 +2791,49 @@ export default function Home() {
                         {selectedRelationship.successorId}
                       </b>
                     ) : (
-                      <b>اختر علاقة منطقية</b>
+                      <b>{eventWorkspace.selectRelationshipPreview}</b>
                     )}
                   </div>
                   <span>
                     {eventModel === "activity-split"
-                      ? "يُنشأ التقسيم في Post‑TIA فقط ولا يعدّل XER الأصلي."
-                      : `الحدث سيستخدم تقويم «${schedule.calendar?.name ?? "أيام تقويمية"}» عند تحويل تاريخ الإكمال.`}
+                      ? eventWorkspace.splitPostOnly
+                      : eventWorkspace.eventUsesCalendar(
+                          schedule.calendar?.name ?? eventWorkspace.calendarDays
+                        )}
                   </span>
                 </div>
                 <div className="form-actions">
                   <p>
                     <Clock3 size={16} />
-                    الأداة تقيس الأثر الزمني؛ لا تحكم وحدها على التعويض أو
-                    الاستحقاق التعاقدي.
+                    {eventWorkspace.timeImpactOnly}
                   </p>
                   <Button type="submit" className="run-button">
                     <Play size={16} fill="currentColor" />
-                    اعتماد النموذج وتشغيل TIA
+                    {eventWorkspace.approveAndRun}
                   </Button>
                 </div>
               </form>
               <aside className="event-guide">
                 <div>
                   <span className="guide-number">1</span>
-                  <h3>النسخة المختارة</h3>
-                  <p>
-                    استخدم تحديثاً مناسباً قبل الحدث، مع حالة التقدم المعروفة.
-                  </p>
+                  <h3>{eventWorkspace.selectedCopy}</h3>
+                  <p>{eventWorkspace.selectedCopyText}</p>
                 </div>
                 <div>
                   <span className="guide-number">2</span>
-                  <h3>المنطق لا الاسم</h3>
-                  <p>شبكة صغيرة وروابط واقعية أفضل من نشاط واحد معزول.</p>
+                  <h3>{eventWorkspace.logicNotName}</h3>
+                  <p>{eventWorkspace.logicNotNameText}</p>
                 </div>
                 <div>
                   <span className="guide-number">3</span>
-                  <h3>اعتمد ثم احسب</h3>
-                  <p>
-                    راجع Pre/Event/Post أو العلاقة قبل بناء Post‑TIA وقراءة
-                    الفرق.
-                  </p>
+                  <h3>{eventWorkspace.approveThenCalculate}</h3>
+                  <p>{eventWorkspace.approveThenCalculateText}</p>
                 </div>
                 <div className="guide-foot">
                   <CalendarDays size={18} />
                   <span>
-                    تقويم: <b>{schedule.calendar?.name ?? "أيام تقويمية"}</b>
+                    {eventWorkspace.calendar}{" "}
+                    <b>{schedule.calendar?.name ?? eventWorkspace.calendarDays}</b>
                   </span>
                 </div>
               </aside>

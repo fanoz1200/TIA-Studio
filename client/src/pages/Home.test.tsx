@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  formatEventWorkspaceCopy,
   formatHomeChrome,
   formatHomeOverview,
   formatHomeStatus,
@@ -102,5 +103,28 @@ describe("formatScheduleWorkspaceCopy", () => {
     expect(copy.scheduleHeading).toBe("البرنامج المرجعي والتقويم");
     expect(copy.updateHolidays).toBe("تحديث الإجازات");
     expect(copy.noExceptionalHolidays).toBe("لا توجد عطل استثنائية مدخلة.");
+  });
+});
+
+describe("formatEventWorkspaceCopy", () => {
+  it("provides English event and Fragnet chrome while callers retain event and schedule source values", () => {
+    const eventTitle = "تأخر اعتماد المخططات — RFI-17";
+    const activityId = "A200";
+    const calendarName = "تقويم المشروع — مصر (6 أيام)";
+    const copy = formatEventWorkspaceCopy("en");
+
+    expect(copy.heading).toBe("Add a delay event as a Fragnet");
+    expect(copy.approveAndRun).toBe("Approve model and run TIA");
+    expect(copy.eventUsesCalendar(calendarName)).toContain(calendarName);
+    expect(eventTitle).toBe("تأخر اعتماد المخططات — RFI-17");
+    expect(activityId).toBe("A200");
+  });
+
+  it("retains Arabic event and Fragnet chrome for the RTL interface", () => {
+    const copy = formatEventWorkspaceCopy("ar");
+
+    expect(copy.heading).toBe("أضف حدث تأخير كـ Fragnet");
+    expect(copy.approveAndRun).toBe("اعتماد النموذج وتشغيل TIA");
+    expect(copy.selectActivityPreview).toBe("اختر نشاطاً متأثراً لمعاينة التقسيم");
   });
 });
