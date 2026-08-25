@@ -187,6 +187,11 @@ export type ActivitySplitInput = {
   targetActivityId: string;
 };
 
+/** مجموعة أنشطة لواقعة واحدة؛ تُرفض العلاقات المباشرة بينها لحماية منطق الشبكة. */
+export type MultiActivitySplitInput = Omit<ActivitySplitInput, "targetActivityId"> & {
+  targetActivityIds: string[];
+};
+
 export type AnalysisWindow = {
   id: string;
   name: string;
@@ -565,6 +570,46 @@ export function buildActivitySplitFragnet(schedule: Schedule, input: ActivitySpl
       { id: `${baseId}--event-post`, predecessorId: eventId, successorId: postId, type: "FS" as const },
       ...outbound.map((relationship) => ({ ...relationship, id: `${baseId}--out--${relationship.id}`, predecessorId: postId })),
     ],
+  };
+}
+
+/**
+ * يبني Fragnet مركباً لواقعة واحدة مرتبطة بعدة أنشطة مستقلة في نسخة Post-TIA.
+ * يظل قيد FS بلا Lag سارياً لكل نشاط؛ لا يحاول هذا المسار إعادة كتابة علاقة
+ * مباشرة بين نشاطين مختارين لأن ذلك يحتاج نمذجة صريحة يراجعها المحلل.
+ */
+export function buildMultiActivitySplitFragnet(schedule: Schedule, input: MultiActivitySplitInput): Fragnet {
+  const rawIds = input.targetActivityIds.filter(Boolean);
+  const targetActivityIds = Array.from(new Set(rawIds));
+  if (!targetActivityIds.length) throw new Error("اختر نشاطاً متأثراً واحداً على الأقل قبل إنشاء واقعة التقسيم.");
+  if (targetActivityIds.length !== rawIds.length) throw new Error("معرفات الأنشطة المتأثرة مكررة؛ راجع الاختيار قبل إنشاء الواقعة.");
+
+  const selected = new Set(targetActivityIds);
+  const internalRelationship = schedule.relationships.find(
+    (relationship) => selected.has(relationship.predecessorId) && selected.has(relationship.successorId)
+  );
+  if (internalRelationship) {
+    throw new Error(`لا يدعم التقسيم المجمع نشاطين مرتبطين مباشرة (${internalRelationship.predecessorId} → ${internalRelationship.successorId}). أنشئهما كواقعتين أو نمذج العلاقة يدوياً.`);
+  }
+
+  const parts = targetActivityIds.map((targetActivityId) =>
+    buildActivitySplitFragnet(schedule, {
+      ...input,
+      id: input.id,
+      targetActivityId,
+    })
+  );
+  return {
+    id: input.id,
+    title: input.title,
+    description: input.description,
+    cause: input.cause,
+    occurrenceDate: input.occurrenceDate,
+    model: "activity-split",
+    replacedActivityIds: targetActivityIds,
+    sourceActivityIds: targetActivityIds,
+    activities: parts.flatMap((part) => part.activities),
+    relationships: parts.flatMap((part) => part.relationships),
   };
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildActivitySplitFragnet, calculateFinancialImpact, createTiaAnalyticalCopies, dateToRelativeDay, getFragnetDelayDuration, insertFragnet, resourceAssignmentsForEvent, runCPM, runTIA, type Fragnet, type Schedule } from "./cpm";
+import { buildActivitySplitFragnet, buildMultiActivitySplitFragnet, calculateFinancialImpact, createTiaAnalyticalCopies, dateToRelativeDay, getFragnetDelayDuration, insertFragnet, resourceAssignmentsForEvent, runCPM, runTIA, type Fragnet, type Schedule } from "./cpm";
 
 const baseSchedule: Schedule = {
   id: "baseline-01",
@@ -182,6 +182,52 @@ describe("Time Impact Analysis", () => {
     expect(result.impactDays).toBe(4);
     expect(result.impacted.criticalActivityIds).toContain("F-SPLIT-01--A300--event");
     expect(getFragnetDelayDuration(split)).toBe(4);
+  });
+
+  it("creates one Post-TIA-only event for several independent affected activities", () => {
+    const independentSchedule: Schedule = {
+      id: "multi-baseline",
+      name: "Independent workstreams",
+      startDate: "2026-01-05",
+      activities: [
+        { id: "P100", name: "Package one", duration: 10 },
+        { id: "P200", name: "Package two", duration: 10 },
+      ],
+      relationships: [],
+    };
+    const sourceBefore = JSON.stringify(independentSchedule);
+    const split = buildMultiActivitySplitFragnet(independentSchedule, {
+      id: "F-MULTI-01",
+      title: "تصاريح متأخرة",
+      description: "واقعة واحدة مرتبطة بمسارين مستقلين.",
+      cause: "employer",
+      occurrenceDate: "2026-01-10",
+      eventDuration: 3,
+      targetActivityIds: ["P100", "P200"],
+    });
+    const postTia = insertFragnet(independentSchedule, split);
+    const result = runTIA(independentSchedule, split);
+
+    expect(split.sourceActivityIds).toEqual(["P100", "P200"]);
+    expect(split.replacedActivityIds).toEqual(["P100", "P200"]);
+    expect(postTia.activities.map((activity) => activity.id)).not.toEqual(expect.arrayContaining(["P100", "P200"]));
+    expect(postTia.activities.map((activity) => activity.id)).toEqual(expect.arrayContaining([
+      "F-MULTI-01--P100--event", "F-MULTI-01--P200--event",
+    ]));
+    expect(result.impacted.activities.map((activity) => activity.id)).toContain("F-MULTI-01--P100--event");
+    expect(JSON.stringify(independentSchedule)).toBe(sourceBefore);
+  });
+
+  it("rejects a grouped split when selected activities are directly linked", () => {
+    expect(() => buildMultiActivitySplitFragnet(baseSchedule, {
+      id: "F-MULTI-LINKED",
+      title: "اختيار مترابط",
+      description: "",
+      cause: "employer",
+      occurrenceDate: "2026-01-21",
+      eventDuration: 2,
+      targetActivityIds: ["A200", "A300"],
+    })).toThrow("لا يدعم التقسيم المجمع نشاطين مرتبطين مباشرة");
   });
 
   it("creates independent Pre-TIA and Post-TIA copies while preserving the imported source schedule", () => {

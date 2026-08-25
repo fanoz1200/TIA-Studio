@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatAnalysisReportCopy,
   formatEventWorkspaceCopy,
+  filterAffectedActivities,
   formatHomeChrome,
   formatHomeOverview,
   formatHomeStatus,
@@ -39,6 +40,21 @@ describe("formatHomeStatus", () => {
         scheduleName,
       })
     ).toBe(`تمت قراءة تحديث قبل الحدث: ${scheduleName}`);
+  });
+});
+
+describe("filterAffectedActivities", () => {
+  const activities = [
+    { id: "A200", name: "Structural frame", duration: 10, wbs: "Tower / Structure", wbsId: "WBS-STR" },
+    { id: "B310", name: "MEP rough-in", duration: 7, wbs: "Tower / Services", wbsId: "WBS-MEP" },
+  ];
+
+  it("filters locally by untouched ID, name, or WBS and keeps an empty search unfiltered", () => {
+    expect(filterAffectedActivities(activities, "a200").map((activity) => activity.id)).toEqual(["A200"]);
+    expect(filterAffectedActivities(activities, "rough-in").map((activity) => activity.id)).toEqual(["B310"]);
+    expect(filterAffectedActivities(activities, "wbs-str").map((activity) => activity.id)).toEqual(["A200"]);
+    expect(filterAffectedActivities(activities, "")).toBe(activities);
+    expect(activities[0]?.name).toBe("Structural frame");
   });
 });
 

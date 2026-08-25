@@ -60,6 +60,7 @@ import { useAppLanguage } from "@/contexts/LanguageContext";
 import { type AppLanguage } from "@/lib/language";
 import {
   buildActivitySplitFragnet,
+  buildMultiActivitySplitFragnet,
   calendarDayCalendar,
   dateToRelativeDay,
   fiveDayCalendar,
@@ -119,6 +120,18 @@ const workspaceImageUrl =
   "/manus-storage/tia-studio-workspace-hero_f79d49ba.png";
 const reportTextureUrl =
   "/manus-storage/tia-studio-report-texture_0415e3ef.png";
+
+export function filterAffectedActivities(activities: Activity[], search: string): Activity[] {
+  const query = search.trim().toLocaleLowerCase();
+  if (!query) return activities;
+  return activities.filter((activity) =>
+    [activity.id, activity.name, activity.wbs, activity.wbsId]
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase()
+      .includes(query)
+  );
+}
 
 type ViewKey =
   | "guided"
@@ -1162,9 +1175,10 @@ export default function Home() {
   const [selectedRelationshipId, setSelectedRelationshipId] = useState(
     schedule.relationships[0]?.id ?? ""
   );
-  const [selectedActivityId, setSelectedActivityId] = useState(
-    schedule.activities[0]?.id ?? ""
-  );
+  const [selectedActivityIds, setSelectedActivityIds] = useState<string[]>([
+    schedule.activities[0]?.id ?? "",
+  ].filter(Boolean));
+  const [activitySearch, setActivitySearch] = useState("");
   const [eventModel, setEventModel] = useState<
     "relationship" | "activity-split"
   >("relationship");
@@ -1270,9 +1284,19 @@ export default function Home() {
   const selectedRelationship = schedule.relationships.find(
     item => item.id === selectedRelationshipId
   );
-  const selectedActivity = schedule.activities.find(
-    item => item.id === selectedActivityId
+  const selectedActivityId = selectedActivityIds[0] ?? "";
+  const selectedActivity = schedule.activities.find(item => item.id === selectedActivityId);
+  const visibleActivities = useMemo(
+    () => filterAffectedActivities(schedule.activities, activitySearch),
+    [schedule.activities, activitySearch]
   );
+  const toggleSelectedActivity = (activityId: string) => {
+    setSelectedActivityIds((current) =>
+      current.includes(activityId)
+        ? current.filter((item) => item !== activityId)
+        : [...current, activityId]
+    );
+  };
   const handleActiveClaimChange = useCallback(
     (key: string, unifiedNarrative: string) => {
       setActiveClaim(previous =>
@@ -1303,7 +1327,8 @@ export default function Home() {
     setSelectedWindowId(nextWindow.id);
     setSelectedEventId("");
     setSelectedRelationshipId(imported.relationships[0]?.id ?? "");
-    setSelectedActivityId(imported.activities[0]?.id ?? "");
+    setSelectedActivityIds([imported.activities[0]?.id ?? ""].filter(Boolean));
+    setActivitySearch("");
     setEventModel("relationship");
     setEventDate(imported.dataDate ?? imported.startDate);
     setNewWindowFrom(imported.startDate);
@@ -1470,7 +1495,7 @@ export default function Home() {
     setEventDate(first.occurrenceDate);
     setEventDuration(String(first.proposedDurationDays));
     setEventCause(first.delayCause);
-    setSelectedActivityId(first.affectedActivityIds[0] ?? "");
+    setSelectedActivityIds(Array.from(new Set(first.affectedActivityIds.filter(Boolean))));
     setSelectedRelationshipId(first.replacedRelationshipId);
     setEventDescription(first.description);
     setEventModel("activity-split");
@@ -1483,7 +1508,7 @@ export default function Home() {
     duration: number;
     cause: DelayCause;
   }) {
-    setSelectedActivityId(input.activityId);
+    setSelectedActivityIds([input.activityId]);
     setEventTitle(input.title);
     setEventDescription(input.description);
     setEventDate(input.occurrenceDate);
@@ -1596,7 +1621,7 @@ export default function Home() {
       toast.error(formatHomeStatus(language, "selectRelationship"));
       return;
     }
-    if (eventModel === "activity-split" && !selectedActivityId) {
+    if (eventModel === "activity-split" && !selectedActivityIds.length) {
       toast.error(formatHomeStatus(language, "selectActivity"));
       return;
     }
@@ -1612,14 +1637,14 @@ export default function Home() {
       const activityId = `FR-${String(sequence).padStart(3, "0")}`;
       const next: Fragnet =
         eventModel === "activity-split"
-          ? buildActivitySplitFragnet(schedule, {
+          ? buildMultiActivitySplitFragnet(schedule, {
               id: fragnetId,
               title: eventTitle.trim(),
               description: eventDescription.trim(),
               cause: eventCause,
               occurrenceDate: eventDate,
               eventDuration: duration,
-              targetActivityId: selectedActivityId,
+              targetActivityIds: selectedActivityIds,
             })
           : {
               id: fragnetId,
@@ -2845,24 +2870,66 @@ export default function Home() {
                     </Select>
                   </div>
                   {eventModel === "activity-split" ? (
-                    <div className="form-wide">
-                      <Label>{eventWorkspace.affectedActivity}</Label>
-                      <Select
-                        value={selectedActivityId}
-                        onValueChange={setSelectedActivityId}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={eventWorkspace.selectAffectedActivity} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {schedule.activities.map(activity => (
-                            <SelectItem value={activity.id} key={activity.id}>
-                              <span dir="ltr">{activity.id}</span> ·{" "}
-                              {activity.name} · {activity.duration} {eventWorkspace.dayUnit}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="form-wide activity-multi-picker">
+                      <div className="activity-picker-heading">
+                        <Label>{eventWorkspace.affectedActivity}</Label>
+                        <span aria-live="polite">
+                          {language === "en"
+                            ? `${selectedActivityIds.length} selected`
+                            : `${selectedActivityIds.length} نشاط/أنشطة مختارة`}
+                        </span>
+                      </div>
+                      <Input
+                        value={activitySearch}
+                        onChange={(event) => setActivitySearch(event.target.value)}
+                        placeholder={language === "en" ? "Search by ID, name, or WBS" : "ابحث بالـ ID أو الاسم أو WBS"}
+                        aria-label={language === "en" ? "Search affected activities" : "بحث الأنشطة المتأثرة"}
+                      />
+                      <div className="activity-picker-actions">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedActivityIds((current) => Array.from(new Set([...current, ...visibleActivities.map((activity) => activity.id)])))}
+                        >
+                          {language === "en" ? "Select visible" : "اختر الظاهر"}
+                        </Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedActivityIds([])}>
+                          {language === "en" ? "Clear" : "مسح الاختيار"}
+                        </Button>
+                      </div>
+                      <div className="activity-checkbox-list" role="group" aria-label={eventWorkspace.affectedActivity}>
+                        {visibleActivities.map((activity) => (
+                          <label className="activity-checkbox-row" key={activity.id}>
+                            <input
+                              type="checkbox"
+                              checked={selectedActivityIds.includes(activity.id)}
+                              onChange={() => toggleSelectedActivity(activity.id)}
+                            />
+                            <span>
+                              <b dir="ltr">{activity.id}</b> · {activity.name} · {activity.duration} {eventWorkspace.dayUnit}
+                            </span>
+                          </label>
+                        ))}
+                        {!visibleActivities.length && (
+                          <p className="activity-picker-empty">
+                            {language === "en" ? "No activities match this search." : "لا توجد أنشطة مطابقة للبحث."}
+                          </p>
+                        )}
+                      </div>
+                      {selectedActivityIds.length > 0 && (
+                        <div className="activity-selection-preview" aria-live="polite">
+                          <strong>{language === "en" ? "Will be linked to this event" : "سيتم ربطها بهذه الواقعة"}</strong>
+                          <div>
+                            {selectedActivityIds.map((activityId) => <span key={activityId} dir="ltr">{activityId}</span>)}
+                          </div>
+                        </div>
+                      )}
+                      <p className="activity-picker-note">
+                        {language === "en"
+                          ? "Excel Issue Log IDs are carried into this selection. Automatic batch split is limited to FS relationships with zero lag; directly linked selected activities require separate or manual modelling."
+                          : "يتم نقل كل IDs من Issue Log Excel إلى هذا الاختيار. التقسيم المجمع الآلي يدعم علاقات FS بدون Lag فقط؛ الأنشطة المختارة المرتبطة مباشرة تحتاج واقعة منفصلة أو نمذجة يدوية."}
+                      </p>
                     </div>
                   ) : (
                     <div className="form-wide">
