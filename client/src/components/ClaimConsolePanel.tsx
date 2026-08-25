@@ -86,7 +86,7 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
   const createDeadline = trpc.claimConsole.createDeadline.useMutation({ onSuccess: () => { invalidate(); setDeadline(previous => ({ ...previous, title: "", ruleDescription: "", sourceReference: "", reviewNotes: "", dueDate: "", calendarDays: "" })); toast.success(toastText.deadlineSaved); }, onError: error => toast.error(error.message) });
 
   if (view !== "claimConsole") return null;
-  if (!isAuthenticated) return <section className="workflow-panel" dir={direction}><div className="workflow-heading"><div><p className="eyebrow">Claim Console</p><h2>{copy.accessTitle}</h2><p>{copy.accessBody}</p></div><ShieldAlert size={30} /></div></section>;
+  if (!isAuthenticated) return <section className="workflow-panel" dir={direction}><div className="workflow-heading"><div><p className="eyebrow">{txt("منصة المطالبات", "Claim Console")}</p><h2>{copy.accessTitle}</h2><p>{copy.accessBody}</p></div><ShieldAlert size={30} /></div></section>;
 
   const data = consoleData.data;
   const openRisks = data?.risks.filter(item => item.status !== "closed").length ?? 0;
@@ -105,7 +105,7 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
   return <div className="view-stack claim-console-view" dir={direction}>
     <section className="hero-panel border border-amber-200 bg-amber-50/70 text-slate-900">
       <div className="hero-copy">
-        <p className="eyebrow">CLAIM CONSOLE · MVP</p>
+        <p className="eyebrow">{txt("منصة المطالبات · نسخة أولية", "CLAIM CONSOLE · MVP")}</p>
         <h1>{copy.heroTitle}</h1>
         <p>{copy.heroBody}</p>
       </div>
@@ -150,7 +150,7 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
     </section>
 
     <section className="workflow-panel">
-      <div className="workflow-heading"><div><p className="eyebrow">03 · Issue → Claim Candidate</p><h2>{copy.candidateTitle}</h2><p>{copy.candidateBody}</p></div><Link2 size={28} /></div>
+      <div className="workflow-heading"><div><p className="eyebrow">{txt("03 · واقعة ← مرشح مطالبة", "03 · Issue → Claim Candidate")}</p><h2>{copy.candidateTitle}</h2><p>{copy.candidateBody}</p></div><Link2 size={28} /></div>
       <div className="form-grid three-col">
         <div><Label htmlFor="cc-candidate-key">{txt("مفتاح المرشح", "Candidate key")}</Label><Input id="cc-candidate-key" value={candidate.candidateKey} onChange={event => setCandidate({ ...candidate, candidateKey: event.target.value })} /></div>
         <div className="span-2"><Label htmlFor="cc-candidate-title">{txt("عنوان مرشح المطالبة", "Claim candidate title")}</Label><Input id="cc-candidate-title" value={candidate.title} onChange={event => setCandidate({ ...candidate, title: event.target.value })} /></div>
@@ -169,13 +169,13 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
     </section>
 
     <section className="workflow-panel">
-      <div className="workflow-heading"><div><p className="eyebrow">04 · Configurable Deadline Tracker</p><h2>{copy.deadlineTitle}</h2><p>{copy.deadlineBody}</p></div><BellRing size={28} /></div>
+      <div className="workflow-heading"><div><p className="eyebrow">{txt("04 · متابع المواعيد القابل للضبط", "04 · Configurable Deadline Tracker")}</p><h2>{copy.deadlineTitle}</h2><p>{copy.deadlineBody}</p></div><BellRing size={28} /></div>
       <div className="alert-strip warning"><AlertTriangle size={18} />{txt("لا يوجد 28 أو 42 أو 84 يوماً ثابتاً هنا. راجع نص العقد والشروط الخاصة وتاريخ العلم ووسيلة الإرسال قبل إنشاء Notice.", "There is no fixed 28-, 42-, or 84-day period here. Review the contract, particular conditions, knowledge date and delivery method before creating a Notice.")}</div>
       <div className="form-grid three-col mt-4">
         <div><Label>{txt("مرشح المطالبة", "Claim candidate")}</Label><Select value={deadline.claimCandidateId} onValueChange={value => setDeadline({ ...deadline, claimCandidateId: value })}><SelectTrigger><SelectValue placeholder={txt("اختَر المرشح", "Select candidate")} /></SelectTrigger><SelectContent><SelectItem value="none">{txt("اختَر مرشحاً محفوظاً", "Select a saved candidate")}</SelectItem>{data?.candidates.map(item => <SelectItem key={item.id} value={String(item.id)}>{item.candidateKey} — {item.title}</SelectItem>)}</SelectContent></Select></div>
         <div><Label htmlFor="cc-deadline-key">{txt("مفتاح الموعد", "Deadline key")}</Label><Input id="cc-deadline-key" value={deadline.deadlineKey} onChange={event => setDeadline({ ...deadline, deadlineKey: event.target.value })} /></div>
         <div><Label htmlFor="cc-deadline-title">{txt("عنوان الموعد", "Deadline title")}</Label><Input id="cc-deadline-title" value={deadline.title} onChange={event => setDeadline({ ...deadline, title: event.target.value })} /></div>
-        <div><Label>{txt("نوع الموعد", "Deadline type")}</Label><Select value={deadline.deadlineKind} onValueChange={value => setDeadline({ ...deadline, deadlineKind: value as typeof deadline.deadlineKind })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="notice">Notice</SelectItem><SelectItem value="particulars">Particulars</SelectItem><SelectItem value="substantiation">Substantiation</SelectItem><SelectItem value="other">{txt("آخر", "Other")}</SelectItem></SelectContent></Select></div>
+        <div><Label>{txt("نوع الموعد", "Deadline type")}</Label><Select value={deadline.deadlineKind} onValueChange={value => setDeadline({ ...deadline, deadlineKind: value as typeof deadline.deadlineKind })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="notice">{txt("إشعار", "Notice")}</SelectItem><SelectItem value="particulars">{txt("تفاصيل مطالبة", "Particulars")}</SelectItem><SelectItem value="substantiation">{txt("تدعيم بالمستندات", "Substantiation")}</SelectItem><SelectItem value="other">{txt("آخر", "Other")}</SelectItem></SelectContent></Select></div>
         <div><Label>{txt("طريقة الإدخال", "Entry method")}</Label><Select value={deadline.calculationMode} onValueChange={value => setDeadline({ ...deadline, calculationMode: value as typeof deadline.calculationMode })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="manual_date">{txt("تاريخ يدوي موثق", "Documented manual date")}</SelectItem><SelectItem value="calendar_days">{txt("تاريخ مرجعي + أيام تقويمية", "Reference date + calendar days")}</SelectItem></SelectContent></Select></div>
         <div><Label>{txt("حالة المتابعة", "Tracking status")}</Label><Select value={deadline.status} onValueChange={value => setDeadline({ ...deadline, status: value as typeof deadline.status })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unconfigured">{txt("غير مهيأ", "Unconfigured")}</SelectItem><SelectItem value="tracking">{txt("قيد المتابعة", "Tracking")}</SelectItem><SelectItem value="review_required">{txt("مراجعة مطلوبة", "Review required")}</SelectItem><SelectItem value="completed">{txt("مكتمل", "Completed")}</SelectItem><SelectItem value="superseded">{txt("استبدل", "Superseded")}</SelectItem></SelectContent></Select></div>
         {deadline.calculationMode === "manual_date" ? <div><Label htmlFor="cc-due-date">{txt("التاريخ النهائي اليدوي", "Manual due date")}</Label><Input id="cc-due-date" type="date" value={deadline.dueDate} onChange={event => setDeadline({ ...deadline, dueDate: event.target.value })} /></div> : <><div><Label htmlFor="cc-reference-date">{txt("التاريخ المرجعي", "Reference date")}</Label><Input id="cc-reference-date" type="date" value={deadline.referenceDate} onChange={event => setDeadline({ ...deadline, referenceDate: event.target.value })} /></div><div><Label htmlFor="cc-calendar-days">{txt("عدد الأيام التقويمية", "Calendar-day count")}</Label><Input id="cc-calendar-days" type="number" min="0" value={deadline.calendarDays} onChange={event => setDeadline({ ...deadline, calendarDays: event.target.value })} /></div></>}

@@ -26,6 +26,7 @@ describe("لوحة أعضاء المشروع", () => {
   it("تعرض مدة الوصول في الدعوة وحالة العضوية المنتهية وحدود النسخة المحلية", () => {
     render(<LanguageProvider><ProjectMembersPanel projectKey="P-TIA" isAuthenticated /></LanguageProvider>);
 
+    expect(screen.getByText("أعضاء المشروع")).toBeTruthy();
     expect(screen.getByText("مدة الوصول بعد القبول")).toBeTruthy();
     expect(screen.getByText(/الوصول 14 يوماً بعد القبول/)).toBeTruthy();
     expect(screen.getByText(/انتهى الوصول في/)).toBeTruthy();
@@ -38,6 +39,7 @@ describe("لوحة أعضاء المشروع", () => {
     const { container } = render(<LanguageProvider><ProjectMembersPanel projectKey="P-TIA" isAuthenticated /></LanguageProvider>);
 
     expect(container.querySelector("section")?.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByText("PROJECT MEMBERS")).toBeTruthy();
     expect(screen.getByText("Project members & review route")).toBeTruthy();
     expect(screen.getByText("Member email")).toBeTruthy();
     expect(screen.getByText("Invitations")).toBeTruthy();

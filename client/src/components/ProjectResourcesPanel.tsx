@@ -247,7 +247,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     </section>
 
     <section className="panel workshop-training-reference" aria-labelledby="workshop-training-title">
-      <div className="panel-heading"><div><p className="eyebrow">PRIVATE TRAINING REFERENCE · P6 23.12</p><h2 id="workshop-training-title">{WORKSHOP_NO8_TRAINING_REFERENCE.title}</h2><p>{copy.trainingDescription}</p></div><ShieldCheck size={24} /></div>
+      <div className="panel-heading"><div><p className="eyebrow">{language === "en" ? "PRIVATE TRAINING REFERENCE · P6 23.12" : "مرجع تدريبي خاص · P6 23.12"}</p><h2 id="workshop-training-title">{WORKSHOP_NO8_TRAINING_REFERENCE.title}</h2><p>{copy.trainingDescription}</p></div><ShieldCheck size={24} /></div>
       <div className="workshop-training-reference__facts" aria-label={copy.trainingAria}>
         <div><span>{copy.baseline}</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.activities} {copy.activity} / {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.relationships} {copy.relationship}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.calendars} {copy.calendar}</small></div>
         <div><span>{copy.postTia}</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.activities} {copy.activity} / {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.relationships} {copy.relationship}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.calendars} {copy.calendar}</small></div>

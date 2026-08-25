@@ -469,7 +469,7 @@ export function FinancialNoticeReviewPanel({
       <section className="workflow-panel" dir={direction}>
         <div className="workflow-heading">
           <div>
-            <p className="eyebrow">P6 COST EXPOSURE</p>
+            <p className="eyebrow">{uiText(interfaceLanguage, "أثر تكلفة P6", "P6 COST EXPOSURE")}</p>
             <h2>
               {uiText(
                 interfaceLanguage,
@@ -598,7 +598,7 @@ export function FinancialNoticeReviewPanel({
       <section className="workflow-panel" dir={direction}>
         <div className="workflow-heading">
           <div>
-            <p className="eyebrow">NOTICE REGISTER</p>
+            <p className="eyebrow">{uiText(interfaceLanguage, "سجل الإشعارات", "NOTICE REGISTER")}</p>
             <h2>{uiText(interfaceLanguage, "سجل الإشعارات التعاقدية", "Contractual Notice register")}</h2>
             <p>
               {uiText(interfaceLanguage, "يُنشئ مسودة مرتبطة بالحدث مع تاريخ العلم والاستحقاق والأدلة. لا يرسل التطبيق مراسلات خارجية أو يقرر الاستحقاق التعاقدي.", "Creates a draft linked to the event, awareness date, due date, and evidence. The application does not send external communications or decide contractual entitlement.")}
@@ -934,7 +934,7 @@ export function FinancialNoticeReviewPanel({
       <section className="workflow-panel" dir={direction}>
         <div className="workflow-heading">
           <div>
-            <p className="eyebrow">ELECTRONIC CLAIM REVIEW</p>
+            <p className="eyebrow">{uiText(interfaceLanguage, "مراجعة المطالبة الإلكترونية", "ELECTRONIC CLAIM REVIEW")}</p>
             <h2>{uiText(interfaceLanguage, "مسار الاعتماد الإلكتروني", "Electronic approval workflow")}</h2>
             <p>
               {uiText(interfaceLanguage, "مسودة ← مراجعة التخطيط ← مراجعة العقود ← اعتماد مدير المطالبات ← جاهزة للتصدير. لا يجيز النظام قرار المرحلة إلا للمراجع المعيّن لها.", "Draft → planning review → contract review → claims manager approval → ready to export. The system permits a stage decision only to its assigned reviewer.")}

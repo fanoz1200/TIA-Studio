@@ -173,6 +173,12 @@ const englishWorkspaceCopy: Partial<Record<GuideView, Pick<(typeof workspaceScre
   learning: { title: "Learning and guidance", note: "Start with decision-tree questions or search the case library." },
 };
 
+const englishDocumentCopy: Partial<Record<GuideView, Pick<(typeof documents)[number], "title" | "text">>> = {
+  notices: { title: "Notice of Claim", text: "Open the Notice register after recording the event. Draft the notice within the contractual deadline and link it to the event. The app helps organise the record, but you must review the deadline and wording against the contract." },
+  report: { title: "Delay Analysis Narrative", text: "This is the technical narrative: what happened, which programme version was used, how the Fragnet was developed, the result, and its limits. Review and edit the wording before export." },
+  review: { title: "Full Claim", text: "A complete file bringing together notices, contract records, correspondence, evidence, the narrative, analysis results, and financial impact. The app organises parts of it, but it is not a complete legal claim without specialist and project-contract review." },
+};
+
 type GuideCopy = {
   badge: string;
   heading: string;
@@ -198,14 +204,17 @@ type GuideCopy = {
   openScreen: string;
   shotAria: string;
   shotCaption: string;
+  documentsEyebrow: string;
+  documentsTitle: string;
+  openRoute: string;
 };
 
 const guideCopy: Record<"ar" | "en", GuideCopy> = {
   ar: {
-    badge: "دليل استخدام بالصور", heading: "امشي معايا خطوة خطوة", intro: "دي خريطة استخدام البرنامج من أول ملف P6 لحد التقرير. كل زر تحت بيفتح الشاشة الحقيقية، ومكتوب قبله إيه اللي تجهزه وبعده إيه المفروض يطلع.", firstTime: "لو دي أول مرة ليك", firstTimeHint: "ابدأ بالرحلة المرقمة. ما تدخلش على Fragnet أو التقرير قبل ما ترفع النسخ وتسجل الواقعة.", startTraining: "ابدأ حالة تدريبية", routeAria: "خطوات استخدام TIA Studio", stepsAria: "خطوات الدليل", step: "الخطوة", of: "من", prepare: "قبل ما تدوس", after: "هتلاقي إيه بعد كده", next: "الخطوة اللي بعدها", exampleEyebrow: "مثال سريع: تأخير اعتماد رسم", exampleTitle: "عندي اعتماد متأخر.. أعمل إيه؟", exampleBody: "١) ارفع Baseline وUpdate قبل يوم التأخير. ٢) سجّل تاريخ الطلب وتاريخ الاعتماد والمراسلات. ٣) اختار النشاط المتأثر وعلاقته. ٤) راجع Fragnet. ٥) شغّل TIA واقرأ فرق الإكمال. ٦) اكتب السرد الفني ونزّله مع Excel.", target: "الناتج اللي تستهدفه", targetBody: "فرق زمني موثّق + سجل أدلة + Narrative قابل للمراجعة", mapEyebrow: "كل نافذة بتعمل إيه؟", mapTitle: "خريطة البرنامج بالصور", mapBody: "دوس على أي بطاقة عشان تفتح الشاشة الأصلية. لو لسه في البداية، امشِ بالخطوات الستة اللي فوق الأول.", openScreen: "افتح الشاشة", shotAria: "لقطة توضيحية للخطوة", shotCaption: "لقطة فعلية من داخل البرنامج — الشاشة اللي هتدخلها في الخطوة دي",
+    badge: "دليل استخدام بالصور", heading: "امشي معايا خطوة خطوة", intro: "دي خريطة استخدام البرنامج من أول ملف P6 لحد التقرير. كل زر تحت بيفتح الشاشة الحقيقية، ومكتوب قبله إيه اللي تجهزه وبعده إيه المفروض يطلع.", firstTime: "لو دي أول مرة ليك", firstTimeHint: "ابدأ بالرحلة المرقمة. ما تدخلش على Fragnet أو التقرير قبل ما ترفع النسخ وتسجل الواقعة.", startTraining: "ابدأ حالة تدريبية", routeAria: "خطوات استخدام TIA Studio", stepsAria: "خطوات الدليل", step: "الخطوة", of: "من", prepare: "قبل ما تدوس", after: "هتلاقي إيه بعد كده", next: "الخطوة اللي بعدها", exampleEyebrow: "مثال سريع: تأخير اعتماد رسم", exampleTitle: "عندي اعتماد متأخر.. أعمل إيه؟", exampleBody: "١) ارفع Baseline وUpdate قبل يوم التأخير. ٢) سجّل تاريخ الطلب وتاريخ الاعتماد والمراسلات. ٣) اختار النشاط المتأثر وعلاقته. ٤) راجع Fragnet. ٥) شغّل TIA واقرأ فرق الإكمال. ٦) اكتب السرد الفني ونزّله مع Excel.", target: "الناتج اللي تستهدفه", targetBody: "فرق زمني موثّق + سجل أدلة + Narrative قابل للمراجعة", mapEyebrow: "كل نافذة بتعمل إيه؟", mapTitle: "خريطة البرنامج بالصور", mapBody: "دوس على أي بطاقة عشان تفتح الشاشة الأصلية. لو لسه في البداية، امشِ بالخطوات الستة اللي فوق الأول.", openScreen: "افتح الشاشة", shotAria: "لقطة توضيحية للخطوة", shotCaption: "لقطة فعلية من داخل البرنامج — الشاشة اللي هتدخلها في الخطوة دي", documentsEyebrow: "بعد النتيجة", documentsTitle: "أنهي مستند أعمله من جوه البرنامج؟", openRoute: "افتح المسار",
   },
   en: {
-    badge: "Illustrated user guide", heading: "Follow the route step by step", intro: "This is the route through the app—from the P6 file to the report. Each button opens the real screen and explains what to prepare and what to expect.", firstTime: "If this is your first time", firstTimeHint: "Start with the numbered route. Do not go to Fragnet or the report before uploading versions and recording the event.", startTraining: "Start a training case", routeAria: "TIA Studio usage steps", stepsAria: "Guide steps", step: "Step", of: "of", prepare: "Prepare before opening", after: "What comes next", next: "Next step", exampleEyebrow: "Quick example: delayed drawing approval", exampleTitle: "I have a late approval—what should I do?", exampleBody: "1) Upload the Baseline and an Update before the delay date. 2) Record the request, approval dates, and correspondence. 3) Select the affected activity and link. 4) Review the Fragnet. 5) Run TIA and read the completion difference. 6) Write the technical narrative and download it with Excel.", target: "Target output", targetBody: "Documented time difference + evidence register + reviewable Narrative", mapEyebrow: "What does each screen do?", mapTitle: "Illustrated workspace map", mapBody: "Select any card to open its original screen. If you are just starting, follow the six steps above first.", openScreen: "Open screen", shotAria: "Illustrative screenshot for step", shotCaption: "Actual in-app screenshot — the screen opened at this step",
+    badge: "Illustrated user guide", heading: "Follow the route step by step", intro: "This is the route through the app—from the P6 file to the report. Each button opens the real screen and explains what to prepare and what to expect.", firstTime: "If this is your first time", firstTimeHint: "Start with the numbered route. Do not go to Fragnet or the report before uploading versions and recording the event.", startTraining: "Start a training case", routeAria: "TIA Studio usage steps", stepsAria: "Guide steps", step: "Step", of: "of", prepare: "Prepare before opening", after: "What comes next", next: "Next step", exampleEyebrow: "Quick example: delayed drawing approval", exampleTitle: "I have a late approval—what should I do?", exampleBody: "1) Upload the Baseline and an Update before the delay date. 2) Record the request, approval dates, and correspondence. 3) Select the affected activity and link. 4) Review the Fragnet. 5) Run TIA and read the completion difference. 6) Write the technical narrative and download it with Excel.", target: "Target output", targetBody: "Documented time difference + evidence register + reviewable Narrative", mapEyebrow: "What does each screen do?", mapTitle: "Illustrated workspace map", mapBody: "Select any card to open its original screen. If you are just starting, follow the six steps above first.", openScreen: "Open screen", shotAria: "Illustrative screenshot for step", shotCaption: "Actual in-app screenshot — the screen opened at this step", documentsEyebrow: "After the result", documentsTitle: "Which document should I prepare in the app?", openRoute: "Open route",
   },
 };
 
@@ -226,6 +235,7 @@ export function UserGuidePanel({ view, onNavigate }: Props) {
   const copy = guideCopy[language];
   const localizedSteps = language === "en" ? steps.map(step => ({ ...step, ...englishStepCopy[step.id] })) : steps;
   const localizedWorkspace = language === "en" ? workspaceScreens.map(screen => ({ ...screen, ...englishWorkspaceCopy[screen.view] })) : workspaceScreens;
+  const localizedDocuments = language === "en" ? documents.map(document => ({ ...document, ...englishDocumentCopy[document.view] })) : documents;
   const current = localizedSteps[activeStep];
   const Icon = current.icon;
   const NavArrow = direction === "rtl" ? ArrowLeft : ArrowRight;
@@ -273,7 +283,7 @@ export function UserGuidePanel({ view, onNavigate }: Props) {
         <div className="guide-workspace-grid">{localizedWorkspace.map(screen => <article key={screen.view}><button type="button" onClick={() => onNavigate(screen.view)} aria-label={`${copy.openScreen} ${screen.title}`}><img src={screen.imageSrc} alt={`${copy.shotCaption}: ${screen.title}`} loading="lazy" /><span>{copy.openScreen} <NavArrow size={14} /></span></button><h3>{screen.title}</h3><p>{screen.note}</p></article>)}</div>
       </section>
 
-      <section className="guide-documents"><div><p className="eyebrow">بعد النتيجة</p><h2>أنهي مستند أعمله من جوه البرنامج؟</h2></div><div className="guide-document-grid">{documents.map(document => <article key={document.title}><FileSpreadsheet size={19} /><h3>{document.title}</h3><p>{document.text}</p><Button variant="outline" onClick={() => onNavigate(document.view)}>افتح المسار <ArrowLeft size={15} /></Button></article>)}</div></section>
+      <section className="guide-documents"><div><p className="eyebrow">{copy.documentsEyebrow}</p><h2>{copy.documentsTitle}</h2></div><div className="guide-document-grid">{localizedDocuments.map(document => <article key={document.title}><FileSpreadsheet size={19} /><h3>{document.title}</h3><p>{document.text}</p><Button variant="outline" onClick={() => onNavigate(document.view)}>{copy.openRoute} <NavArrow size={15} /></Button></article>)}</div></section>
     </section>
   );
 }

@@ -536,7 +536,7 @@ export function P6EvidenceReportPanel({
     return (
       <section className="p6-ops-panel" dir={direction}>
         <div className="p6-ops-copy">
-          <p className="eyebrow">P6 EXTENDED IMPORT</p>
+          <p className="eyebrow">{txt("استيراد P6 الموسّع", "P6 EXTENDED IMPORT")}</p>
           <h2>{txt("بيانات التقدم وWBS من Primavera", "Progress data and WBS from Primavera")}</h2>
           <p>{txt(
             "يدعم المستورد P6 XML عناصر Project وActivity وRelationship وWBS، ويعرض النسب كما وردت دون تحويلها إلى حكم استحقاق.",
@@ -617,7 +617,7 @@ export function P6EvidenceReportPanel({
       <section className="evidence-panel" dir={direction}>
         <div className="evidence-header">
           <div>
-            <p className="eyebrow">EVIDENCE REGISTER</p>
+            <p className="eyebrow">{txt("سجل الأدلة", "EVIDENCE REGISTER")}</p>
             <h2>{txt("أدلة حدث التأخير", "Delay-event evidence")}</h2>
             <p>
               {selectedEvent
@@ -752,7 +752,7 @@ export function P6EvidenceReportPanel({
       <section className="claim-export-panel" dir={direction}>
         <div className="claim-export-header">
           <div>
-            <p className="eyebrow">CLAIM OUTPUT</p>
+            <p className="eyebrow">{txt("مخرجات المطالبة", "CLAIM OUTPUT")}</p>
             <h2>{txt("قالب المطالبة وتصدير التقرير", "Claim template and report export")}</h2>
             <p>{txt("حرّر القالب ثم صدّر Full Claim ثابتاً بصيغة Word أو PDF أو التقرير النهائي Excel متعدد الأوراق، أو Fact Pack محلي JSON. يُدرج التقرير السرد ونتائج TIA وسجل الأحداث وأدلة الحدث المحدد، ويظهر أي نقص بوضوح.", "Edit the template, then export a fixed Full Claim in Word or PDF, a multi-sheet Excel final report, or a local JSON Fact Pack. The report includes the narrative, TIA results, event register and selected-event evidence, and clearly shows any gap.")}</p>
             <p className="context-tip">

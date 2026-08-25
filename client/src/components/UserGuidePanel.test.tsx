@@ -30,6 +30,7 @@ describe("مرجع الاستخدام المصوّر", () => {
     const { onNavigate } = renderGuide();
 
     expect(screen.getByRole("heading", { name: "امشي معايا خطوة خطوة" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "أنهي مستند أعمله من جوه البرنامج؟" })).toBeTruthy();
     const realScreenshot = screen.getByRole("img", { name: /ابدأ وعرّف الحالة/ });
     expect(realScreenshot.getAttribute("src")).toContain("step-1-start_");
     fireEvent.click(screen.getByRole("button", { name: /ارفع نسخ البرنامج/ }));
@@ -42,6 +43,8 @@ describe("مرجع الاستخدام المصوّر", () => {
     const { onNavigate } = renderGuide();
 
     expect(screen.getByRole("heading", { name: "Follow the route step by step" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Which document should I prepare in the app?" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "Open route" })).toHaveLength(3);
     expect(screen.getByLabelText("Follow the route step by step").getAttribute("dir")).toBe("ltr");
     const realScreenshot = screen.getByRole("img", { name: /Start and define the case/ });
     expect(realScreenshot.getAttribute("src")).toContain("step-1-start_");

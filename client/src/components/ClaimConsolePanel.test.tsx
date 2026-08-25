@@ -32,6 +32,7 @@ describe("Claim Console", () => {
     window.localStorage.removeItem("tia-studio-interface-language");
     render(<LanguageProvider><ClaimConsolePanel view="claimConsole" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
 
+    expect(screen.getByText("منصة المطالبات")).toBeTruthy();
     expect(screen.getByText("ملف العقد وسجل المخاطر")).toBeTruthy();
     expect(screen.getByText(/سجّل الدخول لحفظ هذا السجل/)).toBeTruthy();
     expect(screen.queryByText("إضافة مخاطرة")).toBeNull();
@@ -41,6 +42,7 @@ describe("Claim Console", () => {
     window.localStorage.setItem("tia-studio-interface-language", "en");
     const { container } = render(<LanguageProvider><ClaimConsolePanel view="claimConsole" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
 
+    expect(screen.getByText("Claim Console")).toBeTruthy();
     expect(screen.getByText("Contract profile and risk register")).toBeTruthy();
     expect(screen.getByText(/Sign in to save this register/)).toBeTruthy();
     expect(container.querySelector("section")?.getAttribute("dir")).toBe("ltr");

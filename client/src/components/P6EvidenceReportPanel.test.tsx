@@ -102,6 +102,7 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     mocks.exportDocx.mockImplementation(() => new Promise<void>((resolve) => { completeExport = resolve; }));
     renderPanel("report");
 
+    expect(screen.getByText("مخرجات المطالبة")).toBeTruthy();
     expect(screen.getByText("لغة المخرجات")).toBeTruthy();
     expect((screen.getByRole("button", { name: "ملف مطابقة P6 (JSON)" }) as HTMLButtonElement).disabled).toBe(true);
     const excelButton = screen.getByRole("button", { name: "تصدير التقرير النهائي Excel" }) as HTMLButtonElement;
@@ -133,6 +134,7 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
   it("يعرض مسار التقرير بالإنجليزية واتجاه LTR عندما تختار لغة الواجهة English", () => {
     const { container } = renderPanel("report", vi.fn(), "en");
     expect(container.querySelector(".claim-export-panel")?.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByText("CLAIM OUTPUT")).toBeTruthy();
     expect(screen.getByText("Claim template and report export")).toBeTruthy();
     expect(screen.getByText("Output language")).toBeTruthy();
     expect(screen.getByText("Pre-export checklist")).toBeTruthy();
@@ -141,5 +143,7 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export Excel final report" }));
     expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ events: [expect.objectContaining({ id: "EV-01", title: "تأخر اعتماد" })] }));
     expect(mocks.toastSuccess).toHaveBeenCalledWith("Multi-sheet Excel final report created.");
+    expect(schedule.name).toBe("برنامج اختبار P6");
+    expect(event.title).toBe("تأخر اعتماد");
   });
 });
