@@ -4,12 +4,13 @@
 
 ## نطاق التدقيق
 
-تم فحص **13** ملفاً من المصادر المتاحة.
+تم فحص **18** ملفاً من المصادر المتاحة.
 
 | الملف | النوع | الحجم (بايت) | معرفات D المذكورة | مفاتيح حالات منظمة | كل المعرفات المذكورة | مفاتيح الحالات المنظمة |
 |---|---:|---:|---:|---:|---|---|
 | `تجميعحالاتالواتسابوالقراراتبناءعليها.html` | HTML | 11,866 | 0 | 0 | لا توجد معرفات D | — |
 | `DalayAnalysisTimeline.xlsx` | Excel | 21,233 | 0 | 0 | لا توجد معرفات D | — |
+| `FIDIC_2017_Claims_Intelligence_Upgraded.xlsx` | Excel | 7,840 | 0 | 0 | لا توجد معرفات D | — |
 | `FIDIC_2017_Claims_Reference.xlsx.xlsx` | Excel | 12,741 | 0 | 0 | لا توجد معرفات D | — |
 | `Master_Claim_Intelligence_HTML.html` | HTML | 1,687,581 | 55 | 55 | D-001، D-002، D-003، D-004، D-005، D-006، D-007، D-008، D-009، D-010، D-011، D-012، D-013، D-014، D-015، D-016، D-017، D-018، D-019، D-020، D-021، D-022، D-023، D-024، D-025، D-026، D-027، D-028، D-029، D-030، D-031، D-032، D-033، D-034، D-035، D-036، D-037، D-038، D-039، D-040، D-041، D-042، D-043، D-044، D-045، D-046، D-047، D-048، D-049، D-050، D-051، D-052، D-053، D-054، D-055 | D-001، D-002، D-003، D-004، D-005، D-006، D-007، D-008، D-009، D-010، D-011، D-012، D-013، D-014، D-015، D-016، D-017، D-018، D-019، D-020، D-021، D-022، D-023، D-024، D-025، D-026، D-027، D-028، D-029، D-030، D-031، D-032، D-033، D-034، D-035، D-036، D-037، D-038، D-039، D-040، D-041، D-042، D-043، D-044، D-045، D-046، D-047، D-048، D-049، D-050، D-051، D-052، D-053، D-054، D-055 |
 | `Master_Claim_Intelligence.xlsx` | Excel | 219,406 | 55 | 0 | D-001، D-002، D-003، D-004، D-005، D-006، D-007، D-008، D-009، D-010، D-011، D-012، D-013، D-014، D-015، D-016، D-017، D-018، D-019، D-020، D-021، D-022، D-023، D-024، D-025، D-026، D-027، D-028، D-029، D-030، D-031، D-032، D-033، D-034، D-035، D-036، D-037، D-038، D-039، D-040، D-041، D-042، D-043، D-044، D-045، D-046، D-047، D-048، D-049، D-050، D-051، D-052، D-053، D-054، D-055 | — |
@@ -18,8 +19,12 @@
 | `pasted_file_e2BhvF_Qwen_html_20260809_kc6odu9f7.html` | HTML | 45,127 | 0 | 0 | لا توجد معرفات D | — |
 | `pasted_file_gHGBOL_FIDIC_2017_Claims_Reference.xlsx.xlsx` | Excel | 12,741 | 0 | 0 | لا توجد معرفات D | — |
 | `pasted_file_pJ8TCu_Master_Claim_Intelligence.xlsx` | Excel | 219,406 | 55 | 0 | D-001، D-002، D-003، D-004، D-005، D-006، D-007، D-008، D-009، D-010، D-011، D-012، D-013، D-014، D-015، D-016، D-017، D-018، D-019، D-020، D-021، D-022، D-023، D-024، D-025، D-026، D-027، D-028، D-029، D-030، D-031، D-032، D-033، D-034، D-035، D-036، D-037، D-038، D-039، D-040، D-041، D-042، D-043، D-044، D-045، D-046، D-047، D-048، D-049، D-050، D-051، D-052، D-053، D-054، D-055 | — |
-| `PMC_Level_Integrated_Claims_System_FIDIC2017-final.v01.xlsx` | Excel | 30,565 | 0 | 0 | لا توجد معرفات D | — |
+| `PMC_Claims_System_Final_Level.xlsx` | Excel | 8,704 | 0 | 0 | لا توجد معرفات D | — |
+| `PMC_Claims_System_With_FIDIC_Intelligence.xlsx` | Excel | 19,623 | 0 | 0 | لا توجد معرفات D | — |
+| `PMC_Claims_System_Working.xlsx` | Excel | 24,791 | 0 | 0 | لا توجد معرفات D | — |
+| `PMC_Level_Integrated_Claims_System_FIDIC2017-final.v01.xlsx` | Excel | 30,519 | 0 | 0 | لا توجد معرفات D | — |
 | `Table.xlsx` | Excel | 12,469 | 0 | 0 | لا توجد معرفات D | — |
+| `Workshop-NO8TimeImpactAnalysis.xlsx` | Excel | 25,435 | 0 | 0 | لا توجد معرفات D | — |
 | `Master_Claim_Intelligence.xlsx` | Excel | 219,406 | 55 | 0 | D-001، D-002، D-003، D-004، D-005، D-006، D-007، D-008، D-009، D-010، D-011، D-012، D-013، D-014، D-015، D-016، D-017، D-018، D-019، D-020، D-021، D-022، D-023، D-024، D-025، D-026، D-027، D-028، D-029، D-030، D-031، D-032، D-033، D-034، D-035، D-036، D-037، D-038، D-039، D-040، D-041، D-042، D-043، D-044، D-045، D-046، D-047، D-048، D-049، D-050، D-051، D-052، D-053، D-054، D-055 | — |
 
 ## النسخ المتطابقة تماماً
@@ -28,6 +33,7 @@
 |---|---|
 | `b22c64dc3058…` | `FIDIC_2017_Claims_Reference.xlsx.xlsx`<br>`pasted_file_gHGBOL_FIDIC_2017_Claims_Reference.xlsx.xlsx` |
 | `3af8b62e3987…` | `Master_Claim_Intelligence.xlsx`<br>`pasted_file_pJ8TCu_Master_Claim_Intelligence.xlsx`<br>`Master_Claim_Intelligence.xlsx` |
+| `1974eafc38ba…` | `pasted_file_33xNWZ_Workshop-NO8TimeImpactAnalysis.xlsx`<br>`Workshop-NO8TimeImpactAnalysis.xlsx` |
 
 ## نتيجة نطاق D-056 إلى D-088
 

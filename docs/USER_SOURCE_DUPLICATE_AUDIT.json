@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-23T07:32:35.719Z",
+  "generatedAt": "2026-08-25T07:56:31.449Z",
   "scope": {
     "sourceRoots": [
       "/home/ubuntu/upload",
       "/home/ubuntu/webdev-static-assets"
     ],
-    "fileCount": 13
+    "fileCount": 18
   },
   "files": [
     {
@@ -78,6 +78,22 @@
           "sheetName": "Sheet1",
           "range": "A1:CD53",
           "nonEmptyCellCount": 120
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/FIDIC_2017_Claims_Intelligence_Upgraded.xlsx",
+      "filename": "FIDIC_2017_Claims_Intelligence_Upgraded.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 7840,
+      "sha256": "e56d12b7a0d792fb84c0e3eb1900c00dc9b42f79b939deef9e211e139637246a",
+      "sheetDetails": [
+        {
+          "sheetName": "FIDIC_2017_Claims_Reference",
+          "range": "A1:G28",
+          "nonEmptyCellCount": 169
         }
       ],
       "caseIds": [],
@@ -595,7 +611,7 @@
       "filename": "MasterClaimIntelligence—نظامذكاءالمطالباتالإنشائيةV3.0.html",
       "kind": "html",
       "sizeBytes": 1687047,
-      "sha256": "6673084b9ab8bffcc03443d04ea62fb8b722a6b189b0df4e748797cb83d1c2a4",
+      "sha256": "cf4c758cbfcc1f29745421ec9032ea76d233fbf02a615d4eba13e9c4c4d786e2",
       "caseIds": [
         "D-001",
         "D-002",
@@ -1178,11 +1194,94 @@
       }
     },
     {
+      "path": "/home/ubuntu/upload/PMC_Claims_System_Final_Level.xlsx",
+      "filename": "PMC_Claims_System_Final_Level.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 8704,
+      "sha256": "87a78105b6c7c7f70e46d2ed3c005021a2d022bb5c01697f9cc03594a68d6bd6",
+      "sheetDetails": [
+        {
+          "sheetName": "Risk Register",
+          "range": "A1:L5",
+          "nonEmptyCellCount": 52
+        },
+        {
+          "sheetName": "Issue Log",
+          "range": "A1:O5",
+          "nonEmptyCellCount": 68
+        },
+        {
+          "sheetName": "Claim Register Final",
+          "range": "A1:R9",
+          "nonEmptyCellCount": 74
+        },
+        {
+          "sheetName": "Dashboard",
+          "range": "A1:B8",
+          "nonEmptyCellCount": 7
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/PMC_Claims_System_With_FIDIC_Intelligence.xlsx",
+      "filename": "PMC_Claims_System_With_FIDIC_Intelligence.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 19623,
+      "sha256": "f4c12683b75291efe93cfb0b924a31a2422c2541a6e34bd72d05a294df254b95",
+      "sheetDetails": [
+        {
+          "sheetName": "FIDIC_2017_Claims_Reference",
+          "range": "A1:H28",
+          "nonEmptyCellCount": 197
+        },
+        {
+          "sheetName": "Claim Register Smart",
+          "range": "A1:O27",
+          "nonEmptyCellCount": 279
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/PMC_Claims_System_Working.xlsx",
+      "filename": "PMC_Claims_System_Working.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 24791,
+      "sha256": "e926ea7003cf696cb2a344787f069bb5ef628076af84b834976facfa2e643196",
+      "sheetDetails": [
+        {
+          "sheetName": "Risk Register",
+          "range": "A1:L1",
+          "nonEmptyCellCount": 12
+        },
+        {
+          "sheetName": "Issue Log",
+          "range": "A1:O299",
+          "nonEmptyCellCount": 15
+        },
+        {
+          "sheetName": "Claim Register Final",
+          "range": "A1:R299",
+          "nonEmptyCellCount": 18
+        },
+        {
+          "sheetName": "Dashboard",
+          "range": "A1:B3",
+          "nonEmptyCellCount": 2
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
       "path": "/home/ubuntu/upload/PMC_Level_Integrated_Claims_System_FIDIC2017-final.v01.xlsx",
       "filename": "PMC_Level_Integrated_Claims_System_FIDIC2017-final.v01.xlsx",
       "kind": "workbook",
-      "sizeBytes": 30565,
-      "sha256": "a8a87aaf948380a659a1b51f9254dd1eb1afb06a83e01fc0ea45ba3a4be136fb",
+      "sizeBytes": 30519,
+      "sha256": "0cd84da8105862e70af2a5625fb3826b9520fe8fd54b8f49fe2ae66f7f79dc03",
       "sheetDetails": [
         {
           "sheetName": "Risk Register",
@@ -1224,6 +1323,27 @@
           "sheetName": "Sheet1",
           "range": "A1:R12",
           "nonEmptyCellCount": 102
+        }
+      ],
+      "caseIds": [],
+      "caseLocations": {}
+    },
+    {
+      "path": "/home/ubuntu/upload/Workshop-NO8TimeImpactAnalysis.xlsx",
+      "filename": "Workshop-NO8TimeImpactAnalysis.xlsx",
+      "kind": "workbook",
+      "sizeBytes": 25435,
+      "sha256": "1974eafc38ba56ecf984a8ef33183dd93a7b3e10efce4162242954868223b993",
+      "sheetDetails": [
+        {
+          "sheetName": "Workshop TIA",
+          "range": "A1:H21",
+          "nonEmptyCellCount": 96
+        },
+        {
+          "sheetName": "TIA Delay Analysis Table",
+          "range": "A1:AI39",
+          "nonEmptyCellCount": 174
         }
       ],
       "caseIds": [],
@@ -1596,6 +1716,21 @@
           "path": "/home/ubuntu/webdev-static-assets/Master_Claim_Intelligence.xlsx",
           "filename": "Master_Claim_Intelligence.xlsx",
           "sizeBytes": 219406
+        }
+      ]
+    },
+    {
+      "sha256": "1974eafc38ba56ecf984a8ef33183dd93a7b3e10efce4162242954868223b993",
+      "files": [
+        {
+          "path": "/home/ubuntu/upload/pasted_file_33xNWZ_Workshop-NO8TimeImpactAnalysis.xlsx",
+          "filename": "pasted_file_33xNWZ_Workshop-NO8TimeImpactAnalysis.xlsx",
+          "sizeBytes": 25435
+        },
+        {
+          "path": "/home/ubuntu/upload/Workshop-NO8TimeImpactAnalysis.xlsx",
+          "filename": "Workshop-NO8TimeImpactAnalysis.xlsx",
+          "sizeBytes": 25435
         }
       ]
     }
