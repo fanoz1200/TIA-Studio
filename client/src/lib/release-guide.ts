@@ -77,3 +77,79 @@ export const releaseChanges = [
   "إصلاح انتقال زر «طبّق هذه الحالة الآن» ليبدأ رحلة التحليل فوراً مع رسالة واضحة، بدلاً من التجمّد الظاهري.",
   "إلزام مركز الموارد بعرض رابط الإصدار وتعليمات التشغيل وسجل التغييرات مع كل حزمة محفوظة.",
 ] as const;
+
+export const ENGLISH_LOCAL_RELEASE = {
+  version: releaseInfo.version,
+  publishedOn: "24 August 2026",
+  channel: "Local desktop · Windows x64 and Linux x64",
+  launcher: "Windows: use Setup to install or Portable to run directly. Linux: use the single TIA-Studio-1.0.7-Linux-x64.AppImage file.",
+} as const;
+
+export const englishMethodologyGuide = [
+  {
+    title: "Time Impact Analysis — TIA",
+    purpose: "Measures the effect of a defined event by inserting a Fragnet into an independent analytical copy of the accepted schedule, then comparing the completion date before and after insertion.",
+    useWhen: "When a suitable baseline or pre-event update exists and the event's logic, duration, and tie-in points can be defined.",
+  },
+  {
+    title: "Windows & Concurrency",
+    purpose: "Divides the review into successive time windows and shows independent events that overlap in the same period instead of combining their causes without evidence.",
+    useWhen: "When periodic updates, more than one impacting event, or possible concurrent delay exist.",
+  },
+  {
+    title: "Quality Gate — GAO/AACE",
+    purpose: "Checks relationship integrity, logic, dates, and the critical path before accepting a calculated result or exporting a report.",
+    useWhen: "Required after import and before accepting a Pre-TIA copy or running the analysis.",
+  },
+] as const;
+
+export const englishEngineGuide = [
+  { name: "P6 XER / XML reader and XER Viewer", input: "Schedule file, notes, WBS, progress percentages, resources, costs, activity-calendar identifier, and constraint register", output: "A normalized schedule model and local constraint/calendar checks before returning to Primavera" },
+  { name: "Deterministic CPM engine and regional calendar", input: "Activities, relationships, calendar, country, reviewed holidays, and CS_SNET/CS_FNET only", output: "Local ES/EF/LS/LF, Total Float, and critical path; not a substitute for F9 or the P6 activity calendar" },
+  { name: "Fragnet and splitting engine", input: "A documented event and logical tie-in points", output: "An independent Post-TIA copy or Pre/Event/Post activities" },
+  { name: "Schedule quality gate", input: "The imported schedule copy", output: "Accept, warning, or blocker with a local improvement register" },
+  { name: "TIA results validation", input: "The before/after result and quality signals", output: "A clear decision on whether the result is usable in the report" },
+  { name: "Reporting and exchange", input: "The accepted result, evidence, and register", output: "Word, PDF, Excel, and trial XER within the stated boundaries" },
+] as const;
+
+export const englishWorkflowGuide = [
+  "Start in the knowledge centre to identify the event type and suitable method, or start in the issue log when the data is ready.",
+  "Upload the Baseline, then the pre-event Update. Always preserve the original P6 file outside the app and without modification.",
+  "Choose the country and calendar: Egypt defaults to Saturday–Thursday. Load holiday suggestions manually when needed and review their source and date, especially Hijri or deferred holidays.",
+  "Open the XER Viewer to read activities, relationships, WBS, calendars, the constraint register, and version differences locally. It is for review and not a substitute for Primavera.",
+  "Complete the quality gate after Baseline and Update: review activities, relationships, Data Date, calendar, constraint register, and Actuals/Remaining Duration status before Excel input or Fragnet creation. Multiple activity calendars, an unsupported constraint, or an Update requiring rescheduling blocks local reliance.",
+  "Enter the event from the structured Excel template or issue log, attach evidence, and record apparent responsibility separately from the delay cause. You may search or paste multiple Activity IDs.",
+  "Create one Fragnet per independent tie-in point, identify affected activities, and split an activity into Pre/Event/Post where needed.",
+  "Run TIA or Windows & Concurrency, then review the validation panel before calculating financial exposure or preparing a local Notice draft or report.",
+  "Route the result through approval, then export the report and Excel. Do not export trial XER until reverse validation succeeds and it has been tested in a non-production Primavera copy.",
+] as const;
+
+export const englishSystemLinks = [
+  "Import and the XER Viewer supply the same data to the CPM engine and quality gate, so there are no hidden numbers or external calculations. Encoded P6 calendars and exceptions are not decoded, therefore multiplicity appears as a review blocker.",
+  "Country and holiday selection pass through visible review before entering a calculation. There is no hidden update or automatic decision on Hijri holidays.",
+  "The quality gate precedes Fragnet and TIA and shares its result with the export gate, so a warning cannot silently become an accepted report.",
+  "The Fragnet creates an independent Post-TIA copy; the Pre-TIA copy and original P6 file remain preserved references.",
+  "The CPM and TIA result links time impact to actual activities. Only then can financial exposure be calculated and a Notice or report be prepared.",
+  "The knowledge centre, checklist, and live guide explain the decision, while the deterministic engine performs the calculation; no AI model determines the result.",
+] as const;
+
+export const englishReleaseChanges = [
+  "Version 1.0.12: a clear interface-language choice (Arabic / English) was added, saved locally, and used to set RTL/LTR direction with the shared navigation and header. Specialist screens are translated and tested progressively; the release does not claim that every legacy text is English.",
+  "Version 1.0.12: a separate output-language choice was added to the report panel. Full Claim, PDF, Fact Pack, and Excel use Arabic or English headings and direction as selected, while activity names, events, and evidence remain as entered by the user and are neither automatically translated nor sent to an external service.",
+  "Version 1.0.11: the resources centre was corrected to preserve external GitHub links when running the local Windows build. When the browser does not offer PWA installation, a clear Windows Setup download appears instead of a disabled button.",
+  "Version 1.0.10: the app records Actuals, Remaining Duration, and Percent Complete imported from XER, but it does not reschedule an Update or emulate P6/F9. The quality gate and CPM view show this as an explicit blocker; the result is not Primavera equivalence.",
+  "Version 1.0.9: the XER importer preserves each activity calendar identifier and the constraint register. The local CPM engine applies only documented minimum start/finish constraints (CS_SNET and CS_FNET) to the selected schedule calendar, and blocks the quality gate for multiple activity calendars or an unsupported constraint.",
+  "Version 1.0.9: the app does not decode P6 calendar-hour patterns or exceptions and does not reschedule Progress/Remaining Duration like P6. The result is therefore not Primavera equivalence and local use does not replace re-import, F9, and non-production review.",
+  "Version 1.0.8: Claim Console MVP added one contract profile per project, a traceable Risk → Issue → Claim Candidate chain, and a user-configurable Notice tracker. The system does not invent a contract clause, deadline, or legal entitlement and shows gaps that still need completion.",
+  "Version 1.0.8: the selected claim connects to the Notice path, Fact Pack, and Full Claim V1 as a manual-review handoff only. The build passed 155 tests, TypeScript, production build, and isolated Windows Portable package checks; desktop and mobile UI were also reviewed.",
+  "Version 1.0.7: a regional work calendar was added. Egypt defaults to six working days from Saturday to Thursday, with Arab-country selection and manually loaded holiday suggestions that show their source and review date. Hijri holidays and deferrals remain for contractual review.",
+  "Version 1.0.7: the quality gate became mandatory after Baseline and Update and before Excel or Fragnet, with activity, relationship, Data Date, and calendar review.",
+  "Version 1.0.7: the issue log supports search, multiple selection, and pasted Activity IDs. Each Fragnet keeps an independent tie-in point so event logic is not mixed.",
+  "Version 1.0.7: a local read-only XER Viewer and professional Excel event template were added, and a local Notice draft became available without login. The build passed 134 tests in 44 files, TypeScript, production build, and Wine/Xvfb EXE checks; real Windows and SmartScreen testing remain necessary.",
+  "Version 1.0.6: the Windows Portable failure caused by an EXE attempting to run a second copy from Temp was corrected. The server now starts inside the app process, and the new EXE was checked in Wine with a temporary user and responded locally on port 4317.",
+  "Version 1.0.6: the Excel final-report export button became explicit and invokes the real multi-sheet analysis workbook for summary, activities, relationships, events, and quality checks.",
+  "Version 1.0.5 (Workshop NO8): the local XER/CPM engine imported the locally supplied Baseline and Post-TIA files, reading 9→13 activities, 9→15 relationships, 3 WBS, and one calendar in each copy, with a local duration delta of +17 working days (80→97). This does not demonstrate Primavera equivalence.",
+  "Content update 1.0.4 (Master Claim): the locally supplied file was integrated into the knowledge centre as a fixed, reproducible record: 70 structured entries, including 55 D cases and 15 supporting records, with 8 supporting sheets and 99 internal links. This source contains no structured records for D-056 to D-088.",
+  "The ‘Apply this case now’ action was corrected to start the analysis journey immediately with a clear message instead of apparent freezing.",
+  "The resources centre was required to display the release link, operating instructions, and change log with every preserved package.",
+] as const;

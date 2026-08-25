@@ -61,6 +61,12 @@ describe("ProjectResourcesPanel", () => {
 
     expect(screen.getByRole("heading", { name: "Knowledge and download center" })).toBeTruthy();
     expect(document.querySelector('[aria-label="Project resources and downloads"]')?.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByRole("heading", { name: "Live guide: how does the app work end-to-end?" })).toBeTruthy();
+    expect(screen.getByText("One-click local launch")).toBeTruthy();
+    expect(screen.getByText("Deterministic CPM engine and regional calendar")).toBeTruthy();
+    expect(screen.getByText(/Start in the knowledge centre to identify the event type/)).toBeTruthy();
+    expect(screen.getByText(/The quality gate precedes Fragnet and TIA/)).toBeTruthy();
+    expect(screen.getByText(/Version 1.0.12: a clear interface-language choice/)).toBeTruthy();
     expect(screen.getByText("Desktop app — Windows 1.0.12 Setup (recommended)").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe");
     expect(screen.getByRole("link", { name: "Windows 1.0.12 — Portable" }).getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe");
     expect(screen.getByRole("heading", { name: "Workshop NO8 — مرجع TIA مرفوع من المستخدم" })).toBeTruthy();

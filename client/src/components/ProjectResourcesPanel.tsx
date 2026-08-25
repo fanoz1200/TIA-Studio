@@ -3,7 +3,7 @@ import React from "react";
 import { BookOpenCheck, Boxes, Download, FileArchive, FileCode2, FileText, GitBranch, HardDriveDownload, Info, ListChecks, Network, ShieldCheck, WifiOff, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resolveResourceDownloadHref } from "@/lib/download-links";
-import { engineGuide, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
+import { ENGLISH_LOCAL_RELEASE, englishEngineGuide, englishMethodologyGuide, englishReleaseChanges, englishSystemLinks, englishWorkflowGuide, engineGuide, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
 import { WORKSHOP_NO8_TRAINING_REFERENCE } from "@/lib/workshop-training-reference";
 import { useAppLanguage } from "@/contexts/LanguageContext";
 import "./project-resources.css";
@@ -184,6 +184,12 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
   const copy = resourceCopy[language];
   const visibleResources = language === "en" ? resources.map((resource, index) => ({ ...resource, ...englishResources[index] })) : resources;
   const visibleExamples = examples.map((example, index) => ({ ...example, name: language === "en" ? englishExamples[index] : example.name }));
+  const visibleRelease = language === "en" ? ENGLISH_LOCAL_RELEASE : LOCAL_RELEASE;
+  const visibleMethodologyGuide = language === "en" ? englishMethodologyGuide : methodologyGuide;
+  const visibleEngineGuide = language === "en" ? englishEngineGuide : engineGuide;
+  const visibleWorkflowGuide = language === "en" ? englishWorkflowGuide : workflowGuide;
+  const visibleSystemLinks = language === "en" ? englishSystemLinks : systemLinks;
+  const visibleReleaseChanges = language === "en" ? englishReleaseChanges : releaseChanges;
 
   return <div className="view-stack resources-view" dir={direction} aria-label={copy.resourcesAria}>
     <section className="page-heading resources-hero">
@@ -216,19 +222,19 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
 
     <section id="release-guide" className="panel release-guide" aria-labelledby="release-guide-title">
       <div className="release-guide__heading">
-        <div><p className="eyebrow">{copy.releaseEyebrow} · {LOCAL_RELEASE.version}</p><h2 id="release-guide-title">{copy.releaseTitle}</h2><p>{copy.releaseDescription}</p></div>
-        <div className="release-stamp"><b>{copy.releaseVersion} {LOCAL_RELEASE.version}</b><span>{LOCAL_RELEASE.publishedOn}</span><small>{LOCAL_RELEASE.channel}</small></div>
+        <div><p className="eyebrow">{copy.releaseEyebrow} · {visibleRelease.version}</p><h2 id="release-guide-title">{copy.releaseTitle}</h2><p>{copy.releaseDescription}</p></div>
+        <div className="release-stamp"><b>{copy.releaseVersion} {visibleRelease.version}</b><span>{visibleRelease.publishedOn}</span><small>{visibleRelease.channel}</small></div>
       </div>
-      <div className="release-launcher"><HardDriveDownload size={20} /><div><b>{copy.launchTitle}</b><p>{LOCAL_RELEASE.launcher} {language === "en" ? "After download, open the file directly; you do not need to run Node.js or write commands. A protection message may appear because the packages are not digitally signed, so verify the file from the official link before allowing it to run." : "بعد التنزيل افتح الملف مباشرة؛ لا تحتاج إلى تشغيل Node.js أو كتابة أوامر. تظهر أي رسالة حماية لأنها حزم غير موقعة رقمياً؛ افحص الملف من الرابط الرسمي فقط قبل السماح له بالتشغيل."}</p></div></div>
+      <div className="release-launcher"><HardDriveDownload size={20} /><div><b>{copy.launchTitle}</b><p>{visibleRelease.launcher} {language === "en" ? "After download, open the file directly; you do not need to run Node.js or write commands. A protection message may appear because the packages are not digitally signed, so verify the file from the official link before allowing it to run." : "بعد التنزيل افتح الملف مباشرة؛ لا تحتاج إلى تشغيل Node.js أو كتابة أوامر. تظهر أي رسالة حماية لأنها حزم غير موقعة رقمياً؛ افحص الملف من الرابط الرسمي فقط قبل السماح له بالتشغيل."}</p></div></div>
       <div className="guide-card-grid">
-        <article><div className="guide-card-title"><BookOpenCheck size={18} /><h3>{copy.methodologyTitle}</h3></div>{methodologyGuide.map(method => <div className="guide-item" key={method.title}><b>{method.title}</b><p>{method.purpose}</p><small><strong>{language === "en" ? "Used when:" : "يستخدم عندما:"}</strong> {method.useWhen}</small></div>)}</article>
-        <article><div className="guide-card-title"><Boxes size={18} /><h3>{copy.enginesTitle}</h3></div>{engineGuide.map(engine => <div className="engine-row" key={engine.name}><b>{engine.name}</b><span><strong>{language === "en" ? "Input:" : "يدخل:"}</strong> {engine.input}</span><span><strong>{language === "en" ? "Output:" : "ينتج:"}</strong> {engine.output}</span></div>)}</article>
+        <article><div className="guide-card-title"><BookOpenCheck size={18} /><h3>{copy.methodologyTitle}</h3></div>{visibleMethodologyGuide.map(method => <div className="guide-item" key={method.title}><b>{method.title}</b><p>{method.purpose}</p><small><strong>{language === "en" ? "Used when:" : "يستخدم عندما:"}</strong> {method.useWhen}</small></div>)}</article>
+        <article><div className="guide-card-title"><Boxes size={18} /><h3>{copy.enginesTitle}</h3></div>{visibleEngineGuide.map(engine => <div className="engine-row" key={engine.name}><b>{engine.name}</b><span><strong>{language === "en" ? "Input:" : "يدخل:"}</strong> {engine.input}</span><span><strong>{language === "en" ? "Output:" : "ينتج:"}</strong> {engine.output}</span></div>)}</article>
       </div>
       <div className="guide-flow-grid">
-        <article><div className="guide-card-title"><Workflow size={18} /><h3>{copy.flowTitle}</h3></div><ol className="live-workflow">{workflowGuide.map(step => <li key={step}>{step}</li>)}</ol></article>
-        <article><div className="guide-card-title"><Network size={18} /><h3>{copy.linksTitle}</h3></div><ul className="system-links">{systemLinks.map(link => <li key={link}>{link}</li>)}</ul></article>
+        <article><div className="guide-card-title"><Workflow size={18} /><h3>{copy.flowTitle}</h3></div><ol className="live-workflow">{visibleWorkflowGuide.map(step => <li key={step}>{step}</li>)}</ol></article>
+        <article><div className="guide-card-title"><Network size={18} /><h3>{copy.linksTitle}</h3></div><ul className="system-links">{visibleSystemLinks.map(link => <li key={link}>{link}</li>)}</ul></article>
       </div>
-      <div className="release-changelog"><div className="guide-card-title"><GitBranch size={18} /><h3>{copy.changesTitle}</h3></div><ul>{releaseChanges.map(change => <li key={change}>{change}</li>)}</ul><p><ListChecks size={16} />{copy.changeRule}</p></div>
+      <div className="release-changelog"><div className="guide-card-title"><GitBranch size={18} /><h3>{copy.changesTitle}</h3></div><ul>{visibleReleaseChanges.map(change => <li key={change}>{change}</li>)}</ul><p><ListChecks size={16} />{copy.changeRule}</p></div>
     </section>
 
     <section className="resources-grid" aria-label={copy.resourcesAria}>
