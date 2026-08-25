@@ -50,6 +50,7 @@ describe("واجهة مقارنة التحديثات", () => {
 
     await waitFor(() => expect(screen.getByTestId("gantt-comparison-chart")).toBeTruthy());
     expect(screen.getByText("المخطط الزمني المقارن")).toBeTruthy();
+    expect(screen.getByText("مخطط زمني تفاعلي: الأساس والتحديث")).toBeTruthy();
     expect(screen.getByText("A200")).toBeTruthy();
     expect(screen.getAllByText("+3 يوم").length).toBeGreaterThan(0);
     expect(screen.getByText(/فرق مدة المشروع/)).toBeTruthy();
@@ -79,6 +80,7 @@ describe("واجهة مقارنة التحديثات", () => {
     fireEvent.change(container.querySelectorAll('input[type="file"]')[1], { target: { files: [updateFile] } });
 
     await waitFor(() => expect(screen.getByLabelText("Comparison timeline")).toBeTruthy());
+    expect(screen.getByText("INTERACTIVE BASELINE / UPDATE TIMELINE")).toBeTruthy();
     expect(container.querySelector(".gantt-comparison-panel")?.getAttribute("dir")).toBe("ltr");
     expect(screen.getAllByText("+3 days").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Changed" })).toBeTruthy();

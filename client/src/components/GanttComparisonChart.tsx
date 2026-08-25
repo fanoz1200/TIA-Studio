@@ -70,11 +70,11 @@ function buildLayer(metric: ActivityMetrics | undefined, schedule: Schedule, glo
 export function GanttComparisonChart({ baseline, update, comparison, onExport }: GanttComparisonChartProps) {
   const { language, direction } = useAppLanguage();
   const tx = language === "en" ? {
-    title: "Comparison timeline", description: "Each row shows the baseline layer in blue and the update in orange according to CPM output. Hatched shading denotes an activity that is critical in either version.", exportCsv: "Export CSV", filter: "Chart filters", status: "Activity status", all: "All", wbs: "WBS", filterByWbs: "Filter by WBS", allWbs: "All packages", reset: "Reset filters", zoomControls: "Chart zoom controls", scale: "Scale", zoomOut: "Zoom out", zoomIn: "Zoom in", baseline: "Baseline", update: "Update", delay: "Increase / delay", critical: "Critical", visible: "activities visible out of", scrollRegion: "Horizontally scrollable Gantt chart area", activityWbs: "Activity / WBS", unclassified: "Unclassified", days: "days", noResults: "No activities match the current filter. Reset filters to show all activities.", disclaimer: "Professional note: the chart displays date, duration, and calculated criticality variances. It does not by itself establish causation, entitlement to an extension, or compensation.",
+    eyebrow: "INTERACTIVE BASELINE / UPDATE TIMELINE", title: "Comparison timeline", description: "Each row shows the baseline layer in blue and the update in orange according to CPM output. Hatched shading denotes an activity that is critical in either version.", exportCsv: "Export CSV", filter: "Chart filters", status: "Activity status", all: "All", wbs: "WBS", filterByWbs: "Filter by WBS", allWbs: "All packages", reset: "Reset filters", zoomControls: "Chart zoom controls", scale: "Scale", zoomOut: "Zoom out", zoomIn: "Zoom in", baseline: "Baseline", update: "Update", delay: "Increase / delay", critical: "Critical", visible: "activities visible out of", scrollRegion: "Horizontally scrollable Gantt chart area", activityWbs: "Activity / WBS", unclassified: "Unclassified", days: "days", noResults: "No activities match the current filter. Reset filters to show all activities.", disclaimer: "Professional note: the chart displays date, duration, and calculated criticality variances. It does not by itself establish causation, entitlement to an extension, or compensation.",
     statuses: { unchanged: "Unchanged", changed: "Changed", added: "Added", removed: "Removed" } satisfies Record<ActivityVarianceStatus, string>,
     baselineTitle: "Baseline", updateTitle: "Update", through: "to",
   } : {
-    title: "المخطط الزمني المقارن", description: "كل صف يعرض طبقة الأساس بالأزرق والتحديث بالبرتقالي وفق مخرجات CPM. التظليل المخطط يدل على نشاط حرج في إحدى النسختين.", exportCsv: "تصدير CSV", filter: "تصفية المخطط", status: "حالة النشاط", all: "الكل", wbs: "WBS", filterByWbs: "تصفية حسب WBS", allWbs: "كل الحزم", reset: "إعادة ضبط", zoomControls: "التحكم في تكبير المخطط", scale: "المقياس", zoomOut: "تصغير المخطط", zoomIn: "تكبير المخطط", baseline: "الأساس", update: "التحديث", delay: "زيادة/تأخير", critical: "حرج", visible: "نشاط ظاهر من", scrollRegion: "منطقة مخطط Gantt قابلة للتمرير أفقياً", activityWbs: "النشاط / الحزمة", unclassified: "غير مصنّف", days: "يوم", noResults: "لا توجد أنشطة تطابق التصفية الحالية. أعد ضبط التصفية لعرض جميع الأنشطة.", disclaimer: "ملاحظة مهنية: يعرض المخطط فروق التواريخ والمدد والحرجية الحسابية، ولا يثبت بمفرده علاقة سببية أو استحقاق تمديد أو تعويض.",
+    eyebrow: "مخطط زمني تفاعلي: الأساس والتحديث", title: "المخطط الزمني المقارن", description: "كل صف يعرض طبقة الأساس بالأزرق والتحديث بالبرتقالي وفق مخرجات CPM. التظليل المخطط يدل على نشاط حرج في إحدى النسختين.", exportCsv: "تصدير CSV", filter: "تصفية المخطط", status: "حالة النشاط", all: "الكل", wbs: "WBS", filterByWbs: "تصفية حسب WBS", allWbs: "كل الحزم", reset: "إعادة ضبط", zoomControls: "التحكم في تكبير المخطط", scale: "المقياس", zoomOut: "تصغير المخطط", zoomIn: "تكبير المخطط", baseline: "الأساس", update: "التحديث", delay: "زيادة/تأخير", critical: "حرج", visible: "نشاط ظاهر من", scrollRegion: "منطقة مخطط Gantt قابلة للتمرير أفقياً", activityWbs: "النشاط / الحزمة", unclassified: "غير مصنّف", days: "يوم", noResults: "لا توجد أنشطة تطابق التصفية الحالية. أعد ضبط التصفية لعرض جميع الأنشطة.", disclaimer: "ملاحظة مهنية: يعرض المخطط فروق التواريخ والمدد والحرجية الحسابية، ولا يثبت بمفرده علاقة سببية أو استحقاق تمديد أو تعويض.",
     statuses: { unchanged: "دون تغيير", changed: "مُعدّل", added: "مضاف", removed: "محذوف" } satisfies Record<ActivityVarianceStatus, string>,
     baselineTitle: "الأساس", updateTitle: "التحديث", through: "حتى",
   };
@@ -124,7 +124,7 @@ export function GanttComparisonChart({ baseline, update, comparison, onExport }:
   return <section className="panel gantt-comparison-panel" dir={direction} aria-label={tx.title}>
     <div className="panel-heading gantt-heading">
       <div>
-        <p className="eyebrow">INTERACTIVE BASELINE / UPDATE TIMELINE</p>
+        <p className="eyebrow">{tx.eyebrow}</p>
         <h2>{tx.title}</h2>
         <span>{tx.description}</span>
       </div>
@@ -141,7 +141,7 @@ export function GanttComparisonChart({ baseline, update, comparison, onExport }:
           {(Object.keys(tx.statuses) as ActivityVarianceStatus[]).map(status => <button key={status} type="button" className={statusFilter === status ? "selected" : ""} onClick={() => setStatusFilter(status)}>{tx.statuses[status]}</button>)}
         </div>
         <label className="gantt-wbs-select">
-          <span>WBS</span>
+          <span>{tx.wbs}</span>
           <select value={wbsFilter} onChange={event => setWbsFilter(event.target.value)} aria-label={tx.filterByWbs}>
             <option value="all">{tx.allWbs}</option>
             {wbsValues.map(value => <option key={value} value={value}>{value}</option>)}
