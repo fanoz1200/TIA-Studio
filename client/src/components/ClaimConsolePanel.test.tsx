@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { ClaimConsolePanel } from "./ClaimConsolePanel";
+import { toast } from "sonner";
+import { ClaimConsolePanel, claimConsoleToastText } from "./ClaimConsolePanel";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/lib/trpc", () => ({
@@ -10,17 +11,23 @@ vi.mock("@/lib/trpc", () => ({
     useUtils: () => ({ claimConsole: { list: { invalidate: vi.fn() } } }),
     claimConsole: {
       list: { useQuery: () => ({ data: undefined }) },
-      saveContractProfile: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
-      createRisk: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
-      createCandidate: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
-      createDeadline: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+      saveContractProfile: { useMutation: (options: { onSuccess?: () => void }) => ({ mutate: () => options.onSuccess?.(), isPending: false }) },
+      createRisk: { useMutation: (options: { onSuccess?: () => void }) => ({ mutate: () => options.onSuccess?.(), isPending: false }) },
+      createCandidate: { useMutation: (options: { onSuccess?: () => void }) => ({ mutate: () => options.onSuccess?.(), isPending: false }) },
+      createDeadline: { useMutation: (options: { onSuccess?: () => void }) => ({ mutate: () => options.onSuccess?.(), isPending: false }) },
     },
   },
 }));
 
-const schedule = { id: "test-project", name: "مشروع اختبار", startDate: "2026-01-01", dataDate: "2026-01-15" } as never;
+const sourceScheduleName = "مشروع اختبار";
+const schedule = { id: "test-project", name: sourceScheduleName, startDate: "2026-01-01", dataDate: "2026-01-15" } as never;
 
 describe("Claim Console", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.localStorage.clear();
+  });
+
   it("لا يعرض سجلاً أو بيانات افتراضية لغير المسجل، ويوضح شرط الحفظ المشترك", () => {
     window.localStorage.removeItem("tia-studio-interface-language");
     render(<LanguageProvider><ClaimConsolePanel view="claimConsole" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
@@ -43,5 +50,16 @@ describe("Claim Console", () => {
     window.localStorage.removeItem("tia-studio-interface-language");
     const { container } = render(<LanguageProvider><ClaimConsolePanel view="guided" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
     expect(container.innerHTML).toBe("");
+  });
+
+  it("يعرض رسالة حفظ ثابتة بالإنجليزية مع بقاء اسم المشروع المصدرى دون ترجمة", () => {
+    window.localStorage.setItem("tia-studio-interface-language", "en");
+    render(<LanguageProvider><ClaimConsolePanel view="claimConsole" schedule={schedule} isAuthenticated onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
+
+    fireEvent.click(screen.getByRole("button", { name: "Save contract profile" }));
+
+    expect(toast.success).toHaveBeenCalledWith("Contract profile saved as reviewable reference data.");
+    expect(sourceScheduleName).toBe("مشروع اختبار");
+    expect(claimConsoleToastText("ar").handoffMissing).toContain("مرشح المطالبة");
   });
 });

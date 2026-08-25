@@ -17,6 +17,21 @@ const sourceLabels: Record<AppLanguage, Record<SourceStatus, string>> = {
   ar: { sourced: "مصدر موثق", to_enrich: "يحتاج استكمال", review_required: "مراجعة مطلوبة", rejected: "مرفوض" },
   en: { sourced: "Verified source", to_enrich: "Needs enrichment", review_required: "Review required", rejected: "Rejected" },
 };
+export const claimConsoleToastText = (language: AppLanguage) => language === "en" ? {
+  contractSaved: "Contract profile saved as reviewable reference data.",
+  riskAdded: "Risk added to the review register.",
+  candidateLinked: "Claim candidate linked without an automatic entitlement finding.",
+  deadlineSaved: "Deadline saved as a review indicator only.",
+  handoffMissing: "Link the claim candidate to a saved Claim chain before opening Notice or the report.",
+  handoffSelected: "Claim chain selected. Review the source, recipient and date before saving or sending any Notice.",
+} : {
+  contractSaved: "تم حفظ ملف العقد كبيانات مرجعية قابلة للمراجعة.",
+  riskAdded: "تمت إضافة المخاطرة إلى سجل المراجعة.",
+  candidateLinked: "تم ربط مرشح المطالبة دون تقرير استحقاق تلقائي.",
+  deadlineSaved: "تم حفظ الموعد كمؤشر مراجعة فقط.",
+  handoffMissing: "اربط مرشح المطالبة بسلسلة Claim محفوظة أولاً قبل الانتقال إلى Notice أو التقرير.",
+  handoffSelected: "تم اختيار سلسلة المطالبة. راجع المصدر والمستلم والتاريخ قبل حفظ أو إرسال أي Notice.",
+};
 const dateOnly = (value?: Date | null) => value ? new Date(value).toISOString().slice(0, 10) : "";
 const shortDate = (value: Date | null | undefined, language: AppLanguage) => value ? new Date(value).toLocaleDateString(language === "ar" ? "ar-EG" : "en-GB") : language === "ar" ? "غير محدد" : "Not specified";
 
@@ -27,6 +42,7 @@ function SourceBadge({ status, language }: { status: SourceStatus; language: App
 
 export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate, onActiveClaimChange }: { view: string; schedule: Schedule; isAuthenticated: boolean; onNavigate: (view: "notices" | "report") => void; onActiveClaimChange: (claimKey: string, narrative: string) => void }) {
   const { language, direction } = useAppLanguage();
+  const toastText = claimConsoleToastText(language);
   const copy = language === "en" ? {
     accessTitle: "Contract profile and risk register",
     accessBody: "Sign in to save this register in the project workspace and share it through the review workflow. No sample data is added automatically.",
@@ -64,10 +80,10 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
     setContract({ contractTitle: profile.contractTitle ?? "", contractForm: profile.contractForm ?? "", contractEdition: profile.contractEdition ?? "", specialConditionsReference: profile.specialConditionsReference ?? "", governingLaw: profile.governingLaw ?? "", claimClauseReference: profile.claimClauseReference ?? "", noticeTriggerDescription: profile.noticeTriggerDescription ?? "", sourceReference: profile.sourceReference ?? "", sourceStatus: profile.sourceStatus, reviewNotes: profile.reviewNotes ?? "" });
   }, [consoleData.data?.profile]);
 
-  const saveContract = trpc.claimConsole.saveContractProfile.useMutation({ onSuccess: () => { invalidate(); toast.success("تم حفظ ملف العقد كبيانات مرجعية قابلة للمراجعة."); }, onError: error => toast.error(error.message) });
-  const createRisk = trpc.claimConsole.createRisk.useMutation({ onSuccess: () => { invalidate(); setRisk(previous => ({ ...previous, title: "", description: "", sourceReference: "", reviewNotes: "", linkedPlannerIssueId: "none" })); toast.success("تمت إضافة المخاطرة إلى سجل المراجعة."); }, onError: error => toast.error(error.message) });
-  const createCandidate = trpc.claimConsole.createCandidate.useMutation({ onSuccess: () => { invalidate(); setCandidate(previous => ({ ...previous, title: "", basisSummary: "", sourceReference: "", reviewNotes: "", riskId: "none", plannerIssueLogId: "none", claimChainId: "none" })); toast.success("تم ربط مرشح المطالبة دون تقرير استحقاق تلقائي."); }, onError: error => toast.error(error.message) });
-  const createDeadline = trpc.claimConsole.createDeadline.useMutation({ onSuccess: () => { invalidate(); setDeadline(previous => ({ ...previous, title: "", ruleDescription: "", sourceReference: "", reviewNotes: "", dueDate: "", calendarDays: "" })); toast.success("تم حفظ الموعد كمؤشر مراجعة فقط."); }, onError: error => toast.error(error.message) });
+  const saveContract = trpc.claimConsole.saveContractProfile.useMutation({ onSuccess: () => { invalidate(); toast.success(toastText.contractSaved); }, onError: error => toast.error(error.message) });
+  const createRisk = trpc.claimConsole.createRisk.useMutation({ onSuccess: () => { invalidate(); setRisk(previous => ({ ...previous, title: "", description: "", sourceReference: "", reviewNotes: "", linkedPlannerIssueId: "none" })); toast.success(toastText.riskAdded); }, onError: error => toast.error(error.message) });
+  const createCandidate = trpc.claimConsole.createCandidate.useMutation({ onSuccess: () => { invalidate(); setCandidate(previous => ({ ...previous, title: "", basisSummary: "", sourceReference: "", reviewNotes: "", riskId: "none", plannerIssueLogId: "none", claimChainId: "none" })); toast.success(toastText.candidateLinked); }, onError: error => toast.error(error.message) });
+  const createDeadline = trpc.claimConsole.createDeadline.useMutation({ onSuccess: () => { invalidate(); setDeadline(previous => ({ ...previous, title: "", ruleDescription: "", sourceReference: "", reviewNotes: "", dueDate: "", calendarDays: "" })); toast.success(toastText.deadlineSaved); }, onError: error => toast.error(error.message) });
 
   if (view !== "claimConsole") return null;
   if (!isAuthenticated) return <section className="workflow-panel" dir={direction}><div className="workflow-heading"><div><p className="eyebrow">Claim Console</p><h2>{copy.accessTitle}</h2><p>{copy.accessBody}</p></div><ShieldAlert size={30} /></div></section>;
@@ -78,12 +94,12 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
   const handoffToClaim = (claimChainId: number | null) => {
     const chain = data?.chains.find(item => item.id === claimChainId);
     if (!chain) {
-      toast.error("اربط مرشح المطالبة بسلسلة Claim محفوظة أولاً قبل الانتقال إلى Notice أو التقرير.");
+      toast.error(toastText.handoffMissing);
       return;
     }
     onActiveClaimChange(chain.claimKey, "");
     onNavigate("notices");
-    toast.message("تم اختيار سلسلة المطالبة. راجع المصدر والمستلم والتاريخ قبل حفظ أو إرسال أي Notice.");
+    toast.message(toastText.handoffSelected);
   };
 
   return <div className="view-stack claim-console-view" dir={direction}>
