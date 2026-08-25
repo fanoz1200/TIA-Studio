@@ -60,6 +60,7 @@ describe("تنزيل مسودة Notice محلية", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.removeItem("tia-studio-interface-language");
   });
 
   it("يجهز وينزل مسودة للمستخدم غير المسجل بدون بدء تسجيل الدخول", () => {
@@ -136,5 +137,28 @@ describe("تنزيل مسودة Notice محلية", () => {
     expect(String(generatedBlob?.parts.join(""))).toContain("TIA Studio — Editable Notice Draft");
     expect(String(generatedBlob?.parts.join(""))).toContain("This is a local draft.");
     expect(mocks.toastSuccess).toHaveBeenCalledWith("The local Notice draft was downloaded. Review and edit it before any sending.");
+  });
+
+  it("يعرض سجل الإشعارات بالإنجليزية واتجاه LTR من دون بدء تسجيل الدخول", () => {
+    localStorage.setItem("tia-studio-interface-language", "en");
+
+    const { container } = render(
+      <LanguageProvider>
+        <FinancialNoticeReviewPanel
+          view="notices"
+          schedule={schedule}
+          events={[event]}
+          selectedEvent={event}
+          activeImpactDays={3}
+          isAuthenticated={false}
+        />
+      </LanguageProvider>
+    );
+
+    expect(screen.getByRole("heading", { name: "Contractual Notice register" })).toBeTruthy();
+    expect(screen.getByText("Reference delay event")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Prepare editable draft" })).toBeTruthy();
+    expect(container.querySelector("section")?.getAttribute("dir")).toBe("ltr");
+    expect(mocks.startLogin).not.toHaveBeenCalled();
   });
 });
