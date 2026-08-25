@@ -142,6 +142,166 @@ type ViewKey =
   | "claimConsole";
 type CsvActivity = Activity;
 
+type HomeStatusMessageKey =
+  | "cpmUnavailable"
+  | "tiaUnavailable"
+  | "windowUnavailable"
+  | "demoLoaded"
+  | "invalidJsonShape"
+  | "jsonImported"
+  | "jsonReadFailure"
+  | "xerImported"
+  | "xerReadFailure"
+  | "journeyImported"
+  | "journeyReadFailure"
+  | "csvDurationInvalid"
+  | "activitiesCsvImported"
+  | "csvReadFailure"
+  | "activitiesFirst"
+  | "csvNetworkImported"
+  | "relationshipsCsvReadFailure"
+  | "p6GateRequired"
+  | "selectRelationship"
+  | "selectActivity"
+  | "invalidEvent"
+  | "eventSplitCreated"
+  | "eventCreated"
+  | "eventCreateFailed"
+  | "eventRemoved"
+  | "issueFragnetFailed"
+  | "invalidWindow"
+  | "windowCreated"
+  | "weekdayRequired"
+  | "countryRequired"
+  | "holidaysSynced"
+  | "holidaysSyncFailure"
+  | "holidayDateInvalid"
+  | "scheduleExported"
+  | "analysisExported"
+  | "calculationUpdated"
+  | "analysisJourneyStarted"
+  | "p6XmlImported"
+  | "tiaJourneyOpened";
+
+/**
+ * Translates only fixed UI status chrome. Values received from imported files,
+ * the CPM/TIA engine, or users are supplied by callers unchanged.
+ */
+export function formatHomeStatus(
+  language: "ar" | "en",
+  key: HomeStatusMessageKey,
+  values: Record<string, string | number> = {}
+) {
+  const value = (name: string) => String(values[name] ?? "");
+  const messages: Record<HomeStatusMessageKey, string> =
+    language === "en"
+      ? {
+          cpmUnavailable: "Unable to calculate CPM.",
+          tiaUnavailable: "Unable to calculate TIA for this event.",
+          windowUnavailable: "Unable to calculate the analysis window.",
+          demoLoaded:
+            "Expanded sample loaded: 5-day calendar, TIA event, and review window.",
+          invalidJsonShape: "The JSON file does not match the required schedule format.",
+          jsonImported: `Imported ${value("activities")} activities and ${value("relationships")} relationships.`,
+          jsonReadFailure: "Unable to read the JSON file.",
+          xerImported: `XER imported: ${value("activities")} activities and ${value("relationships")} relationships. Review the calendar before approval.`,
+          xerReadFailure: "Unable to read the XER file.",
+          journeyImported: `Read ${value("stage")}: ${value("scheduleName")}`,
+          journeyReadFailure: "Unable to read the schedule file.",
+          csvDurationInvalid:
+            "The duration column is required and must contain non-negative numbers.",
+          activitiesCsvImported: `Read ${value("activities")} activities. Import relationships to complete the network.`,
+          csvReadFailure: "Unable to read the CSV file.",
+          activitiesFirst: "Import the activities file first, then the relationships file.",
+          csvNetworkImported: "CSV network imported and CPM calculated successfully.",
+          relationshipsCsvReadFailure: "Unable to read the CSV relationships file.",
+          p6GateRequired:
+            "Complete the P6 review gate and confirm the calendar and Data Date review before creating Pre-TIA.",
+          selectRelationship: "Select a logic relationship to split with the Fragnet.",
+          selectActivity:
+            "Select the affected activity to split it in the Post-TIA copy.",
+          invalidEvent: "Enter an event title and a valid non-negative duration.",
+          eventSplitCreated:
+            "Pre/Event/Post split applied and its impact calculated on the Post-TIA copy.",
+          eventCreated:
+            "The Fragnet was inserted and its impact calculated on the independent TIA copy.",
+          eventCreateFailed: "Unable to create the event.",
+          eventRemoved: "The event was removed from the analysis register.",
+          issueFragnetFailed:
+            "Unable to insert the proposed Fragnet in the TIA copy.",
+          invalidWindow: "Enter a window name and valid dates.",
+          windowCreated:
+            "Analysis window created. It will include events occurring within its dates.",
+          weekdayRequired: "At least one working day must remain.",
+          countryRequired: "Select the country before loading holidays.",
+          holidaysSynced: `Loaded ${value("holidays")} published holidays for ${value("country")}. Review transfers and Hijri holidays before approval.`,
+          holidaysSyncFailure:
+            "Unable to update holidays now; you can add them manually.",
+          holidayDateInvalid: "Enter the holiday date in YYYY-MM-DD format.",
+          scheduleExported: "The schedule copy is ready to download.",
+          analysisExported: "The analysis record and narrative are ready to download.",
+          calculationUpdated:
+            "The calculation was updated using the current calendar and data.",
+          analysisJourneyStarted:
+            "We will begin the numbered journey: choose the case type, import the schedules, then record the issue.",
+          p6XmlImported:
+            "P6 XML schedule loaded and an analysis window matching the imported scope was created.",
+          tiaJourneyOpened:
+            "The TIA journey will start from step one so you do not miss importing schedules or recording the issue.",
+        }
+      : {
+          cpmUnavailable: "تعذر حساب CPM.",
+          tiaUnavailable: "تعذر حساب TIA للحدث.",
+          windowUnavailable: "تعذر حساب نافذة التحليل.",
+          demoLoaded:
+            "تم تحميل النموذج الموسع: تقويم 5 أيام، حدث TIA، ونافذة مراجعة.",
+          invalidJsonShape: "ملف JSON لا يطابق نموذج البرنامج المطلوب.",
+          jsonImported: `تم استيراد ${value("activities")} نشاط و${value("relationships")} علاقة.`,
+          jsonReadFailure: "تعذر قراءة ملف JSON.",
+          xerImported: `تم استيراد XER: ${value("activities")} نشاط و${value("relationships")} علاقة. راجع التقويم قبل الاعتماد.`,
+          xerReadFailure: "تعذر قراءة ملف XER.",
+          journeyImported: `تمت قراءة ${value("stage")}: ${value("scheduleName")}`,
+          journeyReadFailure: "تعذر قراءة ملف البرنامج.",
+          csvDurationInvalid:
+            "عمود duration مطلوب ويجب أن يحتوي أرقاماً غير سالبة.",
+          activitiesCsvImported: `تمت قراءة ${value("activities")} نشاط. حمّل العلاقات لإكمال الشبكة.`,
+          csvReadFailure: "تعذر قراءة CSV.",
+          activitiesFirst: "حمّل ملف الأنشطة أولاً، ثم ملف العلاقات.",
+          csvNetworkImported: "تم استيراد شبكة CSV وحساب CPM بنجاح.",
+          relationshipsCsvReadFailure: "تعذر قراءة العلاقات CSV.",
+          p6GateRequired:
+            "أكمل بوابة فحص P6 وأقر مراجعة التقويم وData Date قبل إنشاء Pre-TIA.",
+          selectRelationship: "اختر علاقة منطقية ليتم فصلها بالـ Fragnet.",
+          selectActivity: "اختر النشاط المتأثر لتقسيمه داخل نسخة Post-TIA.",
+          invalidEvent: "أدخل عنوان الحدث ومدة صحيحة غير سالبة.",
+          eventSplitCreated:
+            "تم اعتماد تقسيم Pre/Event/Post وحساب أثره على نسخة Post-TIA.",
+          eventCreated: "تم إدراج الـ Fragnet وحساب أثره على نسخة TIA المستقلة.",
+          eventCreateFailed: "تعذر إنشاء الحدث.",
+          eventRemoved: "تم حذف الحدث من سجل التحليل.",
+          issueFragnetFailed: "تعذر إدراج Fragnet المقترح في نسخة TIA.",
+          invalidWindow: "أدخل اسم نافذة وتواريخ صحيحة.",
+          windowCreated:
+            "تم إنشاء نافذة التحليل. ستلتقط الأحداث الواقعة داخل تاريخيها.",
+          weekdayRequired: "يجب الإبقاء على يوم عمل واحد على الأقل.",
+          countryRequired: "اختر البلد أولاً قبل تحميل الإجازات.",
+          holidaysSynced: `تم تحميل ${value("holidays")} إجازة منشورة لـ ${value("country")}. راجع الترحيلات والأعياد الهجرية قبل الاعتماد.`,
+          holidaysSyncFailure:
+            "تعذر تحديث الإجازات الآن؛ يمكنك إدخالها يدوياً.",
+          holidayDateInvalid: "أدخل العطلة بصيغة YYYY-MM-DD.",
+          scheduleExported: "تم تجهيز نسخة البرنامج للتنزيل.",
+          analysisExported: "تم تجهيز سجل التحليل والسرد للتنزيل.",
+          calculationUpdated: "تم تحديث الحساب باستخدام التقويم والبيانات الحالية.",
+          analysisJourneyStarted:
+            "هنبدأ بالرحلة المرقمة: اختار نوع الحالة ثم ارفع النسخ وسجّل الواقعة.",
+          p6XmlImported:
+            "تم تحميل برنامج P6 XML وإنشاء نافذة تحليل مطابقة للنطاق المستورد.",
+          tiaJourneyOpened:
+            "هتبدأ رحلة TIA من أول خطوة عشان ما يفوتكش رفع النسخ أو تسجيل الواقعة.",
+        };
+  return messages[key];
+}
+
 const baseSchedule: Schedule = {
   id: "baseline-building-envelope",
   name: "برج النخيل — تحديث البرنامج رقم 04",
@@ -600,10 +760,13 @@ export default function Home() {
     } catch (error) {
       return {
         value: null,
-        error: error instanceof Error ? error.message : "تعذر حساب CPM.",
+        error:
+          error instanceof Error
+            ? error.message
+            : formatHomeStatus(language, "cpmUnavailable"),
       };
     }
-  }, [schedule]);
+  }, [schedule, language]);
   const baseline = baselineState.value;
   const selectedEvent =
     events.find(event => event.id === selectedEventId) ?? null;
@@ -618,10 +781,13 @@ export default function Home() {
     } catch (error) {
       return {
         value: null,
-        error: error instanceof Error ? error.message : "تعذر حساب TIA للحدث.",
+        error:
+          error instanceof Error
+            ? error.message
+            : formatHomeStatus(language, "tiaUnavailable"),
       };
     }
-  }, [schedule, selectedEvent]);
+  }, [schedule, selectedEvent, language]);
   const windowState = useMemo(() => {
     try {
       return {
@@ -635,10 +801,12 @@ export default function Home() {
       return {
         value: null,
         error:
-          error instanceof Error ? error.message : "تعذر حساب نافذة التحليل.",
+          error instanceof Error
+            ? error.message
+            : formatHomeStatus(language, "windowUnavailable"),
       };
     }
-  }, [schedule, selectedWindow, events]);
+  }, [schedule, selectedWindow, events, language]);
   const analysis = singleResultState.value;
   const windowResult = windowState.value;
   const activeResult = windowResult ?? analysis;
@@ -697,9 +865,7 @@ export default function Home() {
     setEvents([initialEvent]);
     setSelectedEventId(initialEvent.id);
     setXerSummary(null);
-    toast.success(
-      "تم تحميل النموذج الموسع: تقويم 5 أيام، حدث TIA، ونافذة مراجعة."
-    );
+    toast.success(formatHomeStatus(language, "demoLoaded"));
   }
   async function importJson(file: File) {
     try {
@@ -711,17 +877,22 @@ export default function Home() {
         !Array.isArray(imported.activities) ||
         !Array.isArray(imported.relationships)
       )
-        throw new Error("ملف JSON لا يطابق نموذج البرنامج المطلوب.");
+        throw new Error(formatHomeStatus(language, "invalidJsonShape"));
       imported.source = "json";
       runCPM(imported);
       resetForImported(imported);
       setXerSummary(null);
       toast.success(
-        `تم استيراد ${imported.activities.length} نشاط و${imported.relationships.length} علاقة.`
+        formatHomeStatus(language, "jsonImported", {
+          activities: imported.activities.length,
+          relationships: imported.relationships.length,
+        })
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "تعذر قراءة ملف JSON."
+        error instanceof Error
+          ? error.message
+          : formatHomeStatus(language, "jsonReadFailure")
       );
     }
   }
@@ -736,11 +907,16 @@ export default function Home() {
       resetForImported(result.schedule);
       setXerSummary(result.summary);
       toast.success(
-        `تم استيراد XER: ${result.summary.activitiesRead} نشاط و${result.summary.relationshipsRead} علاقة. راجع التقويم قبل الاعتماد.`
+        formatHomeStatus(language, "xerImported", {
+          activities: result.summary.activitiesRead,
+          relationships: result.summary.relationshipsRead,
+        })
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "تعذر قراءة ملف XER."
+        error instanceof Error
+          ? error.message
+          : formatHomeStatus(language, "xerReadFailure")
       );
     } finally {
       setIsXerImporting(false);
@@ -776,7 +952,7 @@ export default function Home() {
           !Array.isArray(imported.activities) ||
           !Array.isArray(imported.relationships)
         )
-          throw new Error("ملف JSON لا يطابق نموذج البرنامج المطلوب.");
+          throw new Error(formatHomeStatus(language, "invalidJsonShape"));
       }
       runCPM(imported);
       const snapshot: ScheduleSnapshot = {
@@ -802,11 +978,25 @@ export default function Home() {
         setUpdateSnapshots(previous => [...previous, snapshot]);
       }
       toast.success(
-        `تمت قراءة ${stage === "baseline" ? "Baseline" : stage === "pre-event-update" ? "Update قبل الحدث" : "تحديث لاحق"}: ${imported.name}`
+        formatHomeStatus(language, "journeyImported", {
+          stage:
+            stage === "baseline"
+              ? "Baseline"
+              : stage === "pre-event-update"
+                ? language === "en"
+                  ? "Pre-event update"
+                  : "Update قبل الحدث"
+                : language === "en"
+                  ? "Later update"
+                  : "تحديث لاحق",
+          scheduleName: imported.name,
+        })
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "تعذر قراءة ملف البرنامج."
+        error instanceof Error
+          ? error.message
+          : formatHomeStatus(language, "journeyReadFailure")
       );
     } finally {
       setIsXerImporting(false);
@@ -880,19 +1070,25 @@ export default function Home() {
             !Number.isFinite(activity.duration) || activity.duration < 0
         )
       )
-        throw new Error("عمود duration مطلوب ويجب أن يحتوي أرقاماً غير سالبة.");
+        throw new Error(formatHomeStatus(language, "csvDurationInvalid"));
       setCsvActivities(imported);
       toast.success(
-        `تمت قراءة ${imported.length} نشاط. حمّل العلاقات لإكمال الشبكة.`
+        formatHomeStatus(language, "activitiesCsvImported", {
+          activities: imported.length,
+        })
       );
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر قراءة CSV.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : formatHomeStatus(language, "csvReadFailure")
+      );
     }
   }
   async function importRelationshipsCsv(file: File) {
     try {
       if (!csvActivities)
-        throw new Error("حمّل ملف الأنشطة أولاً، ثم ملف العلاقات.");
+        throw new Error(formatHomeStatus(language, "activitiesFirst"));
       const records = parseCsv(await file.text());
       const relationships: Relationship[] = records.map((record, index) => ({
         id:
@@ -926,10 +1122,12 @@ export default function Home() {
       runCPM(imported);
       resetForImported(imported);
       setXerSummary(null);
-      toast.success("تم استيراد شبكة CSV وحساب CPM بنجاح.");
+      toast.success(formatHomeStatus(language, "csvNetworkImported"));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "تعذر قراءة العلاقات CSV."
+        error instanceof Error
+          ? error.message
+          : formatHomeStatus(language, "relationshipsCsvReadFailure")
       );
     }
   }
@@ -940,22 +1138,20 @@ export default function Home() {
     ) {
       setJourneyStep(2);
       setView("guided");
-      toast.error(
-        "أكمل بوابة فحص P6 وأقر مراجعة التقويم وData Date قبل إنشاء Pre-TIA."
-      );
+      toast.error(formatHomeStatus(language, "p6GateRequired"));
       return;
     }
     if (eventModel === "relationship" && !selectedRelationship) {
-      toast.error("اختر علاقة منطقية ليتم فصلها بالـ Fragnet.");
+      toast.error(formatHomeStatus(language, "selectRelationship"));
       return;
     }
     if (eventModel === "activity-split" && !selectedActivityId) {
-      toast.error("اختر النشاط المتأثر لتقسيمه داخل نسخة Post-TIA.");
+      toast.error(formatHomeStatus(language, "selectActivity"));
       return;
     }
     const duration = Number(eventDuration);
     if (!eventTitle.trim() || !Number.isFinite(duration) || duration < 0) {
-      toast.error("أدخل عنوان الحدث ومدة صحيحة غير سالبة.");
+      toast.error(formatHomeStatus(language, "invalidEvent"));
       return;
     }
     try {
@@ -1014,17 +1210,21 @@ export default function Home() {
       setView("analysis");
       toast.success(
         eventModel === "activity-split"
-          ? "تم اعتماد تقسيم Pre/Event/Post وحساب أثره على نسخة Post-TIA."
-          : "تم إدراج الـ Fragnet وحساب أثره على نسخة TIA المستقلة."
+          ? formatHomeStatus(language, "eventSplitCreated")
+          : formatHomeStatus(language, "eventCreated")
       );
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر إنشاء الحدث.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : formatHomeStatus(language, "eventCreateFailed")
+      );
     }
   }
   function removeEvent(id: string) {
     setEvents(previous => previous.filter(event => event.id !== id));
     setSelectedEventId(events.find(event => event.id !== id)?.id ?? "");
-    toast.success("تم حذف الحدث من سجل التحليل.");
+    toast.success(formatHomeStatus(language, "eventRemoved"));
   }
   function applyIssueFragnet(event: Fragnet) {
     try {
@@ -1036,13 +1236,13 @@ export default function Home() {
       toast.error(
         error instanceof Error
           ? error.message
-          : "تعذر إدراج Fragnet المقترح في نسخة TIA."
+          : formatHomeStatus(language, "issueFragnetFailed")
       );
     }
   }
   function addWindow() {
     if (!newWindowName.trim() || newWindowFrom > newWindowTo) {
-      toast.error("أدخل اسم نافذة وتواريخ صحيحة.");
+      toast.error(formatHomeStatus(language, "invalidWindow"));
       return;
     }
     const item: AnalysisWindow = {
@@ -1057,9 +1257,7 @@ export default function Home() {
     setWindows(previous => [...previous, item]);
     setSelectedWindowId(item.id);
     setView("windows");
-    toast.success(
-      "تم إنشاء نافذة التحليل. ستلتقط الأحداث الواقعة داخل تاريخيها."
-    );
+    toast.success(formatHomeStatus(language, "windowCreated"));
   }
   function toggleWeekday(day: number) {
     const current = schedule.calendar ?? calendarDayCalendar;
@@ -1067,7 +1265,7 @@ export default function Home() {
       ? current.workingWeekdays.filter(value => value !== day)
       : [...current.workingWeekdays, day].sort((a, b) => a - b);
     if (!next.length) {
-      toast.error("يجب الإبقاء على يوم عمل واحد على الأقل.");
+      toast.error(formatHomeStatus(language, "weekdayRequired"));
       return;
     }
     setSchedule(previous => ({
@@ -1112,7 +1310,7 @@ export default function Home() {
       countryCode ?? schedule.calendar?.countryCode
     );
     if (!country) {
-      toast.error("اختر البلد أولاً قبل تحميل الإجازات.");
+      toast.error(formatHomeStatus(language, "countryRequired"));
       return;
     }
     setIsHolidaySyncing(true);
@@ -1142,13 +1340,16 @@ export default function Home() {
         };
       });
       toast.success(
-        `تم تحميل ${loaded.length} إجازة منشورة لـ ${country.label.split(" — ")[0]}. راجع الترحيلات والأعياد الهجرية قبل الاعتماد.`
+        formatHomeStatus(language, "holidaysSynced", {
+          holidays: loaded.length,
+          country: country.label.split(" — ")[0],
+        })
       );
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "تعذر تحديث الإجازات الآن؛ يمكنك إدخالها يدوياً."
+          : formatHomeStatus(language, "holidaysSyncFailure")
       );
     } finally {
       setIsHolidaySyncing(false);
@@ -1156,7 +1357,7 @@ export default function Home() {
   }
   function addHoliday() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(holidayInput)) {
-      toast.error("أدخل العطلة بصيغة YYYY-MM-DD.");
+      toast.error(formatHomeStatus(language, "holidayDateInvalid"));
       return;
     }
     setSchedule(previous => {
@@ -1198,7 +1399,7 @@ export default function Home() {
   }
   function exportSchedule() {
     downloadText("tia-studio-schedule.json", JSON.stringify(schedule, null, 2));
-    toast.success("تم تجهيز نسخة البرنامج للتنزيل.");
+    toast.success(formatHomeStatus(language, "scheduleExported"));
   }
   function exportAnalysis() {
     if (!activeResult) return;
@@ -1218,7 +1419,7 @@ export default function Home() {
         2
       )
     );
-    toast.success("تم تجهيز سجل التحليل والسرد للتنزيل.");
+    toast.success(formatHomeStatus(language, "analysisExported"));
   }
 
   const qualityItems = [
@@ -1354,16 +1555,12 @@ export default function Home() {
               onClick={() => {
                 if (activeResult) {
                   setView("analysis");
-                  toast.success(
-                    "تم تحديث الحساب باستخدام التقويم والبيانات الحالية."
-                  );
+                  toast.success(formatHomeStatus(language, "calculationUpdated"));
                 } else {
                   setJourneyPath(null);
                   setJourneyStep(1);
                   setView("guided");
-                  toast.message(
-                    "هنبدأ بالرحلة المرقمة: اختار نوع الحالة ثم ارفع النسخ وسجّل الواقعة."
-                  );
+                  toast.message(formatHomeStatus(language, "analysisJourneyStarted"));
                   window.requestAnimationFrame(() =>
                     window.scrollTo({ top: 0, behavior: "smooth" })
                   );
@@ -1436,9 +1633,7 @@ export default function Home() {
             runCPM(imported);
             resetForImported(imported);
             setXerSummary(null);
-            toast.success(
-              "تم تحميل برنامج P6 XML وإنشاء نافذة تحليل مطابقة للنطاق المستورد."
-            );
+            toast.success(formatHomeStatus(language, "p6XmlImported"));
           }}
         />
         <FinancialNoticeReviewPanel
@@ -2907,9 +3102,7 @@ export default function Home() {
                         setJourneyPath("direct");
                         setJourneyStep(1);
                         setView("guided");
-                        toast.message(
-                          "هتبدأ رحلة TIA من أول خطوة عشان ما يفوتكش رفع النسخ أو تسجيل الواقعة."
-                        );
+                        toast.message(formatHomeStatus(language, "tiaJourneyOpened"));
                       }}
                     >
                       <Zap size={15} />
