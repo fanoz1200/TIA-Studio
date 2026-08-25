@@ -30,8 +30,29 @@ function expiryText(expiresAt: Date | string | null, language: AppLanguage, isEx
   return language === "ar" ? (isExpired ? `انتهى الوصول في ${date}` : `الوصول متاح حتى ${date}`) : (isExpired ? `Access expired on ${date}` : `Access available until ${date}`);
 }
 
+export function projectMemberActionMessages(language: AppLanguage) {
+  return language === "ar" ? {
+    memberAdded: "تمت إضافة عضو المشروع لمدة الوصول المختارة ويمكن اختياره في مراحل الاعتماد.",
+    membershipUpdated: "تم تحديث العضوية أو مدة الوصول.",
+    memberRemoved: "تمت إزالة عضو المشروع من هذه المساحة.",
+    invitationCreated: "أُنشئ رابط دعوة آمن بمدة وصول محددة. انسخه أو افتح مسودة البريد لإرساله للعضو.",
+    invitationCancelled: "أُلغيت الدعوة ولن يعود الرابط صالحاً.",
+    invitationCopied: "تم نسخ رابط الدعوة.",
+    invitationCopyFailed: "تعذر النسخ تلقائياً؛ انسخ الرابط يدوياً.",
+  } : {
+    memberAdded: "The member was added for the selected access duration and can be assigned to review stages.",
+    membershipUpdated: "Membership or access duration was updated.",
+    memberRemoved: "The project member was removed from this workspace.",
+    invitationCreated: "A secure invitation link with a fixed access duration was created. Copy it or open an email draft for the member.",
+    invitationCancelled: "The invitation was cancelled and its link is no longer valid.",
+    invitationCopied: "Invitation link copied.",
+    invitationCopyFailed: "Automatic copy failed; copy the link manually.",
+  };
+}
+
 export function ProjectMembersPanel({ projectKey, isAuthenticated }: { projectKey: string; isAuthenticated: boolean }) {
   const { language, direction } = useAppLanguage();
+  const actionMessages = projectMemberActionMessages(language);
   const copy = language === "ar" ? {
     title: "أعضاء المشروع ومسار المراجعة", description: "الدعوة ترتبط بالبريد والدور، وتصبح عضوية بعد تسجيل الدخول بالبريد نفسه وقبول الرابط. مدة الوصول تبدأ من القبول وتُفرض على مراجعات مساحة الفريق، ولا تتحكم في نسخة سطح المكتب المحلية.", signInPrompt: "سجّل الدخول لإدارة أعضاء المشروع وتعيينات المراجعة.", signIn: "تسجيل الدخول", memberEmail: "بريد العضو", role: "الدور داخل المشروع", accessDuration: "مدة الوصول بعد القبول", createInvitation: "إنشاء دعوة", addRegistered: "إضافة مسجل", notice: "رابط الدعوة صالح لمدة 7 أيام، أما وصول العضو فيبدأ بعد القبول بالمدة المختارة. عند الانتهاء يمنع الخادم اعتماد المراجعة أو تعيين عضو منتهي، ويمكن للمالك تمديده أو إزالته. لا يرسل التطبيق بريدًا بنفسه.", invitationReady: "دعوة جاهزة إلى", copyLink: "نسخ الرابط", openDraft: "فتح مسودة بريد", invitations: "الدعوات", records: "سجل", loadingInvitations: "جار تحميل الدعوات…", linkExpires: "الرابط ينتهي", access: "الوصول", afterAcceptance: "بعد القبول", accepted: "مقبولة", pending: "بانتظار القبول", expired: "منتهية", cancelled: "ملغاة", resend: "إعادة إرسال دعوة", cancel: "إلغاء دعوة", noInvitations: "لا توجد دعوات بعد.", members: "الأعضاء المعتمدون", member: "عضو", loadingMembers: "جار تحميل الأعضاء…", roleFor: "دور", extendAccess: "تمديد وصول", remove: "إزالة", extend: "مد",
   } : {
@@ -48,12 +69,12 @@ export function ProjectMembersPanel({ projectKey, isAuthenticated }: { projectKe
   const invitations = trpc.projectInvitation.list.useQuery(input, { enabled: isAuthenticated });
   const refresh = () => members.refetch();
   const refreshInvitations = () => invitations.refetch();
-  const add = trpc.projectMember.addByEmail.useMutation({ onSuccess: () => { setEmail(""); refresh(); toast.success(language === "ar" ? "تمت إضافة عضو المشروع لمدة الوصول المختارة ويمكن اختياره في مراحل الاعتماد." : "The member was added for the selected access duration and can be assigned to review stages."); } });
-  const update = trpc.projectMember.updateRole.useMutation({ onSuccess: () => { refresh(); toast.success(language === "ar" ? "تم تحديث العضوية أو مدة الوصول." : "Membership or access duration was updated."); } });
-  const remove = trpc.projectMember.remove.useMutation({ onSuccess: () => { refresh(); toast.success(language === "ar" ? "تمت إزالة عضو المشروع من هذه المساحة." : "The project member was removed from this workspace."); } });
-  const invite = trpc.projectInvitation.create.useMutation({ onSuccess: result => { setLastInvitation(result); refreshInvitations(); toast.success(language === "ar" ? "أُنشئ رابط دعوة آمن بمدة وصول محددة. انسخه أو افتح مسودة البريد لإرساله للعضو." : "A secure invitation link with a fixed access duration was created. Copy it or open an email draft for the member."); } });
-  const cancelInvite = trpc.projectInvitation.cancel.useMutation({ onSuccess: () => { refreshInvitations(); toast.success(language === "ar" ? "أُلغيت الدعوة ولن يعود الرابط صالحاً." : "The invitation was cancelled and its link is no longer valid."); } });
-  const copyInvite = async (value: string) => { try { await navigator.clipboard.writeText(value); toast.success(language === "ar" ? "تم نسخ رابط الدعوة." : "Invitation link copied."); } catch { toast.error(language === "ar" ? "تعذر النسخ تلقائياً؛ انسخ الرابط يدوياً." : "Automatic copy failed; copy the link manually."); } };
+  const add = trpc.projectMember.addByEmail.useMutation({ onSuccess: () => { setEmail(""); refresh(); toast.success(actionMessages.memberAdded); } });
+  const update = trpc.projectMember.updateRole.useMutation({ onSuccess: () => { refresh(); toast.success(actionMessages.membershipUpdated); } });
+  const remove = trpc.projectMember.remove.useMutation({ onSuccess: () => { refresh(); toast.success(actionMessages.memberRemoved); } });
+  const invite = trpc.projectInvitation.create.useMutation({ onSuccess: result => { setLastInvitation(result); refreshInvitations(); toast.success(actionMessages.invitationCreated); } });
+  const cancelInvite = trpc.projectInvitation.cancel.useMutation({ onSuccess: () => { refreshInvitations(); toast.success(actionMessages.invitationCancelled); } });
+  const copyInvite = async (value: string) => { try { await navigator.clipboard.writeText(value); toast.success(actionMessages.invitationCopied); } catch { toast.error(actionMessages.invitationCopyFailed); } };
   const openEmailDraft = (subject: string, body: string) => { window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`; };
   const sendInvitation = (inviteEmail = email, inviteRole = role, duration = accessDurationDays) => invite.mutate({ projectKey, email: inviteEmail.trim(), projectRole: inviteRole, accessDurationDays: duration, origin: window.location.origin, draftLanguage: language });
 

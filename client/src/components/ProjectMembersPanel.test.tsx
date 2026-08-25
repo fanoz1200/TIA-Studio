@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { ProjectMembersPanel } from "./ProjectMembersPanel";
+import { ProjectMembersPanel, projectMemberActionMessages } from "./ProjectMembersPanel";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/const", () => ({ startLogin: vi.fn() }));
@@ -42,5 +42,14 @@ describe("لوحة أعضاء المشروع", () => {
     expect(screen.getByText("Member email")).toBeTruthy();
     expect(screen.getByText("Invitations")).toBeTruthy();
     expect(container.textContent).toContain("م. كريم");
+  });
+
+  it("تُخرج رسائل إجراءات العضوية الثابتة بالإنجليزية دون تضمين بيانات العضو", () => {
+    const messages = projectMemberActionMessages("en");
+
+    expect(messages.memberAdded).toContain("selected access duration");
+    expect(messages.invitationCopied).toBe("Invitation link copied.");
+    expect(JSON.stringify(messages)).not.toContain("م. كريم");
+    expect(JSON.stringify(messages)).not.toContain("planner@example.com");
   });
 });
