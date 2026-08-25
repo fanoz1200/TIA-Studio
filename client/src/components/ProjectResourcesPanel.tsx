@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { resolveResourceDownloadHref } from "@/lib/download-links";
 import { engineGuide, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
 import { WORKSHOP_NO8_TRAINING_REFERENCE } from "@/lib/workshop-training-reference";
+import { useAppLanguage } from "@/contexts/LanguageContext";
 import "./project-resources.css";
 
 type DeferredInstallPrompt = Event & {
@@ -33,7 +34,126 @@ const examples = [
   { name: "04 — مورد P6 مصغر", href: "/manus-storage/04-minimal-p6-resource_b6c6c3e0.xer", type: "XER" },
 ];
 
+const englishResources = [
+  { title: "Complete technical guide", description: "Architecture, schedules, the CPM engine, TIA, import, evidence, tests, and the rebuild approach.", kind: "Markdown · Arabic source" },
+  { title: "User guide and workflow", description: "The working path from a P6 file to a Fragnet, a Notice, approval, and a report, with practical checkpoints.", kind: "Markdown · Arabic source" },
+  { title: "Methodology reference", description: "How the interface relates to the TIA method and SCL Protocol, with the professional limitations of any result.", kind: "Markdown · Arabic source" },
+  { title: "AI and local operation", description: "What is calculated locally, what needs account or storage services, and what does not use an AI model at all.", kind: "Markdown · Arabic source" },
+  { title: "Training examples package", description: "A baseline, update, delay event, and small XER file. Read the workflow guide first, then download the examples for practice.", kind: "Examples guide · Arabic source" },
+  { title: "Source and continuity package — 1.0.7", description: "A clean TAR.GZ archive of source, guides, and examples. It includes the six-day Egypt default calendar, early quality gate, XER viewer, and issue template. It does not include the user's original P6 or Excel files.", kind: "TAR.GZ · Source + handoff" },
+  { title: "Project continuity and handover guide", description: "How to preserve the source, restore work, continue through GitHub or the source package, and test a new release.", kind: "Markdown · Arabic source" },
+  { title: "Desktop app — Windows 1.0.12 Setup (recommended)", description: "The Windows x64 installer includes interface and report language choices, Claim Console, and XER calendar/constraint/update checks. Download it, then run Setup once. It adds a Start shortcut and needs neither Node.js nor extraction. The package is not digitally signed: verify it before running and download only from this official link.", kind: "Windows x64 · Setup" },
+  { title: "Desktop app — Windows 1.0.12 Portable", description: "A direct EXE with interface and report language choices, Claim Console, and XER calendar/constraint/update checks. It does not install anything or add a Start icon. Use it for trial work or where installation is blocked; it does not provide central installation or automatic updates.", kind: "Windows x64 · Portable EXE" },
+  { title: "Windows 1.0.12 checksums — SHA-256", description: "Checksums for Setup and Portable. Download the file and compare the checksum before running; do not mix files from different releases or download sources.", kind: "SHA-256" },
+  { title: "Desktop app — Linux 1.0.7", description: "A single AppImage for Linux x64 with local calculation, import checks, and the 1.0.7 features, without original P6 or Excel files. Grant execute permission once and test it on a training project before professional use.", kind: "Linux x64 · AppImage" },
+] as const;
+
+const englishExamples = [
+  "01 — Baseline schedule",
+  "02 — Update after foundations",
+  "03 — Foundations delay event",
+  "04 — Small P6 resource",
+] as const;
+
+const resourceCopy = {
+  ar: {
+    heroEyebrow: "DOCUMENTATION · EXAMPLES · LOCAL USE",
+    heroTitle: "مركز المعرفة والتنزيل",
+    heroDescription: "كل الأدلة وملفات التدريب محفوظة داخل نسخة المشروع وقابلة للتنزيل. استخدم الأمثلة قبل العمل على برنامج حقيقي، واحتفظ بملفات P6 الأصلية خارج التطبيق كسجل مرجعي.",
+    installed: "تم التثبيت",
+    installFromBrowser: "تثبيت من المتصفح",
+    installTitle: "تثبيت PWA اختياري من المتصفح عند دعمه.",
+    fallbackInstallTitle: "المتصفح لا يوفّر تثبيت PWA هنا؛ نزّل ملف Windows Setup بدلاً من ذلك.",
+    fallbackInstall: "تحميل Setup لـ Windows",
+    localTitle: "وضع الاستخدام المحلي",
+    localDescription: "بعد فتح التطبيق عبر اتصال آمن وتشغيله مرة واحدة، يحفظ المتصفح واجهة التشغيل للاستخدام اللاحق. حساب CPM وTIA وقراءة ملفات XER/XML والتقرير تتم داخل المتصفح؛ أما الحسابات والأدلة والاعتمادات المحفوظة فتحتاج اتصالاً وخدمة الخادم. تتوفر أيضاً حزم Windows وLinux للتجربة المحلية؛ لا تُعد بديلاً عن المراجعة المهنية أو اختبار استيراد Primavera على نسخة غير إنتاجية.",
+    desktopAria: "تنزيل نسخة الكمبيوتر",
+    desktopTitle: "حمّل نسخة الكمبيوتر الآن",
+    desktopDescription: "على Windows حمّل Setup أولاً للتثبيت الطبيعي وأيقونة Start. استخدم النسخة المحمولة فقط لو جهازك يمنع التثبيت.",
+    setup: "Windows 1.0.12 — Setup",
+    portable: "Windows 1.0.12 — محمول",
+    releaseEyebrow: "LIVE RELEASE GUIDE",
+    releaseTitle: "الدليل الحيّ: كيف يعمل البرنامج من البداية للنهاية؟",
+    releaseDescription: "هذا الدليل مضمّن داخل التطبيق، ويرتبط بالإصدار الحالي حتى تعرف بالضبط ما الذي تغير وكيف ينتقل العمل بين الأقسام والمحركات.",
+    releaseVersion: "الإصدار",
+    launchTitle: "تشغيل محلي بنقرة واحدة",
+    methodologyTitle: "المنهجيات: متى نستخدم ماذا؟",
+    enginesTitle: "المحركات المختلفة",
+    flowTitle: "سير العمل المعتمد",
+    linksTitle: "كيف ترتبط الأقسام؟",
+    changesTitle: "سجل تغييرات هذا الإصدار",
+    changeRule: "قاعدة التحديث: أي تعديل يؤثر على الاستيراد أو CPM أو Fragnet أو الجودة أو التقرير يحدّث هذا الدليل ورقم الإصدار وسجل التغييرات، ثم يعاد الاختبار والبناء قبل إتاحة التنزيل.",
+    resourcesAria: "ملفات التوثيق والتنزيل",
+    download: "تنزيل",
+    examplesEyebrow: "SANDBOX PROJECTS",
+    examplesTitle: "ملفات تدريب قابلة للتجربة",
+    examplesDescription: "حمّل برنامج الأساس أولاً، ثم استخدم التحديث في تبويب مقارنة التحديثات، وجرّب ملف XER في تبويب البرنامج والتقويم.",
+    trainingDescription: "سُجل المثال في قاعدة البيانات كـ metadata خاصة بالمالك. يعرض هذا القسم حقائق مهيأة للتدريب فقط؛ لا ينشر أو يحمّل ملفات P6 أو Excel الأصلية.",
+    trainingAria: "ملخص مثال Workshop",
+    baseline: "برنامج الأساس",
+    postTia: "بعد TIA",
+    localDelta: "فرق CPM المحلي",
+    activity: "نشاط",
+    relationship: "علاقة",
+    calendar: "تقويم",
+    workingDays: "يوم عمل",
+    verification: "حد التحقق:",
+    reviewTitle: "قائمة مراجعة P6 قبل الاعتماد",
+    boundaryEyebrow: "PROCESSING BOUNDARY",
+    boundaryTitle: "هل البرنامج يعتمد على الذكاء الاصطناعي؟",
+    boundaryDescription: "لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل. حساب الشبكة، المسار الحرج، الـFragnets، التزامن، مقارنة التحديثات، واستيراد P6 هي عمليات برمجية حتمية قابلة للمراجعة. يمكن إضافة مساعد ذكي مستقبلاً لاقتراح صياغة أو فحص شكلي فقط، ولا ينبغي أن يحل محل الحكم المهني أو مستندات العقد.",
+  },
+  en: {
+    heroEyebrow: "DOCUMENTATION · EXAMPLES · LOCAL USE",
+    heroTitle: "Knowledge and download center",
+    heroDescription: "All guides and training files are preserved with the project and available for download. Use the examples before working on a live schedule, and keep the original P6 files outside the app as reference records.",
+    installed: "Installed",
+    installFromBrowser: "Install from browser",
+    installTitle: "Optional browser PWA installation, where supported.",
+    fallbackInstallTitle: "This browser does not offer PWA installation here; download Windows Setup instead.",
+    fallbackInstall: "Download Windows Setup",
+    localTitle: "Local-use mode",
+    localDescription: "After the app is opened over a secure connection and run once, the browser retains the operating interface for later use. CPM and TIA calculations, XER/XML reading, and reporting run in the browser; saved accounts, evidence, and approvals require a connection and server service. Windows and Linux packages are also available for local trial work; they do not replace professional review or a Primavera import test in a non-production copy.",
+    desktopAria: "Computer download",
+    desktopTitle: "Download the desktop app now",
+    desktopDescription: "On Windows, download Setup first for normal installation and a Start icon. Use Portable only where the device blocks installation.",
+    setup: "Windows 1.0.12 — Setup",
+    portable: "Windows 1.0.12 — Portable",
+    releaseEyebrow: "LIVE RELEASE GUIDE",
+    releaseTitle: "Live guide: how does the app work end-to-end?",
+    releaseDescription: "This guide is embedded in the app and tied to the current release, so you can see what changed and how work moves between sections and engines.",
+    releaseVersion: "Release",
+    launchTitle: "One-click local launch",
+    methodologyTitle: "Methods: when do we use each one?",
+    enginesTitle: "The engines",
+    flowTitle: "Approved workflow",
+    linksTitle: "How do the sections connect?",
+    changesTitle: "Changes in this release",
+    changeRule: "Update rule: any change affecting import, CPM, Fragnet, quality, or reporting must update this guide, the version number, and the change log, then be tested and built before a download is made available.",
+    resourcesAria: "Project resources and downloads",
+    download: "Download",
+    examplesEyebrow: "SANDBOX PROJECTS",
+    examplesTitle: "Training files to try",
+    examplesDescription: "Download the baseline first, then use the update in the schedule-comparison tab and try the XER file in the schedule and calendar tab.",
+    trainingDescription: "This example is recorded in the database as owner-only metadata. This section shows training-ready facts only; it does not publish or upload original P6 or Excel files.",
+    trainingAria: "Workshop example summary",
+    baseline: "Baseline schedule",
+    postTia: "After TIA",
+    localDelta: "Local CPM delta",
+    activity: "activities",
+    relationship: "relationships",
+    calendar: "calendar",
+    workingDays: "working days",
+    verification: "Verification boundary:",
+    reviewTitle: "P6 review checklist before reliance",
+    boundaryEyebrow: "PROCESSING BOUNDARY",
+    boundaryTitle: "Does the app rely on artificial intelligence?",
+    boundaryDescription: "The current engine does not rely on artificial intelligence to reach an analysis result. Network calculation, critical-path analysis, Fragnets, concurrency, update comparison, and P6 import are reviewable deterministic software operations. A future assistant could help with wording or a format check only; it must not replace professional judgment or contract documents.",
+  },
+} as const;
+
 export function ProjectResourcesPanel({ view }: { view: string }) {
+  const { language, direction } = useAppLanguage();
   const [installEvent, setInstallEvent] = useState<DeferredInstallPrompt | null>(null);
   const [installed, setInstalled] = useState(false);
 
@@ -61,72 +181,75 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     setInstallEvent(null);
   };
   const windowsSetupHref = resolveResourceDownloadHref(resources[7].href);
+  const copy = resourceCopy[language];
+  const visibleResources = language === "en" ? resources.map((resource, index) => ({ ...resource, ...englishResources[index] })) : resources;
+  const visibleExamples = examples.map((example, index) => ({ ...example, name: language === "en" ? englishExamples[index] : example.name }));
 
-  return <div className="view-stack resources-view">
+  return <div className="view-stack resources-view" dir={direction} aria-label={copy.resourcesAria}>
     <section className="page-heading resources-hero">
       <div>
-        <p className="eyebrow">DOCUMENTATION · EXAMPLES · LOCAL USE</p>
-        <h1>مركز المعرفة والتنزيل</h1>
-        <p>كل الأدلة وملفات التدريب محفوظة داخل نسخة المشروع وقابلة للتنزيل. استخدم الأمثلة قبل العمل على برنامج حقيقي، واحتفظ بملفات P6 الأصلية خارج التطبيق كسجل مرجعي.</p>
+        <p className="eyebrow">{copy.heroEyebrow}</p>
+        <h1>{copy.heroTitle}</h1>
+        <p>{copy.heroDescription}</p>
       </div>
       <div className="heading-actions">
         {installEvent || installed ? (
-          <Button className="run-button" disabled={!installEvent || installed} onClick={requestInstall} title="تثبيت PWA اختياري من المتصفح عند دعمه."><HardDriveDownload size={16} />{installed ? "تم التثبيت" : "تثبيت من المتصفح"}</Button>
+          <Button className="run-button" disabled={!installEvent || installed} onClick={requestInstall} title={copy.installTitle}><HardDriveDownload size={16} />{installed ? copy.installed : copy.installFromBrowser}</Button>
         ) : (
-          <Button className="run-button" asChild title="المتصفح لا يوفّر تثبيت PWA هنا؛ نزّل ملف Windows Setup بدلاً من ذلك."><a href={windowsSetupHref} target="_blank" rel="noreferrer"><HardDriveDownload size={16} />تحميل Setup لـ Windows</a></Button>
+          <Button className="run-button" asChild title={copy.fallbackInstallTitle}><a href={windowsSetupHref} target="_blank" rel="noreferrer"><HardDriveDownload size={16} />{copy.fallbackInstall}</a></Button>
         )}
       </div>
     </section>
 
     <section className="local-use-banner">
       <WifiOff size={22} />
-      <div><b>وضع الاستخدام المحلي</b><p>بعد فتح التطبيق عبر اتصال آمن وتشغيله مرة واحدة، يحفظ المتصفح واجهة التشغيل للاستخدام اللاحق. حساب CPM وTIA وقراءة ملفات XER/XML والتقرير تتم داخل المتصفح؛ أما الحسابات والأدلة والاعتمادات المحفوظة فتحتاج اتصالاً وخدمة الخادم. تتوفر أيضاً حزم Windows وLinux للتجربة المحلية؛ لا تُعد بديلاً عن المراجعة المهنية أو اختبار استيراد Primavera على نسخة غير إنتاجية.</p></div>
+      <div><b>{copy.localTitle}</b><p>{copy.localDescription}</p></div>
     </section>
 
-    <section className="desktop-download-quick" aria-label="تنزيل نسخة الكمبيوتر">
-      <div><HardDriveDownload size={24} /><div><b>حمّل نسخة الكمبيوتر الآن</b><p>على Windows حمّل Setup أولاً للتثبيت الطبيعي وأيقونة Start. استخدم النسخة المحمولة فقط لو جهازك يمنع التثبيت.</p></div></div>
+    <section className="desktop-download-quick" aria-label={copy.desktopAria}>
+      <div><HardDriveDownload size={24} /><div><b>{copy.desktopTitle}</b><p>{copy.desktopDescription}</p></div></div>
       <div className="desktop-download-quick__actions">
-        <a className="desktop-download-quick__primary" href={windowsSetupHref} target="_blank" rel="noreferrer"><Download size={17} />Windows 1.0.12 — Setup</a>
-        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} target="_blank" rel="noreferrer"><Download size={17} />Windows 1.0.12 — محمول</a>
+        <a className="desktop-download-quick__primary" href={windowsSetupHref} target="_blank" rel="noreferrer"><Download size={17} />{copy.setup}</a>
+        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} target="_blank" rel="noreferrer"><Download size={17} />{copy.portable}</a>
       </div>
     </section>
 
     <section id="release-guide" className="panel release-guide" aria-labelledby="release-guide-title">
       <div className="release-guide__heading">
-        <div><p className="eyebrow">LIVE RELEASE GUIDE · {LOCAL_RELEASE.version}</p><h2 id="release-guide-title">الدليل الحيّ: كيف يعمل البرنامج من البداية للنهاية؟</h2><p>هذا الدليل مضمّن داخل التطبيق، ويرتبط بالإصدار الحالي حتى تعرف بالضبط ما الذي تغير وكيف ينتقل العمل بين الأقسام والمحركات.</p></div>
-        <div className="release-stamp"><b>الإصدار {LOCAL_RELEASE.version}</b><span>{LOCAL_RELEASE.publishedOn}</span><small>{LOCAL_RELEASE.channel}</small></div>
+        <div><p className="eyebrow">{copy.releaseEyebrow} · {LOCAL_RELEASE.version}</p><h2 id="release-guide-title">{copy.releaseTitle}</h2><p>{copy.releaseDescription}</p></div>
+        <div className="release-stamp"><b>{copy.releaseVersion} {LOCAL_RELEASE.version}</b><span>{LOCAL_RELEASE.publishedOn}</span><small>{LOCAL_RELEASE.channel}</small></div>
       </div>
-      <div className="release-launcher"><HardDriveDownload size={20} /><div><b>تشغيل محلي بنقرة واحدة</b><p>{LOCAL_RELEASE.launcher} بعد التنزيل افتح الملف مباشرة؛ لا تحتاج إلى تشغيل Node.js أو كتابة أوامر. تظهر أي رسالة حماية لأنها حزم غير موقعة رقمياً؛ افحص الملف من الرابط الرسمي فقط قبل السماح له بالتشغيل.</p></div></div>
+      <div className="release-launcher"><HardDriveDownload size={20} /><div><b>{copy.launchTitle}</b><p>{LOCAL_RELEASE.launcher} {language === "en" ? "After download, open the file directly; you do not need to run Node.js or write commands. A protection message may appear because the packages are not digitally signed, so verify the file from the official link before allowing it to run." : "بعد التنزيل افتح الملف مباشرة؛ لا تحتاج إلى تشغيل Node.js أو كتابة أوامر. تظهر أي رسالة حماية لأنها حزم غير موقعة رقمياً؛ افحص الملف من الرابط الرسمي فقط قبل السماح له بالتشغيل."}</p></div></div>
       <div className="guide-card-grid">
-        <article><div className="guide-card-title"><BookOpenCheck size={18} /><h3>المنهجيات: متى نستخدم ماذا؟</h3></div>{methodologyGuide.map(method => <div className="guide-item" key={method.title}><b>{method.title}</b><p>{method.purpose}</p><small><strong>يستخدم عندما:</strong> {method.useWhen}</small></div>)}</article>
-        <article><div className="guide-card-title"><Boxes size={18} /><h3>المحركات المختلفة</h3></div>{engineGuide.map(engine => <div className="engine-row" key={engine.name}><b>{engine.name}</b><span><strong>يدخل:</strong> {engine.input}</span><span><strong>ينتج:</strong> {engine.output}</span></div>)}</article>
+        <article><div className="guide-card-title"><BookOpenCheck size={18} /><h3>{copy.methodologyTitle}</h3></div>{methodologyGuide.map(method => <div className="guide-item" key={method.title}><b>{method.title}</b><p>{method.purpose}</p><small><strong>{language === "en" ? "Used when:" : "يستخدم عندما:"}</strong> {method.useWhen}</small></div>)}</article>
+        <article><div className="guide-card-title"><Boxes size={18} /><h3>{copy.enginesTitle}</h3></div>{engineGuide.map(engine => <div className="engine-row" key={engine.name}><b>{engine.name}</b><span><strong>{language === "en" ? "Input:" : "يدخل:"}</strong> {engine.input}</span><span><strong>{language === "en" ? "Output:" : "ينتج:"}</strong> {engine.output}</span></div>)}</article>
       </div>
       <div className="guide-flow-grid">
-        <article><div className="guide-card-title"><Workflow size={18} /><h3>سير العمل المعتمد</h3></div><ol className="live-workflow">{workflowGuide.map(step => <li key={step}>{step}</li>)}</ol></article>
-        <article><div className="guide-card-title"><Network size={18} /><h3>كيف ترتبط الأقسام؟</h3></div><ul className="system-links">{systemLinks.map(link => <li key={link}>{link}</li>)}</ul></article>
+        <article><div className="guide-card-title"><Workflow size={18} /><h3>{copy.flowTitle}</h3></div><ol className="live-workflow">{workflowGuide.map(step => <li key={step}>{step}</li>)}</ol></article>
+        <article><div className="guide-card-title"><Network size={18} /><h3>{copy.linksTitle}</h3></div><ul className="system-links">{systemLinks.map(link => <li key={link}>{link}</li>)}</ul></article>
       </div>
-      <div className="release-changelog"><div className="guide-card-title"><GitBranch size={18} /><h3>سجل تغييرات هذا الإصدار</h3></div><ul>{releaseChanges.map(change => <li key={change}>{change}</li>)}</ul><p><ListChecks size={16} />قاعدة التحديث: أي تعديل يؤثر على الاستيراد أو CPM أو Fragnet أو الجودة أو التقرير يحدّث هذا الدليل ورقم الإصدار وسجل التغييرات، ثم يعاد الاختبار والبناء قبل إتاحة التنزيل.</p></div>
+      <div className="release-changelog"><div className="guide-card-title"><GitBranch size={18} /><h3>{copy.changesTitle}</h3></div><ul>{releaseChanges.map(change => <li key={change}>{change}</li>)}</ul><p><ListChecks size={16} />{copy.changeRule}</p></div>
     </section>
 
-    <section className="resources-grid" aria-label="ملفات التوثيق والتنزيل">
-      {resources.map((resource) => { const Icon = resource.icon; const href = resolveResourceDownloadHref(resource.href); const isExternal = /^https?:\/\//i.test(href); return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{resource.title}</h2><p>{resource.description}</p></div><a className="resource-download" href={href} download={isExternal ? undefined : true} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noreferrer" : undefined}><Download size={16} />تنزيل</a></article>; })}
+    <section className="resources-grid" aria-label={copy.resourcesAria}>
+      {visibleResources.map((resource) => { const Icon = resource.icon; const href = resolveResourceDownloadHref(resource.href); const isExternal = /^https?:\/\//i.test(href); return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{resource.title}</h2><p>{resource.description}</p></div><a className="resource-download" href={href} download={isExternal ? undefined : true} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noreferrer" : undefined}><Download size={16} />{copy.download}</a></article>; })}
     </section>
 
     <section className="panel examples-panel">
-      <div className="panel-heading"><div><p className="eyebrow">SANDBOX PROJECTS</p><h2>ملفات تدريب قابلة للتجربة</h2><p>حمّل برنامج الأساس أولاً، ثم استخدم التحديث في تبويب مقارنة التحديثات، وجرّب ملف XER في تبويب البرنامج والتقويم.</p></div></div>
-      <div className="example-downloads">{examples.map((example) => <a key={example.href} href={resolveResourceDownloadHref(example.href)} download><FileArchive size={16} /><span>{example.name}</span><small>{example.type}</small><Download size={15} /></a>)}</div>
+      <div className="panel-heading"><div><p className="eyebrow">{copy.examplesEyebrow}</p><h2>{copy.examplesTitle}</h2><p>{copy.examplesDescription}</p></div></div>
+      <div className="example-downloads">{visibleExamples.map((example) => <a key={example.href} href={resolveResourceDownloadHref(example.href)} download><FileArchive size={16} /><span>{example.name}</span><small>{example.type}</small><Download size={15} /></a>)}</div>
     </section>
 
     <section className="panel workshop-training-reference" aria-labelledby="workshop-training-title">
-      <div className="panel-heading"><div><p className="eyebrow">PRIVATE TRAINING REFERENCE · P6 23.12</p><h2 id="workshop-training-title">{WORKSHOP_NO8_TRAINING_REFERENCE.title}</h2><p>سُجل المثال في قاعدة البيانات كـ metadata خاصة بالمالك. يعرض هذا القسم حقائق مهيأة للتدريب فقط؛ لا ينشر أو يحمّل ملفات P6 أو Excel الأصلية.</p></div><ShieldCheck size={24} /></div>
-      <div className="workshop-training-reference__facts" aria-label="ملخص مثال Workshop">
-        <div><span>برنامج الأساس</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.activities} نشاط / {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.relationships} علاقة</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.calendars} تقويم</small></div>
-        <div><span>بعد TIA</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.activities} نشاط / {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.relationships} علاقة</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.calendars} تقويم</small></div>
-        <div><span>فرق CPM المحلي</span><b>+{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.durationDeltaDays} يوم عمل</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.baselineDurationDays} → {WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.postTiaDurationDays} يوم</small></div>
+      <div className="panel-heading"><div><p className="eyebrow">PRIVATE TRAINING REFERENCE · P6 23.12</p><h2 id="workshop-training-title">{WORKSHOP_NO8_TRAINING_REFERENCE.title}</h2><p>{copy.trainingDescription}</p></div><ShieldCheck size={24} /></div>
+      <div className="workshop-training-reference__facts" aria-label={copy.trainingAria}>
+        <div><span>{copy.baseline}</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.activities} {copy.activity} / {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.relationships} {copy.relationship}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.calendars} {copy.calendar}</small></div>
+        <div><span>{copy.postTia}</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.activities} {copy.activity} / {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.relationships} {copy.relationship}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.calendars} {copy.calendar}</small></div>
+        <div><span>{copy.localDelta}</span><b>+{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.durationDeltaDays} {copy.workingDays}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.baselineDurationDays} → {WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.postTiaDurationDays} {language === "en" ? "days" : "يوم"}</small></div>
       </div>
-      <p className="workshop-training-reference__boundary"><b>حد التحقق:</b> {WORKSHOP_NO8_TRAINING_REFERENCE.status} ملف Excel يبيّن اكتمالاً مخططاً في {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.asPlannedCompletion} واكتمالاً في {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.completion} وأثراً تراكمياً معلناً قدره {WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.cumulativeImpactDays} يوماً؛ لا يستبدل ذلك نتيجة الجدولة داخل Primavera.</p>
+      <p className="workshop-training-reference__boundary"><b>{copy.verification}</b> {WORKSHOP_NO8_TRAINING_REFERENCE.status} {language === "en" ? `The Excel declaration records planned completion on ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.asPlannedCompletion}, completion on ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.completion}, and a declared cumulative impact of ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.cumulativeImpactDays} days; this does not replace scheduling results inside Primavera.` : `ملف Excel يبيّن اكتمالاً مخططاً في ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.asPlannedCompletion} واكتمالاً في ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.completion} وأثراً تراكمياً معلناً قدره ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.cumulativeImpactDays} يوماً؛ لا يستبدل ذلك نتيجة الجدولة داخل Primavera.`}</p>
       <div className="workshop-training-reference__review" aria-labelledby="workshop-review-title">
-        <div><ListChecks size={18} /><h3 id="workshop-review-title">قائمة مراجعة P6 قبل الاعتماد</h3></div>
+        <div><ListChecks size={18} /><h3 id="workshop-review-title">{copy.reviewTitle}</h3></div>
         <p>{WORKSHOP_NO8_TRAINING_REFERENCE.calendarScope}</p>
         <ol>{WORKSHOP_NO8_TRAINING_REFERENCE.manualP6Checks.map((check) => <li key={check}>{check}</li>)}</ol>
       </div>
@@ -134,8 +257,8 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     </section>
 
     <section className="panel resources-boundary">
-      <div><p className="eyebrow">PROCESSING BOUNDARY</p><h2>هل البرنامج يعتمد على الذكاء الاصطناعي؟</h2></div>
-      <p><b>لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل.</b> حساب الشبكة، المسار الحرج، الـFragnets، التزامن، مقارنة التحديثات، واستيراد P6 هي عمليات برمجية حتمية قابلة للمراجعة. يمكن إضافة مساعد ذكي مستقبلاً لاقتراح صياغة أو فحص شكلي فقط، ولا ينبغي أن يحل محل الحكم المهني أو مستندات العقد.</p>
+      <div><p className="eyebrow">{copy.boundaryEyebrow}</p><h2>{copy.boundaryTitle}</h2></div>
+      <p><b>{language === "en" ? "The current engine does not rely on artificial intelligence to reach an analysis result." : "لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل."}</b> {language === "en" ? "Network calculation, critical-path analysis, Fragnets, concurrency, update comparison, and P6 import are reviewable deterministic software operations. A future assistant could help with wording or a format check only; it must not replace professional judgment or contract documents." : "حساب الشبكة، المسار الحرج، الـFragnets، التزامن، مقارنة التحديثات، واستيراد P6 هي عمليات برمجية حتمية قابلة للمراجعة. يمكن إضافة مساعد ذكي مستقبلاً لاقتراح صياغة أو فحص شكلي فقط، ولا ينبغي أن يحل محل الحكم المهني أو مستندات العقد."}</p>
     </section>
   </div>;
 }

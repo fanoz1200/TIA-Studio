@@ -1,11 +1,22 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProjectResourcesPanel } from "./ProjectResourcesPanel";
 
+function renderPanel(language: "ar" | "en" = "ar", view = "resources") {
+  window.localStorage.setItem("tia-studio-interface-language", language);
+  return render(<LanguageProvider><ProjectResourcesPanel view={view} /></LanguageProvider>);
+}
+
 describe("ProjectResourcesPanel", () => {
+  beforeEach(() => {
+    cleanup();
+    window.localStorage.clear();
+  });
+
   it("يعرض الأدلة والأمثلة القابلة للتنزيل وحدود المعالجة المحلية", () => {
-    render(<ProjectResourcesPanel view="resources" />);
+    renderPanel();
 
     expect(screen.getByRole("heading", { name: "مركز المعرفة والتنزيل" })).toBeTruthy();
     expect(screen.getByText("لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل.")).toBeTruthy();
@@ -41,7 +52,19 @@ describe("ProjectResourcesPanel", () => {
   });
 
   it("لا يعرض محتوى المركز عندما يكون التبويب مختلفاً", () => {
-    const { container } = render(<ProjectResourcesPanel view="overview" />);
+    const { container } = renderPanel("ar", "overview");
     expect(container.innerHTML).toBe("");
+  });
+
+  it("يعرض نصوص مركز الموارد بالإنجليزية واتجاه LTR مع حفظ روابط الإصدار وبيانات التدريب", () => {
+    renderPanel("en");
+
+    expect(screen.getByRole("heading", { name: "Knowledge and download center" })).toBeTruthy();
+    expect(document.querySelector('[aria-label="Project resources and downloads"]')?.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByText("Desktop app — Windows 1.0.12 Setup (recommended)").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe");
+    expect(screen.getByRole("link", { name: "Windows 1.0.12 — Portable" }).getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe");
+    expect(screen.getByRole("heading", { name: "Workshop NO8 — مرجع TIA مرفوع من المستخدم" })).toBeTruthy();
+    expect(screen.getByText("+17 working days")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Does the app rely on artificial intelligence?" })).toBeTruthy();
   });
 });
