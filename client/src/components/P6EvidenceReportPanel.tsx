@@ -101,10 +101,10 @@ const initialTemplate: ClaimTemplateDraft = {
     "يرجى دراسة المستند والمرفقات وإصدار القرار وفق الإجراءات التعاقدية المعتمدة.",
 };
 
-function fileBase64(file: File) {
+function fileBase64(file: File, readErrorMessage: string) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = () => reject(new Error("تعذر قراءة المرفق."));
+    reader.onerror = () => reject(new Error(readErrorMessage));
     reader.onload = () => resolve(String(reader.result));
     reader.readAsDataURL(file);
   });
@@ -186,7 +186,7 @@ export function P6EvidenceReportPanel({
   const upload = trpc.evidence.upload.useMutation({
     onSuccess: () => {
       evidence.refetch();
-      toast.success("تم حفظ الدليل وربطه بالحدث المحدد.");
+      toast.success(txt("تم حفظ الدليل وربطه بالحدث المحدد.", "Evidence saved and linked to the selected event."));
       setEvidenceTitle("");
       setEvidenceDescription("");
       setEvidenceDate("");
@@ -198,7 +198,7 @@ export function P6EvidenceReportPanel({
   const saveTemplate = trpc.claimTemplate.create.useMutation({
     onSuccess: () => {
       templates.refetch();
-      toast.success("تم حفظ قالب المطالبة ضمن حسابك.");
+      toast.success(txt("تم حفظ قالب المطالبة ضمن حسابك.", "Claim template was saved to your account."));
     },
   });
   const workflowChecks = useMemo(
@@ -260,11 +260,16 @@ export function P6EvidenceReportPanel({
       setXmlSummary(result.summary);
       onScheduleImported(result.schedule, result.summary);
       toast.success(
-        `تم استيراد P6 XML: ${result.summary.activitiesRead} نشاط، ${result.summary.wbsRead} عنصر WBS، و${result.summary.activitiesWithProgress} نسبة إنجاز.`
+        txt(
+          `تم استيراد P6 XML: ${result.summary.activitiesRead} نشاط، ${result.summary.wbsRead} عنصر WBS، و${result.summary.activitiesWithProgress} نسبة إنجاز.`,
+          `P6 XML imported: ${result.summary.activitiesRead} activities, ${result.summary.wbsRead} WBS items, and ${result.summary.activitiesWithProgress} progress values.`
+        )
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "تعذر قراءة ملف P6 XML."
+        error instanceof Error
+          ? error.message
+          : txt("تعذر قراءة ملف P6 XML.", "Unable to read the P6 XML file.")
       );
     } finally {
       setIsImporting(false);
@@ -273,11 +278,11 @@ export function P6EvidenceReportPanel({
 
   async function uploadEvidence(file: File) {
     if (!selectedEvent) {
-      toast.error("اختر أو أنشئ حدث تأخير أولاً لربط الدليل به.");
+      toast.error(txt("اختر أو أنشئ حدث تأخير أولاً لربط الدليل به.", "Create or select a delay event first to link the evidence."));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("الحد الأقصى للمرفق هو 10 MB.");
+      toast.error(txt("الحد الأقصى للمرفق هو 10 MB.", "The attachment limit is 10 MB."));
       return;
     }
     try {
@@ -290,16 +295,16 @@ export function P6EvidenceReportPanel({
         receivedAt: evidenceDate || undefined,
         fileName: file.name,
         mimeType: file.type || "application/octet-stream",
-        dataBase64: await fileBase64(file),
+        dataBase64: await fileBase64(file, txt("تعذر قراءة المرفق.", "Unable to read the attachment.")),
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "تعذر حفظ المرفق.");
+      toast.error(error instanceof Error ? error.message : txt("تعذر حفظ المرفق.", "Unable to save the attachment."));
     }
   }
 
   function payload(): ClaimReportPayload | null {
     if (!activeResult) {
-      toast.error("شغّل تحليل TIA أولاً لتوليد تقرير المطالبة.");
+      toast.error(txt("شغّل تحليل TIA أولاً لتوليد تقرير المطالبة.", "Run TIA analysis first to generate the claim report."));
       return null;
     }
     const impactDays =
@@ -407,7 +412,10 @@ export function P6EvidenceReportPanel({
   async function exportReport(format: "docx" | "pdf") {
     if (exportBlocked) {
       toast.error(
-        "التصدير متوقف: عالج الموانع في قائمة التحقق ونتيجة TIA أولاً."
+        txt(
+          "التصدير متوقف: عالج الموانع في قائمة التحقق ونتيجة TIA أولاً.",
+          "Export is blocked: resolve the blockers in the checklist and TIA result first."
+        )
       );
       return;
     }
@@ -421,13 +429,17 @@ export function P6EvidenceReportPanel({
       if (format === "docx") await exportClaimDocx(output);
       else await exportClaimPdf(output);
       toast.success(
-        format === "docx" ? "تم إنشاء ملف Word." : "تم إنشاء ملف PDF."
+        format === "docx"
+          ? txt("تم إنشاء ملف Word.", "Word file created.")
+          : txt("تم إنشاء ملف PDF.", "PDF file created.")
       );
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : `تعذر إنشاء ${format === "docx" ? "Word" : "PDF"}.`
+          : format === "docx"
+            ? txt("تعذر إنشاء Word.", "Unable to create the Word file.")
+            : txt("تعذر إنشاء PDF.", "Unable to create the PDF file.")
       );
     } finally {
       setExportingFormat(null);
@@ -436,7 +448,7 @@ export function P6EvidenceReportPanel({
 
   function exportWorkbook() {
     if (exportBlocked || !activeResult) {
-      toast.error("التصدير متوقف: عالج الموانع وشغّل تحليل TIA أولاً.");
+      toast.error(txt("التصدير متوقف: عالج الموانع وشغّل تحليل TIA أولاً.", "Export is blocked: resolve the blockers and run TIA analysis first."));
       return;
     }
     exportAnalysisExcel({
@@ -447,7 +459,7 @@ export function P6EvidenceReportPanel({
       narrative,
       language: documentLanguage,
     });
-    toast.success("تم إنشاء التقرير النهائي Excel متعدد الأوراق.");
+    toast.success(txt("تم إنشاء التقرير النهائي Excel متعدد الأوراق.", "Multi-sheet Excel final report created."));
   }
 
   function exportFactPack() {
@@ -455,14 +467,20 @@ export function P6EvidenceReportPanel({
     if (!output) return;
     exportFullClaimFactPack(output);
     toast.success(
-      "تم تنزيل Fact Pack منظم محلياً؛ لا يتضمن مستندات خاماً أو استحقاقاً غير موثق."
+      txt(
+        "تم تنزيل Fact Pack منظم محلياً؛ لا يتضمن مستندات خاماً أو استحقاقاً غير موثق.",
+        "A local Fact Pack was downloaded; it does not include raw documents or an unsupported entitlement."
+      )
     );
   }
 
   function exportReconciliationManifest() {
     if (!activeResult || !("impactDays" in activeResult)) {
       toast.error(
-        "ملف المطابقة يحتاج نتيجة TIA واحدة بحدث Fragnet؛ تحليل النوافذ يظل له تقريره المنفصل."
+        txt(
+          "ملف المطابقة يحتاج نتيجة TIA واحدة بحدث Fragnet؛ تحليل النوافذ يظل له تقريره المنفصل.",
+          "The reconciliation manifest requires a single-event TIA result with a Fragnet; window analysis retains its separate report."
+        )
       );
       return;
     }
@@ -483,13 +501,16 @@ export function P6EvidenceReportPanel({
       anchor.click();
       URL.revokeObjectURL(url);
       toast.success(
-        "تم تصدير ملف المطابقة المحلي. قارنه مع P6 أو مدقق مستقل قبل وصف النتائج بأنها متطابقة."
+        txt(
+          "تم تصدير ملف المطابقة المحلي. قارنه مع P6 أو مدقق مستقل قبل وصف النتائج بأنها متطابقة.",
+          "Local reconciliation manifest exported. Compare it with P6 or an independent checker before describing results as matching."
+        )
       );
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "تعذر إنشاء ملف المطابقة المحلي."
+          : txt("تعذر إنشاء ملف المطابقة المحلي.", "Unable to create the local reconciliation manifest.")
       );
     }
   }

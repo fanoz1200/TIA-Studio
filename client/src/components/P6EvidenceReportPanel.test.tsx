@@ -140,5 +140,6 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     expect(screen.getByText("Evidence register")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Export Excel final report" }));
     expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ events: [expect.objectContaining({ id: "EV-01", title: "تأخر اعتماد" })] }));
+    expect(mocks.toastSuccess).toHaveBeenCalledWith("Multi-sheet Excel final report created.");
   });
 });
