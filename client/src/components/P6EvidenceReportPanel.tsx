@@ -213,12 +213,12 @@ export function P6EvidenceReportPanel({
         isAuthenticated,
         hasEventResources:
           resourceAssignmentsForEvent(schedule, selectedEvent).length > 0,
-        templateReady: Boolean(
-          template.title.trim() &&
+          templateReady: Boolean(
+            template.title.trim() &&
             template.recipient.trim() &&
             template.contractReference.trim()
-        ),
-      }),
+          ),
+      }, interfaceLanguage),
     [
       activeResult,
       evidence.data?.length,
@@ -227,6 +227,7 @@ export function P6EvidenceReportPanel({
       review.data?.review.status,
       schedule,
       selectedEvent,
+      interfaceLanguage,
       template.contractReference,
       template.recipient,
       template.title,
@@ -740,7 +741,7 @@ export function P6EvidenceReportPanel({
           </div>
           <FileText size={22} />
         </div>
-        <WorkflowQualityGate checks={workflowChecks} />
+        <WorkflowQualityGate checks={workflowChecks} language={interfaceLanguage} />
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
           <Label htmlFor="document-language" className="font-semibold">
             {txt("لغة المخرجات", "Output language")}
@@ -850,55 +851,55 @@ export function P6EvidenceReportPanel({
               disabled={saveTemplate.isPending}
             >
               <FileCheck2 size={16} />
-              حفظ القالب
+              {txt("حفظ القالب", "Save template")}
             </Button>
           ) : (
             <Button variant="outline" onClick={startLogin}>
               <LogIn size={18} />
-              تسجيل الدخول لحفظ القالب
+              {txt("تسجيل الدخول لحفظ القالب", "Sign in to save template")}
             </Button>
           )}
           <Button
             variant="outline"
             title={
               activeResult && "impactDays" in activeResult
-                ? "ينشئ ملف JSON محلياً للمقارنة مع P6 أو مدقق مستقل؛ لا يثبت التكافؤ تلقائياً."
-                : "يتاح بعد تشغيل TIA لحدث Fragnet واحد؛ تحليل النوافذ له تقرير منفصل."
+                ? txt("ينشئ ملف JSON محلياً للمقارنة مع P6 أو مدقق مستقل؛ لا يثبت التكافؤ تلقائياً.", "Creates a local JSON file for comparison with P6 or an independent checker; it does not prove equivalence automatically.")
+                : txt("يتاح بعد تشغيل TIA لحدث Fragnet واحد؛ تحليل النوافذ له تقرير منفصل.", "Available after running TIA for one Fragnet event; window analysis has a separate report.")
             }
             disabled={!activeResult || !("impactDays" in activeResult)}
             onClick={exportReconciliationManifest}
           >
             <FileCheck2 size={16} />
-            ملف مطابقة P6 (JSON)
+            {txt("ملف مطابقة P6 (JSON)", "P6 reconciliation file (JSON)")}
           </Button>
           <Button
             variant="outline"
             title={
               exportBlocked
-                ? "عالج الموانع في قائمة التحقق قبل التصدير."
-                : "ينشئ التقرير النهائي متعدد الأوراق بصيغة Excel من بيانات TIA الحالية."
+                ? txt("عالج الموانع في قائمة التحقق قبل التصدير.", "Resolve the blockers in the checklist before export.")
+                : txt("ينشئ التقرير النهائي متعدد الأوراق بصيغة Excel من بيانات TIA الحالية.", "Creates a multi-sheet Excel final report from the current TIA data.")
             }
             disabled={exportingFormat !== null || exportBlocked}
             onClick={exportWorkbook}
           >
             <Download size={16} />
-            تصدير التقرير النهائي Excel
+            {txt("تصدير التقرير النهائي Excel", "Export Excel final report")}
           </Button>
           <Button
             variant="outline"
-            title="ينزّل Fact Pack منظم من بيانات التحليل الحالية للمراجعة أو التوسعة الموثقة، من دون ملفات العميل الخام."
+            title={txt("ينزّل Fact Pack منظم من بيانات التحليل الحالية للمراجعة أو التوسعة الموثقة، من دون ملفات العميل الخام.", "Downloads a structured Fact Pack from the current analysis data for review or documented extension, without raw client files.")}
             disabled={exportingFormat !== null || !activeResult}
             onClick={exportFactPack}
           >
             <FileCode2 size={16} />
-            تنزيل Fact Pack (JSON)
+            {txt("تنزيل Fact Pack (JSON)", "Download Fact Pack (JSON)")}
           </Button>
           <Button
             variant="outline"
             title={
               exportBlocked
-                ? "عالج الموانع في قائمة التحقق قبل التصدير."
-                : "ينشئ Full Claim قابلاً للتحرير بغلاف وفهرس وسجل أدلة ونواقص معلنة."
+                ? txt("عالج الموانع في قائمة التحقق قبل التصدير.", "Resolve the blockers in the checklist before export.")
+                : txt("ينشئ Full Claim قابلاً للتحرير بغلاف وفهرس وسجل أدلة ونواقص معلنة.", "Creates an editable Full Claim with a cover, table of contents, evidence register and disclosed gaps.")
             }
             disabled={exportingFormat !== null || exportBlocked}
             onClick={() => exportReport("docx")}
@@ -908,14 +909,16 @@ export function P6EvidenceReportPanel({
             ) : (
               <Download size={16} />
             )}
-            {exportingFormat === "docx" ? "جارِ تجهيز Full Claim…" : "تصدير Full Claim (Word)"}
+            {exportingFormat === "docx"
+              ? txt("جارِ تجهيز Full Claim…", "Preparing Full Claim…")
+              : txt("تصدير Full Claim (Word)", "Export Full Claim (Word)")}
           </Button>
           <Button
             className="run-button"
             title={
               exportBlocked
-                ? "عالج الموانع في قائمة التحقق قبل التصدير."
-                : "ينشئ نسخة PDF عربية من بيانات المطالبة الحالية."
+                ? txt("عالج الموانع في قائمة التحقق قبل التصدير.", "Resolve the blockers in the checklist before export.")
+                : txt("ينشئ نسخة PDF عربية من بيانات المطالبة الحالية.", "Creates a PDF version from the current claim data.")
             }
             disabled={exportingFormat !== null || exportBlocked}
             onClick={() => exportReport("pdf")}
@@ -925,18 +928,20 @@ export function P6EvidenceReportPanel({
             ) : (
               <Download size={16} />
             )}
-            {exportingFormat === "pdf" ? "جارِ تجهيز PDF…" : "تصدير PDF"}
+            {exportingFormat === "pdf"
+              ? txt("جارِ تجهيز PDF…", "Preparing PDF…")
+              : txt("تصدير PDF", "Export PDF")}
           </Button>
         </div>
         {exportingFormat ? (
           <div className="operation-progress" role="status">
             <span />
-            يتم تجميع السرد والجداول وسجل الأدلة ومراحل الاعتماد…
+            {txt("يتم تجميع السرد والجداول وسجل الأدلة ومراحل الاعتماد…", "Compiling the narrative, tables, evidence register and approval stages…")}
           </div>
         ) : null}
         {templates.data?.length ? (
           <div className="saved-templates">
-            قوالب محفوظة:{" "}
+            {txt("قوالب محفوظة:", "Saved templates:")}{" "}
             {templates.data.map(item => (
               <button
                 key={item.id}
@@ -964,9 +969,12 @@ export function P6EvidenceReportPanel({
 
 function WorkflowQualityGate({
   checks,
+  language,
 }: {
   checks: ReturnType<typeof evaluateWorkflowReadiness>;
+  language: "ar" | "en";
 }) {
+  const txt = (ar: string, en: string) => (language === "en" ? en : ar);
   const iconFor = (state: WorkflowCheckState) =>
     state === "pass"
       ? "✓"
@@ -976,14 +984,14 @@ function WorkflowQualityGate({
           ? "!"
           : "i";
   return (
-    <section className="workflow-quality-gate" aria-label="قائمة تحقق المطالبة">
+    <section className="workflow-quality-gate" aria-label={txt("قائمة تحقق المطالبة", "Claim checklist")}>
       <header>
         <div>
-          <p className="eyebrow">WORKFLOW QUALITY GATE</p>
-          <h3>قائمة تحقق قبل التصدير</h3>
+          <p className="eyebrow">{txt("بوابة جودة سير العمل", "WORKFLOW QUALITY GATE")}</p>
+          <h3>{txt("قائمة تحقق قبل التصدير", "Pre-export checklist")}</h3>
         </div>
         <span className="workflow-quality-summary">
-          {workflowReadinessSummary(checks)}
+          {workflowReadinessSummary(checks, language)}
         </span>
       </header>
       <div className="workflow-check-grid">

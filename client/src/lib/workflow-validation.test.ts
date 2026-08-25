@@ -36,6 +36,14 @@ describe("evaluateWorkflowReadiness", () => {
     expect(workflowReadinessSummary(checks)).toContain("اجتازت");
   });
 
+  it("يعرض نصوص بوابة العمل الثابتة بالإنجليزية من دون تغيير حالة الحساب", () => {
+    const checks = evaluateWorkflowReadiness({ schedule, selectedEvent: null, analysis: null, evidenceCount: 0, noticeCount: 0, reviewStatus: null, isAuthenticated: false, hasEventResources: false, templateReady: false }, "en");
+    expect(checks.find((item) => item.id === "schedule")?.title).toBe("Schedule version");
+    expect(checks.find((item) => item.id === "event")?.detail).toContain("Select or create a Fragnet event");
+    expect(checks.find((item) => item.id === "event")?.state).toBe("blocked");
+    expect(workflowReadinessSummary(checks, "en")).toContain("blocking step");
+  });
+
   it("يمنع التقرير عند وجود علاقة ذاتية في البرنامج حتى لو كانت بقية حقول المطالبة مكتملة", () => {
     const checks = evaluateWorkflowReadiness({
       schedule: { ...schedule, relationships: [{ id: "R-self", predecessorId: "A-100", successorId: "A-100", type: "FS", lag: 0 }] },

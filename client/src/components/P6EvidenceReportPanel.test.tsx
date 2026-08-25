@@ -135,5 +135,10 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     expect(container.querySelector(".claim-export-panel")?.getAttribute("dir")).toBe("ltr");
     expect(screen.getByText("Claim template and report export")).toBeTruthy();
     expect(screen.getByText("Output language")).toBeTruthy();
+    expect(screen.getByText("Pre-export checklist")).toBeTruthy();
+    expect(screen.getByText("Export Excel final report")).toBeTruthy();
+    expect(screen.getByText("Evidence register")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Export Excel final report" }));
+    expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ events: [expect.objectContaining({ id: "EV-01", title: "تأخر اعتماد" })] }));
   });
 });
