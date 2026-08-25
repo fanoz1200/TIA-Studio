@@ -1,6 +1,7 @@
-import React from "react";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import React from "react";
 import { afterEach, describe, expect, it } from "vitest";
+import { APP_LANGUAGE_STORAGE_KEY, LanguageProvider } from "@/contexts/LanguageContext";
 import { ActivityDataTable, RelationshipDataTable } from "./ScheduleDataTables";
 
 const activities = [
@@ -9,11 +10,22 @@ const activities = [
   { id: "FR-01", name: "اعتماد تعديل", wbs: "CO-01", duration: 5, totalFloat: 0, earlyStart: 11, earlyFinish: 16, lateStart: 11, lateFinish: 16, freeFloat: 0, isCritical: true, kind: "fragnet" as const },
 ];
 
-afterEach(cleanup);
+const relationships = [
+  { id: "R-20", predecessorId: "A200", successorId: "FR-01", type: "FS" as const },
+  { id: "R-10", predecessorId: "A100", successorId: "A200", type: "SS" as const },
+];
+
+const renderActivities = () => render(<LanguageProvider><ActivityDataTable activities={activities} /></LanguageProvider>);
+const renderRelationships = () => render(<LanguageProvider><RelationshipDataTable activities={activities} relationships={relationships} /></LanguageProvider>);
+
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+});
 
 describe("جدول الأنشطة القابل للفلترة والترتيب", () => {
   it("يبحث في الاسم ويعرض عداد النتائج ثم يعيد الضبط", () => {
-    render(<ActivityDataTable activities={activities} />);
+    renderActivities();
     fireEvent.change(screen.getByLabelText("ابحث في الأنشطة"), { target: { value: "تعديل" } });
     expect(screen.getByRole("status").textContent).toContain("1 من 3 نشاط");
     expect(screen.getByText("اعتماد تعديل")).toBeTruthy();
@@ -24,7 +36,7 @@ describe("جدول الأنشطة القابل للفلترة والترتيب",
   });
 
   it("يرتب المدة ويعلن اتجاه الفرز للقراء المساعدين", () => {
-    render(<ActivityDataTable activities={activities} />);
+    renderActivities();
     fireEvent.click(screen.getByRole("button", { name: "رتّب حسب المدة" }));
 
     const table = screen.getByRole("table", { name: "جدول الأنشطة" });
@@ -36,15 +48,7 @@ describe("جدول الأنشطة القابل للفلترة والترتيب",
 
 describe("جدول العلاقات المنطقية القابل للفلترة والترتيب", () => {
   it("يبحث في النشاط ويرتب العلاقة حسب السابق", () => {
-    render(
-      <RelationshipDataTable
-        activities={activities}
-        relationships={[
-          { id: "R-20", predecessorId: "A200", successorId: "FR-01", type: "FS" },
-          { id: "R-10", predecessorId: "A100", successorId: "A200", type: "SS" },
-        ]}
-      />
-    );
+    renderRelationships();
 
     fireEvent.change(screen.getByLabelText("ابحث في العلاقات"), { target: { value: "الحفر" } });
     expect(screen.getByRole("status").textContent).toContain("1 من 2 علاقة");
@@ -55,5 +59,23 @@ describe("جدول العلاقات المنطقية القابل للفلترة
     const table = screen.getByRole("table", { name: "جدول العلاقات المنطقية" });
     expect(within(within(table).getAllByRole("row")[1]).getByText("R-10")).toBeTruthy();
     expect(within(table).getByRole("columnheader", { name: /السابق/ }).getAttribute("aria-sort")).toBe("ascending");
+  });
+});
+
+describe("Schedule data tables in English", () => {
+  it("renders English LTR chrome without translating imported activities or relationships", () => {
+    window.localStorage.setItem(APP_LANGUAGE_STORAGE_KEY, "en");
+    render(<LanguageProvider><><ActivityDataTable activities={activities} titleKey="baselineActivityTitle" /><RelationshipDataTable activities={activities} relationships={relationships} /></></LanguageProvider>);
+
+    const activityTable = screen.getByRole("table", { name: "Activity table" });
+    const relationshipTable = screen.getByRole("table", { name: "Logic relationships table" });
+    expect(screen.getByRole("heading", { name: "Baseline activities and float" })).toBeTruthy();
+    expect(screen.getByLabelText("Search activities")).toBeTruthy();
+    expect(activityTable.closest("section")?.getAttribute("dir")).toBe("ltr");
+    expect(relationshipTable.closest("section")?.getAttribute("dir")).toBe("ltr");
+    expect(within(activityTable).getByText("A200")).toBeTruthy();
+    expect(within(activityTable).getByText("الهيكل")).toBeTruthy();
+    expect(within(relationshipTable).getByText("R-20")).toBeTruthy();
+    expect(within(relationshipTable).getByText("FS")).toBeTruthy();
   });
 });

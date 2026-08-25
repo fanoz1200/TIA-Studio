@@ -2067,7 +2067,7 @@ export default function Home() {
               <section className="view-stack">
                 <ActivityDataTable
                   activities={baseline.activities}
-                  title="أنشطة البرنامج والعائمة"
+                  titleKey="baselineActivityTitle"
                 />
                 <RelationshipDataTable
                   activities={baseline.activities}
@@ -2629,7 +2629,7 @@ export default function Home() {
                 </section>
                 <ActivityDataTable
                   activities={displayedCpm.activities}
-                  title="تفصيل العائمة والمسار بعد الإدراج"
+                  titleKey="impactedActivityTitle"
                 />
               </>
             ) : (
