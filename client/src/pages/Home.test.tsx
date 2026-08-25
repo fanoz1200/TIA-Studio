@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  formatAnalysisReportCopy,
   formatEventWorkspaceCopy,
   formatHomeChrome,
   formatHomeOverview,
@@ -126,5 +127,32 @@ describe("formatEventWorkspaceCopy", () => {
     expect(copy.heading).toBe("أضف حدث تأخير كـ Fragnet");
     expect(copy.approveAndRun).toBe("اعتماد النموذج وتشغيل TIA");
     expect(copy.selectActivityPreview).toBe("اختر نشاطاً متأثراً لمعاينة التقسيم");
+  });
+});
+
+describe("formatAnalysisReportCopy", () => {
+  it("provides English analysis and report chrome without translating source-derived result values", () => {
+    const scheduleName = "برنامج الأساسات — Update 04";
+    const eventTitle = "تأخر اعتماد المخططات — RFI-17";
+    const calendarName = "تقويم المشروع — مصر (6 أيام)";
+    const activityId = "A200";
+    const impactValue = "+6";
+    const copy = formatAnalysisReportCopy("en");
+
+    expect(copy.analysisHeading).toBe("Traceable analysis result");
+    expect(copy.downloadRecord).toBe("Download record");
+    expect(copy.completionUsesCalendar(calendarName)).toContain(calendarName);
+    expect(scheduleName).toBe("برنامج الأساسات — Update 04");
+    expect(eventTitle).toBe("تأخر اعتماد المخططات — RFI-17");
+    expect(activityId).toBe("A200");
+    expect(impactValue).toBe("+6");
+  });
+
+  it("retains Arabic analysis and report chrome while keeping professional limitations explicit", () => {
+    const copy = formatAnalysisReportCopy("ar");
+
+    expect(copy.analysisHeading).toBe("نتيجة تحليل قابلة للتتبع");
+    expect(copy.printReport).toBe("طباعة التقرير");
+    expect(copy.methodologyText).toContain("لا يحسم الاستحقاق التعاقدي");
   });
 });

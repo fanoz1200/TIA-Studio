@@ -632,6 +632,127 @@ export function formatEventWorkspaceCopy(language: AppLanguage) {
       };
 }
 
+/**
+ * Translates only fixed analysis-result and report chrome. Schedule/event/window
+ * names, IDs, dates, CPM/TIA values, calculation notes, and the editable
+ * narrative remain caller-owned source values and are never translated here.
+ */
+export function formatAnalysisReportCopy(language: AppLanguage) {
+  return language === "en"
+    ? {
+        analysisEyebrow: "BEFORE / AFTER COMPARISON",
+        analysisHeading: "Traceable analysis result",
+        analysisDescription:
+          "Read the impact of one event or a combined window. The coordinates and calculations below belong to the selected schedule copy and calendar.",
+        deleteEvent: "Delete event",
+        downloadRecord: "Download record",
+        calculatedCompletionImpact: "Calculated completion impact",
+        workingDay: "working day",
+        completionUsesCalendar: (calendarName: string) =>
+          `The completion date uses “${calendarName}”; float remains measured in working days.`,
+        beforeInsertion: "Before insertion",
+        afterInsertion: "After insertion",
+        windowOrEvent: "Window / event",
+        impact: "Impact",
+        completionVarianceWorkingDays: "Completion variance in working days",
+        completionAfterAnalysis: "Completion after analysis",
+        criticalPath: "Critical path",
+        activityCount: "activities",
+        impactedCpm: "IMPACTED CPM",
+        networkAfterInsertion: "Network after insertion",
+        evidenceTrace: "EVIDENCE TRACE",
+        calculationRecord: "Calculation record",
+        method: "Method",
+        comparisonBase: "Comparison base",
+        calendar: "Calendar",
+        noCalculatedResult: "No calculated result yet",
+        noCalculatedResultText:
+          "Add a delay event or create a schedule-linked window to run the analysis.",
+        createDelayEvent: "Create delay event",
+        reportEyebrow: "NARRATIVE + EXPORTABLE RECORD",
+        reportHeading: "Delay analysis narrative and technical report",
+        reportDescription:
+          "The narrative is generated from calculation results and entered data, then remains editable before printing or downloading.",
+        printReport: "Print report",
+        analystName: "Analyst name",
+        contractReference: "Contract / clause reference",
+        evidenceSummary: "Evidence summary",
+        claimPosition: "Entered position",
+        refreshNarrative: "Refresh narrative from calculation",
+        technicalRecord: "Delay Analysis Technical Record",
+        issueDate: "Issue date",
+        timeImpactAnalysis: "Time impact analysis / Delay Analysis",
+        noSelectedWindow: "No selected window",
+        schedule: "Schedule",
+        calendarDays: "Calendar days",
+        scheduleDataDate: "Schedule data date",
+        notSpecified: "Not specified",
+        completionBefore: "Completion date before",
+        completionVariance: "Completion variance",
+        completionAfter: "Completion date after",
+        editableNarrativeDraft: "Analysis narrative — editable draft",
+        methodologyAndLimitations: "Methodology and use limitations",
+        methodologyText:
+          "This report measures the time impact arising from the entered schedule, relationships, calendar, and Fragnet. The calculation records the completion-date difference in the model; it does not decide contractual entitlement, compensation, or legal concurrency. A qualified professional should review the contract, correspondence, progress records, and contemporaneous documents before use in a claim or dispute.",
+      }
+    : {
+        analysisEyebrow: "مقارنة قبل / بعد",
+        analysisHeading: "نتيجة تحليل قابلة للتتبع",
+        analysisDescription:
+          "اقرأ أثر واقعة واحدة أو نافذة مجمعة. الإحداثيات والحسابات أدناه تخص نسخة البرنامج والتقويم المحددين.",
+        deleteEvent: "حذف الحدث",
+        downloadRecord: "تنزيل السجل",
+        calculatedCompletionImpact: "الأثر المحسوب على الإكمال",
+        workingDay: "يوم عمل",
+        completionUsesCalendar: (calendarName: string) =>
+          `يُحسب تاريخ الإكمال وفق «${calendarName}»، وتبقى العائمة بوحدة أيام العمل.`,
+        beforeInsertion: "قبل الإدراج",
+        afterInsertion: "بعد الإدراج",
+        windowOrEvent: "النافذة / الحدث",
+        impact: "الأثر",
+        completionVarianceWorkingDays: "فرق الإكمال بوحدة أيام عمل",
+        completionAfterAnalysis: "الإكمال بعد التحليل",
+        criticalPath: "المسار الحرج",
+        activityCount: "نشاط",
+        impactedCpm: "CPM المتأثر",
+        networkAfterInsertion: "الشبكة بعد الإدراج",
+        evidenceTrace: "أثر الأدلة",
+        calculationRecord: "سجل الحساب",
+        method: "الطريقة",
+        comparisonBase: "قاعدة المقارنة",
+        calendar: "التقويم",
+        noCalculatedResult: "لا توجد نتيجة محسوبة بعد",
+        noCalculatedResultText:
+          "أضف حدث تأخير أو أنشئ نافذة مرتبطة بالبرنامج لتشغيل التحليل.",
+        createDelayEvent: "إنشاء حدث تأخير",
+        reportEyebrow: "السرد + سجل قابل للتنزيل",
+        reportHeading: "Delay Analysis Narrative وتقرير فني",
+        reportDescription:
+          "السرد يتولد من نتائج الحساب والبيانات المدخلة، ثم يبقى قابلاً للتحرير قبل الطباعة أو التنزيل.",
+        printReport: "طباعة التقرير",
+        analystName: "اسم المحلل",
+        contractReference: "مرجع العقد/البند",
+        evidenceSummary: "ملخص الأدلة",
+        claimPosition: "الموقف المدخل",
+        refreshNarrative: "تحديث السرد من الحساب",
+        technicalRecord: "سجل فني لتحليل التأخير",
+        issueDate: "تاريخ الإصدار",
+        timeImpactAnalysis: "تحليل أثر زمني / Delay Analysis",
+        noSelectedWindow: "لا توجد نافذة محددة",
+        schedule: "البرنامج",
+        calendarDays: "أيام تقويمية",
+        scheduleDataDate: "تاريخ بيانات البرنامج",
+        notSpecified: "غير محدد",
+        completionBefore: "تاريخ الإكمال قبل",
+        completionVariance: "فرق الإكمال",
+        completionAfter: "تاريخ الإكمال بعد",
+        editableNarrativeDraft: "السرد التحليلي — مسودة قابلة للتحرير",
+        methodologyAndLimitations: "منهجية وحدود الاستخدام",
+        methodologyText:
+          "يقيس هذا التقرير الأثر الزمني الناتج عن برنامج وعلاقات وتقويم وFragnet مدخلة. يثبت الحساب فرق تاريخ الإكمال في النموذج؛ لكنه لا يحسم الاستحقاق التعاقدي أو التعويض أو التزامن القانوني. ينبغي مراجعة العقد والمراسلات وسجلات التقدم والمستندات المعاصرة بواسطة مختص قبل استخدامه في مطالبة أو نزاع.",
+      };
+}
+
 const baseSchedule: Schedule = {
   id: "baseline-building-envelope",
   name: "برج النخيل — تحديث البرنامج رقم 04",
@@ -1756,6 +1877,7 @@ export default function Home() {
   const overview = formatHomeOverview(language);
   const scheduleWorkspace = formatScheduleWorkspaceCopy(language);
   const eventWorkspace = formatEventWorkspaceCopy(language);
+  const analysisReport = formatAnalysisReportCopy(language);
   const qualityItems = [
     {
       ok: Boolean(baseline),
@@ -3013,12 +3135,9 @@ export default function Home() {
           <div className="view-stack analysis-view">
             <section className="page-heading">
               <div>
-                <p className="eyebrow">BEFORE / AFTER COMPARISON</p>
-                <h1>نتيجة التحليل القابلة للتتبع</h1>
-                <p>
-                  يمكن قراءة أثر حدث منفرد أو أثر نافذة مجمعة. الإحداثيات
-                  والحسابات أدناه تعود إلى نسخة البرنامج والتقويم المحددين.
-                </p>
+                <p className="eyebrow">{analysisReport.analysisEyebrow}</p>
+                <h1>{analysisReport.analysisHeading}</h1>
+                <p>{analysisReport.analysisDescription}</p>
               </div>
               <div className="heading-actions">
                 <Button
@@ -3028,7 +3147,7 @@ export default function Home() {
                   disabled={!selectedEvent}
                 >
                   <X size={16} />
-                  حذف الحدث
+                  {analysisReport.deleteEvent}
                 </Button>
                 <Button
                   className="run-button"
@@ -3036,7 +3155,7 @@ export default function Home() {
                   disabled={!activeResult}
                 >
                   <Download size={16} />
-                  تنزيل السجل
+                  {analysisReport.downloadRecord}
                 </Button>
               </div>
             </section>
@@ -3049,35 +3168,35 @@ export default function Home() {
                   }}
                 >
                   <div>
-                    <p>الأثر المحسوب على الإكمال</p>
+                    <p>{analysisReport.calculatedCompletionImpact}</p>
                     <strong dir="ltr">
                       {activeImpact > 0 ? "+" : ""}
                       {activeImpact}
-                      <small> يوم عمل</small>
+                      <small> {analysisReport.workingDay}</small>
                     </strong>
                     <span>
-                      تاريخ الإكمال يحسب وفق «
-                      {activeResult.impacted.calendar.name}»، وتبقى العائمة
-                      بوحدة أيام العمل.
+                      {analysisReport.completionUsesCalendar(
+                        activeResult.impacted.calendar.name
+                      )}
                     </span>
                   </div>
                   <div className="impact-dates">
                     <div>
-                      <small>قبل الإدراج</small>
+                      <small>{analysisReport.beforeInsertion}</small>
                       <b dir="ltr">{activeResult.baseline.completionDate}</b>
                     </div>
                     <i>
                       <ChevronLeft size={20} />
                     </i>
                     <div className="after-date">
-                      <small>بعد الإدراج</small>
+                      <small>{analysisReport.afterInsertion}</small>
                       <b dir="ltr">{activeResult.impacted.completionDate}</b>
                     </div>
                   </div>
                 </section>
                 <section className="metrics-grid analysis-metrics">
                   <MetricCard
-                    label="النافذة / الحدث"
+                    label={analysisReport.windowOrEvent}
                     value={
                       windowResult
                         ? (selectedWindow?.id ?? "—")
@@ -3091,21 +3210,21 @@ export default function Home() {
                     tone="graphite"
                   />
                   <MetricCard
-                    label="الأثر"
-                    value={`${activeImpact > 0 ? "+" : ""}${activeImpact} يوم`}
-                    helper="فرق الإكمال بوحدة أيام عمل"
+                    label={analysisReport.impact}
+                    value={`${activeImpact > 0 ? "+" : ""}${activeImpact} ${analysisReport.workingDay}`}
+                    helper={analysisReport.completionVarianceWorkingDays}
                     tone="orange"
                   />
                   <MetricCard
-                    label="الإكمال بعد التحليل"
+                    label={analysisReport.completionAfterAnalysis}
                     value={activeResult.impacted.completionDate}
                     helper={activeResult.impacted.calendar.name}
                     tone="blue"
                   />
                   <MetricCard
-                    label="المسار الحرج"
-                    value={`${displayedCpm.criticalActivityIds.length} نشاط`}
-                    helper="بعد الإدراج"
+                    label={analysisReport.criticalPath}
+                    value={`${displayedCpm.criticalActivityIds.length} ${analysisReport.activityCount}`}
+                    helper={analysisReport.afterInsertion}
                     tone="graphite"
                   />
                 </section>
@@ -3113,8 +3232,8 @@ export default function Home() {
                   <div className="panel timeline-panel">
                     <div className="panel-heading">
                       <div>
-                        <p className="eyebrow">IMPACTED CPM</p>
-                        <h2>الشبكة بعد الإدراج</h2>
+                        <p className="eyebrow">{analysisReport.impactedCpm}</p>
+                        <h2>{analysisReport.networkAfterInsertion}</h2>
                       </div>
                       <StatusBadge result={activeResult} />
                     </div>
@@ -3123,8 +3242,8 @@ export default function Home() {
                   <div className="panel evidence-panel">
                     <div className="panel-heading">
                       <div>
-                        <p className="eyebrow">EVIDENCE TRACE</p>
-                        <h2>سجل الحساب</h2>
+                        <p className="eyebrow">{analysisReport.evidenceTrace}</p>
+                        <h2>{analysisReport.calculationRecord}</h2>
                       </div>
                     </div>
                     <ol>
@@ -3142,15 +3261,15 @@ export default function Home() {
                     <div className="mini-divider" />
                     <div className="evidence-meta">
                       <div>
-                        <small>الطريقة</small>
+                        <small>{analysisReport.method}</small>
                         <b>{windowResult ? "Windowed TIA" : "TIA"}</b>
                       </div>
                       <div>
-                        <small>قاعدة المقارنة</small>
+                        <small>{analysisReport.comparisonBase}</small>
                         <b>{schedule.name}</b>
                       </div>
                       <div>
-                        <small>التقويم</small>
+                        <small>{analysisReport.calendar}</small>
                         <b>{activeResult.impacted.calendar.name}</b>
                       </div>
                     </div>
@@ -3164,12 +3283,10 @@ export default function Home() {
             ) : (
               <section className="empty-state">
                 <Zap size={28} />
-                <h2>لا توجد نتيجة محسوبة بعد</h2>
-                <p>
-                  أضف حدث تأخير أو أنشئ نافذة مرتبطة بالبرنامج لتشغيل التحليل.
-                </p>
+                <h2>{analysisReport.noCalculatedResult}</h2>
+                <p>{analysisReport.noCalculatedResultText}</p>
                 <Button className="run-button" onClick={() => setView("event")}>
-                  إنشاء حدث تأخير
+                  {analysisReport.createDelayEvent}
                 </Button>
               </section>
             )}
@@ -3180,12 +3297,9 @@ export default function Home() {
           <div className="view-stack report-view">
             <section className="page-heading no-print">
               <div>
-                <p className="eyebrow">NARRATIVE + EXPORTABLE RECORD</p>
-                <h1>Delay Analysis Narrative وتقرير فني</h1>
-                <p>
-                  السرد يتولد من نتائج الحساب والبيانات المدخلة، ثم يبقى قابلاً
-                  للتحرير قبل الطباعة أو التنزيل.
-                </p>
+                <p className="eyebrow">{analysisReport.reportEyebrow}</p>
+                <h1>{analysisReport.reportHeading}</h1>
+                <p>{analysisReport.reportDescription}</p>
               </div>
               <div className="heading-actions">
                 <Button
@@ -3195,18 +3309,18 @@ export default function Home() {
                   disabled={!activeResult}
                 >
                   <Download size={16} />
-                  تنزيل السجل
+                  {analysisReport.downloadRecord}
                 </Button>
                 <Button className="run-button" onClick={() => window.print()}>
                   <Printer size={16} />
-                  طباعة التقرير
+                  {analysisReport.printReport}
                 </Button>
               </div>
             </section>
             <section className="narrative-context no-print">
               <div>
                 <div>
-                  <Label>اسم المحلل</Label>
+                  <Label>{analysisReport.analystName}</Label>
                   <Input
                     value={narrativeContext.analyst}
                     onChange={event =>
@@ -3218,7 +3332,7 @@ export default function Home() {
                   />
                 </div>
                 <div>
-                  <Label>مرجع العقد/البند</Label>
+                  <Label>{analysisReport.contractReference}</Label>
                   <Input
                     value={narrativeContext.contractReference}
                     onChange={event =>
@@ -3230,7 +3344,7 @@ export default function Home() {
                   />
                 </div>
                 <div>
-                  <Label>ملخص الأدلة</Label>
+                  <Label>{analysisReport.evidenceSummary}</Label>
                   <Input
                     value={narrativeContext.evidenceSummary}
                     onChange={event =>
@@ -3242,7 +3356,7 @@ export default function Home() {
                   />
                 </div>
                 <div>
-                  <Label>الموقف المدخل</Label>
+                  <Label>{analysisReport.claimPosition}</Label>
                   <Input
                     value={narrativeContext.claimPosition}
                     onChange={event =>
@@ -3269,7 +3383,7 @@ export default function Home() {
                 }
               >
                 <Sparkles size={16} />
-                تحديث السرد من الحساب
+                {analysisReport.refreshNarrative}
               </Button>
             </section>
             <article className="print-report">
@@ -3278,36 +3392,36 @@ export default function Home() {
                   <img src={logoUrl} alt="" />
                   <div>
                     <b>TIA Studio</b>
-                    <span>Delay Analysis Technical Record</span>
+                    <span>{analysisReport.technicalRecord}</span>
                   </div>
                 </div>
                 <div>
-                  <small>تاريخ الإصدار</small>
+                  <small>{analysisReport.issueDate}</small>
                   <b dir="ltr">{new Date().toISOString().slice(0, 10)}</b>
                 </div>
               </div>
               <div className="report-title">
                 <div>
-                  <p>تحليل أثر زمني / Delay Analysis</p>
+                  <p>{analysisReport.timeImpactAnalysis}</p>
                   <h2>
                     {selectedWindow?.name ??
                       selectedEvent?.title ??
-                      "لا توجد نافذة محددة"}
+                      analysisReport.noSelectedWindow}
                   </h2>
                   <span>
-                    البرنامج: {schedule.name} · التقويم:{" "}
-                    {schedule.calendar?.name ?? "أيام تقويمية"}
+                    {analysisReport.schedule}: {schedule.name} · {analysisReport.calendar}:{" "}
+                    {schedule.calendar?.name ?? analysisReport.calendarDays}
                   </span>
                 </div>
                 <StatusBadge result={activeResult} />
               </div>
               <div className="report-facts">
                 <div>
-                  <small>تاريخ بيانات البرنامج</small>
-                  <b dir="ltr">{schedule.dataDate ?? "غير محدد"}</b>
+                  <small>{analysisReport.scheduleDataDate}</small>
+                  <b dir="ltr">{schedule.dataDate ?? analysisReport.notSpecified}</b>
                 </div>
                 <div>
-                  <small>تاريخ الإكمال قبل</small>
+                  <small>{analysisReport.completionBefore}</small>
                   <b dir="ltr">
                     {activeResult?.baseline.completionDate ??
                       baseline?.completionDate ??
@@ -3315,22 +3429,22 @@ export default function Home() {
                   </b>
                 </div>
                 <div>
-                  <small>فرق الإكمال</small>
+                  <small>{analysisReport.completionVariance}</small>
                   <b dir="ltr">
                     {activeResult
-                      ? `${activeImpact > 0 ? "+" : ""}${activeImpact} يوم عمل`
+                      ? `${activeImpact > 0 ? "+" : ""}${activeImpact} ${analysisReport.workingDay}`
                       : "—"}
                   </b>
                 </div>
                 <div>
-                  <small>تاريخ الإكمال بعد</small>
+                  <small>{analysisReport.completionAfter}</small>
                   <b dir="ltr">
                     {activeResult?.impacted.completionDate ?? "—"}
                   </b>
                 </div>
               </div>
               <section className="report-section narrative-print">
-                <h3>السرد التحليلي — مسودة قابلة للتحرير</h3>
+                <h3>{analysisReport.editableNarrativeDraft}</h3>
                 <Textarea
                   value={narrative}
                   onChange={event => setNarrative(event.target.value)}
@@ -3338,14 +3452,8 @@ export default function Home() {
                 />
               </section>
               <section className="report-section">
-                <h3>منهجية وحدود الاستخدام</h3>
-                <p>
-                  يقيس هذا التقرير الأثر الزمني الناتج عن برنامج وعلاقات وتقويم
-                  وFragnet مدخلة. يثبت الحساب فرق تاريخ الإكمال في النموذج؛ لكنه
-                  لا يحسم الاستحقاق التعاقدي أو التعويض أو التزامن القانوني.
-                  ينبغي مراجعة العقد والمراسلات وسجلات التقدم والمستندات
-                  المعاصرة بواسطة مختص قبل استخدامه في مطالبة أو نزاع.
-                </p>
+                <h3>{analysisReport.methodologyAndLimitations}</h3>
+                <p>{analysisReport.methodologyText}</p>
               </section>
               <section className="report-disclaimer">
                 <AlertTriangle size={17} />
