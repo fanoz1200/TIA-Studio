@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { IssueLogPanel } from "./IssueLogPanel";
 import type { Schedule } from "@/lib/cpm";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/lib/trpc", () => ({
@@ -26,11 +27,23 @@ const schedule = {
   relationships: [{ id: "REL-001", predecessorId: "A-001", successorId: "A-001", type: "FS", lag: 0 }],
 } as unknown as Schedule;
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+});
+
+function renderIssue(language: "ar" | "en" = "ar", isAuthenticated = true) {
+  window.localStorage.setItem("tia-studio-interface-language", language);
+  return render(
+    <LanguageProvider>
+      <IssueLogPanel view="issues" schedule={schedule} existingEvents={[]} isAuthenticated={isAuthenticated} onApplyFragnet={vi.fn()} />
+    </LanguageProvider>,
+  );
+}
 
 describe("أدوات Excel في سجل القضايا", () => {
   it("يعرض القالب والتصدير والاستيراد للمستخدم المصادق مع شرح التحقق قبل الحفظ", () => {
-    render(<IssueLogPanel view="issues" schedule={schedule} existingEvents={[]} isAuthenticated onApplyFragnet={vi.fn()} />);
+    renderIssue();
     expect(screen.getByText("تبادل Excel مضبوط")).toBeTruthy();
     expect(screen.getByRole("button", { name: "قالب Excel" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "تصدير السجل" })).toBeTruthy();
@@ -39,7 +52,7 @@ describe("أدوات Excel في سجل القضايا", () => {
   });
 
   it("يكشف شروط الحفظ ويعرض نقاط الربط القادمة من البرنامج المستورد", () => {
-    render(<IssueLogPanel view="issues" schedule={schedule} existingEvents={[]} isAuthenticated onApplyFragnet={vi.fn()} />);
+    renderIssue();
     expect(screen.getByText("قبل الحفظ: ما الذي ينقصني؟")).toBeTruthy();
     const saveButton = screen.getByRole("button", { name: "حفظ القضية ومقترح Fragnet" }) as HTMLButtonElement;
     expect(saveButton.disabled).toBe(true);
@@ -51,10 +64,21 @@ describe("أدوات Excel في سجل القضايا", () => {
 
   it("يحافظ على ترتيب Hooks عند انتقال المستخدم من غير مسجل إلى مسجل", () => {
     const props = { view: "issues" as const, schedule, existingEvents: [], onApplyFragnet: vi.fn() };
-    const { rerender } = render(<IssueLogPanel {...props} isAuthenticated={false} />);
+    window.localStorage.setItem("tia-studio-interface-language", "ar");
+    const { rerender } = render(<LanguageProvider><IssueLogPanel {...props} isAuthenticated={false} /></LanguageProvider>);
     expect(screen.getByRole("button", { name: "تسجيل الدخول" })).toBeTruthy();
 
-    expect(() => rerender(<IssueLogPanel {...props} isAuthenticated />)).not.toThrow();
+    expect(() => rerender(<LanguageProvider><IssueLogPanel {...props} isAuthenticated /></LanguageProvider>)).not.toThrow();
     expect(screen.getByText("قبل الحفظ: ما الذي ينقصني؟")).toBeTruthy();
+  });
+
+  it("يحوّل نصوص الواجهة إلى English وLTR من دون ترجمة بيانات النشاط المستورد", () => {
+    const { container } = renderIssue("en");
+
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(screen.getByText("Schedule-impacting issue register")).toBeTruthy();
+    expect(screen.getAllByText("Issue number").length).toBeGreaterThan(0);
+    expect(container.textContent).toContain("A-001");
+    expect(container.textContent).toContain("نشاط اختبار");
   });
 });
