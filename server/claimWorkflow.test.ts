@@ -74,7 +74,7 @@ describe("claim review workflow", () => {
     };
     vi.mocked(getDb).mockResolvedValue(fakeDb as never);
 
-    const invitation = await createProjectInvitation(17, { projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", accessDurationDays: 30, origin: "https://tia.example/" });
+    const invitation = await createProjectInvitation(17, { projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", accessDurationDays: 30, origin: "https://tia.example/", draftLanguage: "en" });
 
     expect(invitation.email).toBe("planner@example.com");
     expect(invitation.projectRole).toBe("planner");
@@ -82,6 +82,8 @@ describe("claim review workflow", () => {
     expect(storedInvitation).toMatchObject({ ownerUserId: 17, projectKey: "P-TIA", email: "planner@example.com", projectRole: "planner", accessDurationDays: 30, status: "pending" });
     expect(String(storedInvitation?.tokenHash)).toMatch(/^[a-f0-9]{64}$/);
     expect(JSON.stringify(storedInvitation)).not.toContain(invitation.inviteLink.split("=")[1]);
+    expect(invitation.emailSubject).toBe("TIA Project Invitation: P-TIA");
+    expect(invitation.emailBody).toContain("Planning reviewer");
   });
 
   it("rejects a role change when the member is outside the owner's project scope", async () => {

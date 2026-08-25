@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProjectMembersPanel } from "./ProjectMembersPanel";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -23,12 +24,23 @@ vi.mock("@/lib/trpc", () => ({
 
 describe("لوحة أعضاء المشروع", () => {
   it("تعرض مدة الوصول في الدعوة وحالة العضوية المنتهية وحدود النسخة المحلية", () => {
-    render(<ProjectMembersPanel projectKey="P-TIA" isAuthenticated />);
+    render(<LanguageProvider><ProjectMembersPanel projectKey="P-TIA" isAuthenticated /></LanguageProvider>);
 
     expect(screen.getByText("مدة الوصول بعد القبول")).toBeTruthy();
     expect(screen.getByText(/الوصول 14 يوماً بعد القبول/)).toBeTruthy();
     expect(screen.getByText(/انتهى الوصول في/)).toBeTruthy();
     expect(screen.getByText(/لا تتحكم في نسخة سطح المكتب المحلية/)).toBeTruthy();
     expect(screen.getByRole("button", { name: /تمديد وصول م. كريم/ })).toBeTruthy();
+  });
+
+  it("تظهر الواجهة بالإنجليزية واتجاه LTR مع بقاء اسم العضو العربي كما هو", () => {
+    localStorage.setItem("tia-studio-interface-language", "en");
+    const { container } = render(<LanguageProvider><ProjectMembersPanel projectKey="P-TIA" isAuthenticated /></LanguageProvider>);
+
+    expect(container.querySelector("section")?.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByText("Project members & review route")).toBeTruthy();
+    expect(screen.getByText("Member email")).toBeTruthy();
+    expect(screen.getByText("Invitations")).toBeTruthy();
+    expect(container.textContent).toContain("م. كريم");
   });
 });

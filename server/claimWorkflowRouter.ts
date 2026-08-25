@@ -56,7 +56,7 @@ export const projectMemberRouter = router({
 
 export const projectInvitationRouter = router({
   list: protectedProcedure.input(z.object({ projectKey: key })).query(({ ctx, input }) => listProjectInvitations(ctx.user.id, input.projectKey)),
-  create: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole, accessDurationDays, origin: z.string().url().max(512) })).mutation(({ ctx, input }) => createProjectInvitation(ctx.user.id, input)),
+  create: protectedProcedure.input(z.object({ projectKey: key, email: z.string().trim().email().max(320), projectRole, accessDurationDays, origin: z.string().url().max(512), draftLanguage: z.enum(["ar", "en"]).optional() })).mutation(({ ctx, input }) => createProjectInvitation(ctx.user.id, input)),
   cancel: protectedProcedure.input(z.object({ projectKey: key, invitationId: z.number().int().positive() })).mutation(({ ctx, input }) => cancelProjectInvitation(ctx.user.id, input)),
   accept: protectedProcedure.input(z.object({ token: z.string().trim().min(40).max(256) })).mutation(({ ctx, input }) => acceptProjectInvitation(ctx.user.id, input.token)),
 });

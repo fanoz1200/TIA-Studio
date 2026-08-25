@@ -140,7 +140,7 @@ export async function removeProjectMember(ownerUserId: number, input: { projectK
 }
 
 /** ينشئ رابط دعوة قصير العمر. لا يُحفظ الرمز الخام ولا يرسل الخادم بريداً تلقائياً. */
-export async function createProjectInvitation(ownerUserId: number, input: { projectKey: string; email: string; projectRole: ProjectMemberRole; accessDurationDays: number; origin: string }) {
+export async function createProjectInvitation(ownerUserId: number, input: { projectKey: string; email: string; projectRole: ProjectMemberRole; accessDurationDays: number; origin: string; draftLanguage?: "ar" | "en" }) {
   const db = await requireDb();
   const email = input.email.trim().toLowerCase();
   const [owner] = await db.select({ email: users.email }).from(users).where(eq(users.id, ownerUserId)).limit(1);
@@ -150,7 +150,12 @@ export async function createProjectInvitation(ownerUserId: number, input: { proj
   const accessDurationDays = accessExpiryFromDays(input.accessDurationDays) && input.accessDurationDays;
   await db.insert(projectInvitations).values({ ownerUserId, projectKey: input.projectKey, email, projectRole: input.projectRole, accessDurationDays, tokenHash: hashInvitationToken(token), status: "pending", expiresAt, sentBy: ownerUserId }).onDuplicateKeyUpdate({ set: { projectRole: input.projectRole, accessDurationDays, tokenHash: hashInvitationToken(token), status: "pending", expiresAt, acceptedByUserId: null, acceptedAt: null, sentBy: ownerUserId, updatedAt: new Date() } });
   const inviteLink = `${input.origin.replace(/\/$/, "")}/?invite=${encodeURIComponent(token)}`;
-  return { email, projectRole: input.projectRole, accessDurationDays, expiresAt: expiresAt.toISOString(), inviteLink, emailSubject: `دعوة للانضمام إلى مشروع TIA: ${input.projectKey}`, emailBody: `تمت دعوتك للانضمام إلى مشروع «${input.projectKey}» بدور «${input.projectRole}» لمدة ${accessDurationDays} يوماً من تاريخ القبول. سجّل الدخول بالبريد نفسه ثم افتح الرابط التالي قبل ${expiresAt.toISOString().slice(0, 10)}:\n${inviteLink}` };
+  const role = input.draftLanguage === "en" ? ({ planner: "Planning reviewer", contracts: "Contracts reviewer", claims_manager: "Claims manager", viewer: "View only" } as const)[input.projectRole] : ({ planner: "مراجع التخطيط", contracts: "مراجع العقود", claims_manager: "مدير المطالبات", viewer: "للعرض فقط" } as const)[input.projectRole];
+  const emailSubject = input.draftLanguage === "en" ? `TIA Project Invitation: ${input.projectKey}` : `دعوة للانضمام إلى مشروع TIA: ${input.projectKey}`;
+  const emailBody = input.draftLanguage === "en"
+    ? `You have been invited to join TIA project "${input.projectKey}" as "${role}". Access will be available for ${accessDurationDays} days from acceptance. Sign in with this email address, then open the link before ${expiresAt.toISOString().slice(0, 10)}:\n${inviteLink}`
+    : `تمت دعوتك للانضمام إلى مشروع «${input.projectKey}» بدور «${role}» لمدة ${accessDurationDays} يوماً من تاريخ القبول. سجّل الدخول بالبريد نفسه ثم افتح الرابط التالي قبل ${expiresAt.toISOString().slice(0, 10)}:\n${inviteLink}`;
+  return { email, projectRole: input.projectRole, accessDurationDays, expiresAt: expiresAt.toISOString(), inviteLink, emailSubject, emailBody };
 }
 
 export async function listProjectInvitations(ownerUserId: number, projectKey: string) {
