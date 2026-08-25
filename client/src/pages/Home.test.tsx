@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from "vitest";
-import { formatHomeStatus } from "./Home";
+import { formatHomeChrome, formatHomeStatus } from "./Home";
 
 describe("formatHomeStatus", () => {
   it("renders fixed import status chrome in English without translating the supplied schedule name", () => {
@@ -32,5 +32,25 @@ describe("formatHomeStatus", () => {
         scheduleName,
       })
     ).toBe(`تمت قراءة تحديث قبل الحدث: ${scheduleName}`);
+  });
+});
+
+describe("formatHomeChrome", () => {
+  it("provides English shell chrome while leaving source-derived values for callers to render unchanged", () => {
+    const importedScheduleName = "برنامج الأساسات — Update 04";
+    const chrome = formatHomeChrome("en");
+
+    expect(chrome.workspaceSubtitle).toBe("Delay Analysis Workspace");
+    expect(chrome.criticalPath).toBe("Critical path");
+    expect(chrome.networkError).toBe("Unable to calculate the network");
+    expect(importedScheduleName).toBe("برنامج الأساسات — Update 04");
+  });
+
+  it("retains Arabic shell chrome for the RTL interface", () => {
+    const chrome = formatHomeChrome("ar");
+
+    expect(chrome.workspaceSubtitle).toBe("مساحة عمل تحليل التأخيرات");
+    expect(chrome.expectedCompletion).toBe("الإكمال المتوقع");
+    expect(chrome.mainNavigation).toBe("التنقل الرئيسي");
   });
 });

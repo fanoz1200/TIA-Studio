@@ -57,6 +57,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useAppLanguage } from "@/contexts/LanguageContext";
+import { type AppLanguage } from "@/lib/language";
 import {
   buildActivitySplitFragnet,
   calendarDayCalendar,
@@ -300,6 +301,58 @@ export function formatHomeStatus(
             "هتبدأ رحلة TIA من أول خطوة عشان ما يفوتكش رفع النسخ أو تسجيل الواقعة.",
         };
   return messages[key];
+}
+
+/**
+ * Translates only the application shell chrome. Imported schedule values,
+ * user-entered values, IDs, dates, and CPM/TIA engine output stay unchanged.
+ */
+export function formatHomeChrome(language: AppLanguage) {
+  return language === "en"
+    ? {
+        qualityNetwork: "The CPM network can be calculated and contains no logic loop.",
+        qualityCalendar: "The project calendar and working days are defined.",
+        qualityFragnet: "The issue register contains at least one Fragnet.",
+        qualityAnalysis: "A calculated before/after comparison or analysis window is available.",
+        workspaceSubtitle: "Delay Analysis Workspace",
+        scheduleSource: "Schedule",
+        mainNavigation: "Main navigation",
+        workflowTitle: "Traceable calculation guide",
+        workflowText: "Schedule + calendar ← Fragnet ← CPM ← window/concurrency ← technical narrative.",
+        openSclGuide: "Open the SCL guide",
+        accountEvidence: "Saved evidence is linked to your account after sign-in.",
+        projects: "Projects",
+        interfaceLanguage: "Interface language",
+        howToUse: "How to use",
+        downloadWindows: "Download Windows app",
+        exportSchedule: "Export schedule",
+        runAnalysis: "Run analysis",
+        criticalPath: "Critical path",
+        expectedCompletion: "Expected completion",
+        networkError: "Unable to calculate the network",
+      }
+    : {
+        qualityNetwork: "شبكة CPM قابلة للحساب ولا تحتوي حلقة منطقية.",
+        qualityCalendar: "التقويم وأيام العمل محددة للمشروع.",
+        qualityFragnet: "سجل الأحداث يحتوي Fragnet أو أكثر.",
+        qualityAnalysis: "توجد مقارنة قبل/بعد أو نافذة محسوبة.",
+        workspaceSubtitle: "مساحة عمل تحليل التأخيرات",
+        scheduleSource: "برنامج العمل",
+        mainNavigation: "التنقل الرئيسي",
+        workflowTitle: "دليل حساب قابل للتتبع",
+        workflowText: "برنامج + تقويم ← Fragnet ← CPM ← نافذة/تزامن ← سرد فني.",
+        openSclGuide: "عرض دليل SCL",
+        accountEvidence: "الأدلة المحفوظة ترتبط بحسابك عند تسجيل الدخول.",
+        projects: "مشروعات",
+        interfaceLanguage: "لغة الواجهة",
+        howToUse: "شرح الاستخدام",
+        downloadWindows: "تنزيل نسخة الكمبيوتر",
+        exportSchedule: "تصدير البرنامج",
+        runAnalysis: "تشغيل التحليل",
+        criticalPath: "المسار الحرج",
+        expectedCompletion: "الإكمال المتوقع",
+        networkError: "تعذر تحليل الشبكة",
+      };
 }
 
 const baseSchedule: Schedule = {
@@ -1422,17 +1475,18 @@ export default function Home() {
     toast.success(formatHomeStatus(language, "analysisExported"));
   }
 
+  const chrome = formatHomeChrome(language);
   const qualityItems = [
     {
       ok: Boolean(baseline),
-      text: "شبكة CPM قابلة للحساب ولا تحتوي حلقة منطقية.",
+      text: chrome.qualityNetwork,
     },
     {
       ok: Boolean(schedule.calendar?.workingWeekdays.length),
-      text: "التقويم وأيام العمل محددة للمشروع.",
+      text: chrome.qualityCalendar,
     },
-    { ok: Boolean(events.length), text: "سجل الأحداث يحتوي Fragnet أو أكثر." },
-    { ok: Boolean(activeResult), text: "توجد مقارنة قبل/بعد أو نافذة محسوبة." },
+    { ok: Boolean(events.length), text: chrome.qualityFragnet },
+    { ok: Boolean(activeResult), text: chrome.qualityAnalysis },
   ];
 
   return (
@@ -1454,17 +1508,17 @@ export default function Home() {
           <img className="brand-mark" src={logoUrl} alt="TIA Studio" />
           <div>
             <b>TIA Studio</b>
-            <span>Delay Analysis Workspace</span>
+            <span>{chrome.workspaceSubtitle}</span>
           </div>
         </div>
         <div className="project-chip">
           <span className="project-dot" />
           <div>
-            <small>برنامج العمل / {schedule.source ?? "manual"}</small>
+            <small>{chrome.scheduleSource} / {schedule.source ?? "manual"}</small>
             <b>{schedule.name}</b>
           </div>
         </div>
-        <nav className="main-nav" aria-label="التنقل الرئيسي">
+        <nav className="main-nav" aria-label={chrome.mainNavigation}>
           {navItems.map(item => {
             const Icon = item.icon;
             return (
@@ -1484,34 +1538,34 @@ export default function Home() {
         </nav>
         <div className="method-card">
           <BookOpenCheck size={18} />
-          <strong>{language === "en" ? "Traceable calculation guide" : "دليل حساب قابل للتتبع"}</strong>
-          <p>{language === "en" ? "Schedule + calendar ← Fragnet ← CPM ← window/concurrency ← technical narrative." : "برنامج + تقويم ← Fragnet ← CPM ← نافذة/تزامن ← سرد فني."}</p>
+          <strong>{chrome.workflowTitle}</strong>
+          <p>{chrome.workflowText}</p>
           <button onClick={() => setView("methods")}>
-            {language === "en" ? "Open the SCL guide" : "عرض دليل SCL"} <ChevronLeft size={15} />
+            {chrome.openSclGuide} <ChevronLeft size={15} />
           </button>
         </div>
         <div className="local-note">
           <ShieldCheck size={16} />
-          <span>{language === "en" ? "Saved evidence is linked to your account after sign-in." : "الأدلة المحفوظة ترتبط بحسابك عند تسجيل الدخول."}</span>
+          <span>{chrome.accountEvidence}</span>
         </div>
       </aside>
       <main className="main-area">
         <header className="topbar">
           <div className="crumbs">
-            <span>{language === "en" ? "Projects" : "مشروعات"}</span>
+            <span>{chrome.projects}</span>
             <ChevronLeft size={14} />
             <b>{schedule.name}</b>
             <ChevronLeft size={14} />
             <strong>{(() => { const item = navItems.find(candidate => candidate.key === view); return item ? navigationLabel(item, language) : ""; })()}</strong>
           </div>
           <div className="top-actions">
-            <label className="sr-only" htmlFor="interface-language">لغة الواجهة / Interface language</label>
+            <label className="sr-only" htmlFor="interface-language">{chrome.interfaceLanguage}</label>
             <select
               id="interface-language"
               className="outline-action h-9 rounded-md border border-input bg-background px-2 text-sm font-medium"
               value={language}
               onChange={event => setLanguage(event.target.value as "ar" | "en")}
-              aria-label="لغة الواجهة / Interface language"
+              aria-label={chrome.interfaceLanguage}
             >
               <option value="ar">العربية</option>
               <option value="en">English</option>
@@ -1527,7 +1581,7 @@ export default function Home() {
               }}
             >
               <CircleHelp size={16} />
-              {language === "en" ? "How to use" : "شرح الاستخدام"}
+              {chrome.howToUse}
             </Button>
             <Button
               variant="outline"
@@ -1540,7 +1594,7 @@ export default function Home() {
               }}
             >
               <HardDriveDownload size={16} />
-              {language === "en" ? "Download Windows app" : "تنزيل نسخة الكمبيوتر"}
+              {chrome.downloadWindows}
             </Button>
             <Button
               variant="outline"
@@ -1548,7 +1602,7 @@ export default function Home() {
               onClick={exportSchedule}
             >
               <Download size={16} />
-              {language === "en" ? "Export schedule" : "تصدير البرنامج"}
+              {chrome.exportSchedule}
             </Button>
             <Button
               className="run-button"
@@ -1568,7 +1622,7 @@ export default function Home() {
               }}
             >
               <Play size={16} fill="currentColor" />
-              {language === "en" ? "Run analysis" : "تشغيل التحليل"}
+              {chrome.runAnalysis}
             </Button>
           </div>
         </header>
@@ -1580,7 +1634,7 @@ export default function Home() {
         <section className="critical-ribbon">
           <div className="ribbon-label">
             <Route size={17} />
-            <span>المسار الحرج</span>
+            <span>{chrome.criticalPath}</span>
           </div>
           <div className="path-nodes" dir="ltr">
             {displayedCpm?.criticalActivityIds
@@ -1593,7 +1647,7 @@ export default function Home() {
               ))}
           </div>
           <div className="ribbon-date">
-            <small>الإكمال المتوقع</small>
+            <small>{chrome.expectedCompletion}</small>
             <b dir="ltr">{displayedCpm?.completionDate ?? "—"}</b>
           </div>
           <StatusBadge result={activeResult} />
@@ -1715,7 +1769,7 @@ export default function Home() {
           <div className="analysis-error">
             <AlertTriangle size={18} />
             <div>
-              <b>تعذر تحليل الشبكة</b>
+              <b>{chrome.networkError}</b>
               <span>
                 {baselineState.error ||
                   singleResultState.error ||
