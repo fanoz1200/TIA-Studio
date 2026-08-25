@@ -54,6 +54,7 @@ describe("لوحة تسلسل المطالبات", () => {
     await waitFor(() => expect(screen.getByTestId("active-claim").textContent).toBe("CLM-APR-2026|سرد موحّد مرجعي"));
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("heading", { name: "سلسلة المطالبات والتأخيرات المتزامنة" })).toBeTruthy();
+    expect(screen.getByText("سلسلة المطالبات · سجل التزامن")).toBeTruthy();
   });
 
   it("يعرض النصوص الثابتة بالإنجليزية وLTR من دون ترجمة عنوان المطالبة أو سردها المحفوظ", async () => {
@@ -62,6 +63,7 @@ describe("لوحة تسلسل المطالبات", () => {
     await waitFor(() => expect(screen.getByRole("heading", { name: "Continuous claims & concurrent delays" })).toBeTruthy());
     expect(container.querySelector(".claim-continuity-panel")?.getAttribute("dir")).toBe("ltr");
     expect(container.textContent).toContain("Chain record");
+    expect(container.textContent).toContain("CONTINUOUS CLAIMS · CONCURRENCY LOG");
     expect(container.textContent).toContain("مطالبة تحديث أبريل");
     expect(container.textContent).toContain("سرد موحّد مرجعي");
   });

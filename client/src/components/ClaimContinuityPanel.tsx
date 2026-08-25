@@ -22,6 +22,7 @@ function interfaceCopy(language: "ar" | "en") {
   if (language === "en") {
     return {
       heading: "Continuous claims & concurrent delays",
+      continuityEyebrow: "CONTINUOUS CLAIMS · CONCURRENCY LOG",
       description: "Each new claim inherits the preceding claim reference and analysis period, then links its notices, report, and review path. The concurrency log is a technical review record, not an entitlement decision.",
       login: "Sign in to save the claim chain and concurrency log privately and securely.",
       signIn: "Sign in",
@@ -74,6 +75,7 @@ function interfaceCopy(language: "ar" | "en") {
 
   return {
     heading: "سلسلة المطالبات والتأخيرات المتزامنة",
+    continuityEyebrow: "سلسلة المطالبات · سجل التزامن",
     description: "كل مطالبة جديدة ترث مرجع المطالبة السابقة وفترة التحليل، ثم تربط Notices والتقرير ومسار المراجعة بها. سجل التزامن وثيقة فنية للمراجعة وليس قرار استحقاق.",
     login: "سجّل الدخول لحفظ سلسلة المطالبات وسجل التزامن بصورة خاصة وآمنة.",
     signIn: "تسجيل الدخول",
@@ -103,7 +105,7 @@ function interfaceCopy(language: "ar" | "en") {
     narrative: "السرد الموحد ونموذج Notice of Claim",
     beforeExport: "يُحدّث قبل التصدير",
     updateNarrative: "تحديث السرد وإحالته للمراجعة",
-    concurrentDelays: "CONCURRENT DELAYS",
+    concurrentDelays: "التأخيرات المتزامنة",
     concurrencyTitle: "توثيق التزامن ضمن هذه المطالبة",
     window: "نافذة TIA المرجعية:",
     noWindow: "لم تُحدد نافذة تحليل",
@@ -157,7 +159,7 @@ export function ClaimContinuityPanel({ view, schedule, events, selectedWindow, i
   if (view !== "notices" && view !== "review") return null;
 
   return <section className="claim-continuity-panel" dir={direction}>
-    <div className="claim-continuity-heading"><div><p className="eyebrow">CONTINUOUS CLAIMS · CONCURRENCY LOG</p><h2>{copy.heading}</h2><p>{copy.description}</p></div><GitBranch size={24} /></div>
+    <div className="claim-continuity-heading"><div><p className="eyebrow">{copy.continuityEyebrow}</p><h2>{copy.heading}</h2><p>{copy.description}</p></div><GitBranch size={24} /></div>
     {!isAuthenticated ? <div className="claim-continuity-login"><LogIn size={18} /><span>{copy.login}</span><Button className="run-button" onClick={startLogin}>{copy.signIn}</Button></div> : <>
       <div className="claim-continuity-grid"><div className="claim-chain-list"><div className="claim-chain-list__title"><b>{copy.chainLog}</b><span>{copy.claims(chains.length)}</span></div>{continuity.isLoading ? <p>{copy.loading}</p> : chains.length ? chains.map(item => <button type="button" key={item.id} className={active?.id === item.id ? "claim-chain-card active" : "claim-chain-card"} onClick={() => setActiveId(item.id)}><span dir="ltr">#{item.claimKey}</span><b>{item.title}</b><small>{item.periodStart ? formatDate(item.periodStart) : copy.noStart} — {item.periodEnd ? formatDate(item.periodEnd) : copy.open}</small>{item.parentClaimId ? <em>{copy.extension}</em> : <em>{copy.chainStart}</em>}</button>) : <p className="claim-empty">{copy.noClaims}</p>}</div>
         <div className="claim-create-form"><div className="claim-chain-list__title"><b>{copy.newClaim}</b><span>{copy.linksLast}</span></div><div><Label>{copy.claimTitle}</Label><Input value={title} onChange={event => { setTitle(event.target.value); if (!claimKey) setClaimKey(`CLM-${keyPart(event.target.value).toUpperCase()}`); }} placeholder={copy.claimTitlePlaceholder} /></div><div><Label>{copy.claimKey}</Label><Input dir="ltr" value={claimKey} onChange={event => setClaimKey(keyPart(event.target.value).toUpperCase())} placeholder="CLM-APR-2026" /></div><div className="claim-two"><div><Label>{copy.periodStart}</Label><Input type="date" dir="ltr" value={from} onChange={event => setFrom(event.target.value)} /></div><div><Label>{copy.periodEnd}</Label><Input type="date" dir="ltr" value={to} onChange={event => setTo(event.target.value)} /></div></div><div><Label>{copy.position}</Label><Textarea rows={2} value={position} onChange={event => setPosition(event.target.value)} placeholder={copy.positionPlaceholder} /></div><Button className="run-button" disabled={create.isPending || !title.trim() || !claimKey} onClick={() => create.mutate({ projectKey: schedule.id, claimKey, title: title.trim(), periodStart: from || null, periodEnd: to || null, analystPosition: position || undefined })}><PlusCircle size={16} />{copy.create}</Button></div></div>
