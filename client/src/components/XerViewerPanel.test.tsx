@@ -1,6 +1,7 @@
 import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import type { Schedule } from "@/lib/cpm";
 import type { XerImportSummary } from "@/lib/xer";
 import type { ScheduleSnapshot } from "./GuidedAnalysisPanel";
@@ -19,12 +20,22 @@ const updateSummary: XerImportSummary = { projectName: "Update", activitiesRead:
 const baselineSnapshot: ScheduleSnapshot = { id: "snapshot-base", stage: "baseline", fileName: "baseline.xer", schedule: baseline, summary: baselineSummary };
 const updateSnapshot: ScheduleSnapshot = { id: "snapshot-update", stage: "pre-event-update", fileName: "update.xer", schedule: update, summary: updateSummary };
 
+function renderViewer(language: "ar" | "en", onNavigate = vi.fn()) {
+  window.localStorage.setItem("tia-studio-interface-language", language);
+  render(
+    <LanguageProvider>
+      <XerViewerPanel schedule={update} xerSummary={updateSummary} baselineSnapshot={baselineSnapshot} updateSnapshots={[updateSnapshot]} onNavigate={onNavigate} />
+    </LanguageProvider>,
+  );
+  return onNavigate;
+}
+
 describe("عارض XER المحلي", () => {
   it("يعرض النسخ والفرق وحدود المراجعة ويربط العمل بالشاشات الحقيقية", () => {
-    const onNavigate = vi.fn();
-    render(<XerViewerPanel schedule={update} xerSummary={updateSummary} baselineSnapshot={baselineSnapshot} updateSnapshots={[updateSnapshot]} onNavigate={onNavigate} />);
+    const onNavigate = renderViewer("ar");
 
     expect(screen.getByRole("heading", { name: "عارض XER والنسخ" })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "عارض XER والنسخ" }).getAttribute("dir")).toBe("rtl");
     expect(screen.getByText(/لا يعدّل ملف XER الأصلي/)).toBeTruthy();
     expect(screen.getByText("baseline.xer")).toBeTruthy();
     expect(screen.getByText("update.xer")).toBeTruthy();
@@ -34,5 +45,17 @@ describe("عارض XER المحلي", () => {
     fireEvent.click(screen.getByRole("button", { name: "ارفع أو استبدل ملف" }));
     expect(onNavigate).toHaveBeenNthCalledWith(1, "compare");
     expect(onNavigate).toHaveBeenNthCalledWith(2, "schedule");
+  });
+
+  it("يعرض عناصر واجهة English باتجاه LTR من دون ترجمة بيانات XER المستوردة", () => {
+    renderViewer("en");
+
+    const viewer = screen.getByRole("region", { name: "XER and snapshot viewer" });
+    expect(viewer.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByRole("heading", { name: "XER and snapshot viewer" })).toBeTruthy();
+    expect(screen.getByText("Viewer limits:")).toBeTruthy();
+    expect(screen.getByText("Activities added")).toBeTruthy();
+    expect(screen.getAllByText("A200").length).toBeGreaterThan(0);
+    expect(screen.getByText("صب خرسانة")).toBeTruthy();
   });
 });
