@@ -1,8 +1,8 @@
-// @vitest-environment jsdom
 import React, { useCallback, useState } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ClaimContinuityPanel } from "./ClaimContinuityPanel";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import type { Schedule } from "@/lib/cpm";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -35,12 +35,34 @@ function ClaimStateHarness({ onChange }: { onChange: ReturnType<typeof vi.fn> })
   </>;
 }
 
+function renderClaimPanel(language: "ar" | "en", onChange = vi.fn()) {
+  window.localStorage.setItem("tia-studio-interface-language", language);
+  return render(<LanguageProvider><ClaimStateHarness onChange={onChange} /></LanguageProvider>);
+}
+
 describe("لوحة تسلسل المطالبات", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    document.documentElement.dir = "rtl";
+    document.documentElement.lang = "ar";
+  });
+
   it("تحدّث مطالبة نشطة محفوظة مرة واحدة فقط ولا تدخل في حلقة تحديث عند إعادة تصيير الأب", async () => {
     const onChange = vi.fn();
-    render(<ClaimStateHarness onChange={onChange} />);
+    renderClaimPanel("ar", onChange);
 
     await waitFor(() => expect(screen.getByTestId("active-claim").textContent).toBe("CLM-APR-2026|سرد موحّد مرجعي"));
     expect(onChange).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("heading", { name: "سلسلة المطالبات والتأخيرات المتزامنة" })).toBeTruthy();
+  });
+
+  it("يعرض النصوص الثابتة بالإنجليزية وLTR من دون ترجمة عنوان المطالبة أو سردها المحفوظ", async () => {
+    const { container } = renderClaimPanel("en");
+
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Continuous claims & concurrent delays" })).toBeTruthy());
+    expect(container.querySelector(".claim-continuity-panel")?.getAttribute("dir")).toBe("ltr");
+    expect(container.textContent).toContain("Chain record");
+    expect(container.textContent).toContain("مطالبة تحديث أبريل");
+    expect(container.textContent).toContain("سرد موحّد مرجعي");
   });
 });
