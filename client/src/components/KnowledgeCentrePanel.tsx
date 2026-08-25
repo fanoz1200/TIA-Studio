@@ -9,6 +9,7 @@ import type { MasterClaimCase } from "@/lib/master-claim-cases";
 import type { DetailedMasterClaimCase } from "@/lib/master-claim-excel";
 import { masterClaimIntelligenceCases, masterClaimIntelligenceSource, masterClaimSupportSheets } from "@/lib/master-claim-intelligence-data";
 import { claimTrainingScenarios, fidicClaimReferences } from "@/lib/user-claim-references";
+import { useAppLanguage } from "@/contexts/LanguageContext";
 import "./knowledge-centre.css";
 import "./knowledge-centre-record-filters.css";
 import "./knowledge-decision-tree.css";
@@ -25,12 +26,22 @@ export type KnowledgeRoute = {
   caseTitle: string;
 };
 
-const methods: { id: AnalysisMethod; label: string; detail: string }[] = [
-  { id: "tia", label: "تحليل الأثر الزمني (TIA)", detail: "مناسب لحدث محدد يُنمذج على تحديث سابق للحدث ثم يقاس أثره على الإكمال." },
-  { id: "windows", label: "تحليل النوافذ (Windows)", detail: "مناسب للمشروع المستمر أو الوقائع المتداخلة التي تتطلب قراءة تحديثات متتابعة." },
-  { id: "disruption", label: "تحليل التعطيل (Disruption)", detail: "مناسب لانخفاض الإنتاجية أو اضطراب تسلسل التنفيذ، ويحتاج أدلة تشغيلية." },
-  { id: "quantity", label: "زيادة الكميات / النطاق (Quantity)", detail: "يوثق الزيادة والأثر الزمني، ثم يترك تقرير الاستحقاق المالي والتعاقدي للمراجعة." },
-];
+function methodsFor(language: "ar" | "en"): { id: AnalysisMethod; label: string; detail: string }[] {
+  if (language === "en") {
+    return [
+      { id: "tia", label: "Time Impact Analysis (TIA)", detail: "For a defined event modelled on an update before the event, with its completion impact then measured." },
+      { id: "windows", label: "Windows analysis", detail: "For a live project or overlapping events that need consecutive-update review." },
+      { id: "disruption", label: "Disruption analysis", detail: "For productivity loss or disrupted sequencing, supported by operational records." },
+      { id: "quantity", label: "Quantity / scope increase", detail: "Records the increase and time impact; financial and contractual entitlement remain for review." },
+    ];
+  }
+  return [
+    { id: "tia", label: "تحليل الأثر الزمني (TIA)", detail: "مناسب لحدث محدد يُنمذج على تحديث سابق للحدث ثم يقاس أثره على الإكمال." },
+    { id: "windows", label: "تحليل النوافذ (Windows)", detail: "مناسب للمشروع المستمر أو الوقائع المتداخلة التي تتطلب قراءة تحديثات متتابعة." },
+    { id: "disruption", label: "تحليل التعطيل (Disruption)", detail: "مناسب لانخفاض الإنتاجية أو اضطراب تسلسل التنفيذ، ويحتاج أدلة تشغيلية." },
+    { id: "quantity", label: "زيادة الكميات / النطاق (Quantity)", detail: "يوثق الزيادة والأثر الزمني، ثم يترك تقرير الاستحقاق المالي والتعاقدي للمراجعة." },
+  ];
+}
 
 function normalize(value: string) {
   return value
@@ -50,8 +61,8 @@ function methodFromSource(value: string): AnalysisMethod {
   return "tia";
 }
 
-function selectedMethodLabel(caseItem: MasterClaimCase) {
-  return methods.find(method => method.id === methodFromSource(caseItem.methodology))?.label ?? "تحليل الأثر الزمني (TIA)";
+function selectedMethodLabel(caseItem: MasterClaimCase, methods: { id: AnalysisMethod; label: string; detail: string }[]) {
+  return methods.find(method => method.id === methodFromSource(caseItem.methodology))?.label ?? methods[0]?.label ?? "TIA";
 }
 
 function journeyFor(method: AnalysisMethod): "issue" | "direct" {
@@ -62,6 +73,9 @@ const requestedCaseCount = 88;
 const workbookCases: DetailedMasterClaimCase[] = masterClaimIntelligenceCases.map(item => ({ ...item, source: "excel" }));
 
 export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: string; projectKey: string; isAuthenticated: boolean; onBeginGuidedAnalysis?: (route: KnowledgeRoute) => void }) {
+  const { language, direction } = useAppLanguage();
+  const txt = (ar: string, en: string) => language === "en" ? en : ar;
+  const methods = methodsFor(language);
   const [query, setQuery] = useState("");
   const [methodFilter, setMethodFilter] = useState<AnalysisMethod | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -90,23 +104,23 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const decisionResult = decisionChoice === "single"
     ? hasPreEventUpdate === null ? null : {
       method: "tia" as AnalysisMethod,
-      title: hasPreEventUpdate ? "المناسب كبداية: TIA" : "جهّز تحديث قريب من تاريخ الحدث ثم ابدأ TIA",
-      detail: hasPreEventUpdate ? "عندك واقعة محددة ونسخة قبلها؛ هتدخل رحلة TIA المباشرة." : "تقدر تفتح رحلة TIA دلوقتي، لكن لازم تحدد Update قريب قبل الحدث وتراجع Data Date قبل الحساب.",
+      title: hasPreEventUpdate ? txt("المناسب كبداية: TIA", "Recommended starting point: TIA") : txt("جهّز تحديث قريب من تاريخ الحدث ثم ابدأ TIA", "Prepare an update near the event date, then start TIA"),
+      detail: hasPreEventUpdate ? txt("عندك واقعة محددة ونسخة قبلها؛ هتدخل رحلة TIA المباشرة.", "You have a defined event and a preceding copy; the direct TIA journey is next.") : txt("تقدر تفتح رحلة TIA دلوقتي، لكن لازم تحدد Update قريب قبل الحدث وتراجع Data Date قبل الحساب.", "You can open the TIA journey now, but first identify an update near the event and review the Data Date before calculation."),
     }
     : decisionChoice === "period" ? {
       method: "windows" as AnalysisMethod,
-      title: "المناسب كبداية: تحليل النوافذ",
-      detail: "عندك فترة أو أكتر من واقعة. ابدأ بسجل القضايا ثم رتّب التحديثات والنوافذ.",
+      title: txt("المناسب كبداية: تحليل النوافذ", "Recommended starting point: Windows analysis"),
+      detail: txt("عندك فترة أو أكتر من واقعة. ابدأ بسجل القضايا ثم رتّب التحديثات والنوافذ.", "You have a period or more than one event. Start with the Issue Log, then organise updates and windows."),
     }
     : decisionChoice === "disruption" ? {
       method: "disruption" as AnalysisMethod,
-      title: "المناسب كبداية: تحليل التعطيل",
-      detail: "ركز على الإنتاجية والسجلات اليومية والموارد؛ البرنامج لا يحوّل انخفاض الإنتاجية لأيام تلقائياً من غير أدلة.",
+      title: txt("المناسب كبداية: تحليل التعطيل", "Recommended starting point: Disruption analysis"),
+      detail: txt("ركز على الإنتاجية والسجلات اليومية والموارد؛ البرنامج لا يحوّل انخفاض الإنتاجية لأيام تلقائياً من غير أدلة.", "Focus on productivity, daily records and resources; the application does not convert productivity loss to days automatically without evidence."),
     }
     : decisionChoice === "quantity" ? {
       method: "quantity" as AnalysisMethod,
-      title: "المناسب كبداية: زيادة كميات أو نطاق",
-      detail: "سجّل أمر التغيير والكميات والنشاط المتأثر، وبعدها راجع الأثر الزمني والمالي كل واحد في مساره.",
+      title: txt("المناسب كبداية: زيادة كميات أو نطاق", "Recommended starting point: Quantity or scope increase"),
+      detail: txt("سجّل أمر التغيير والكميات والنشاط المتأثر، وبعدها راجع الأثر الزمني والمالي كل واحد في مساره.", "Record the change order, quantities and affected activity, then review time and financial impact through their respective workflows."),
     }
     : null;
 
@@ -153,7 +167,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const applyCase = () => {
     if (!onBeginGuidedAnalysis || isApplying) return;
     setIsApplying(true);
-    toast.success("جاري فتح رحلة التحليل للحالة المختارة…");
+    toast.success(txt("جاري فتح رحلة التحليل للحالة المختارة…", "Opening the analysis journey for the selected case…"));
     onBeginGuidedAnalysis({
       method: selectedMethod,
       journeyPath: journeyFor(selectedMethod),
@@ -178,28 +192,28 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   if (view !== "learning") return null;
 
   return (
-    <section className="knowledge-centre workflow-panel">
+    <section className="knowledge-centre workflow-panel" dir={direction} aria-label={txt("موسوعة المنهجيات والحالات", "Methodology and case library")}>
       <div className="workflow-heading">
         <div>
           <p className="eyebrow">MASTER CLAIM INTELLIGENCE · READ ONLY</p>
-          <h2>مكتبة المنهجيات والحالات العملية</h2>
-          <p>تجمع المكتبة السجل التفصيلي المقروء محلياً من ملف Excel: الحالات، إجراءات القرار، التدقيق الجنائي، الاعتراضات والردود، القوالب، الحسابات، وقائمة الإقفال. البحث يرشدك ولا يصدر حكماً تعاقدياً آلياً.</p>
+          <h2>{txt("مكتبة المنهجيات والحالات العملية", "Methodology and practical case library")}</h2>
+          <p>{txt("تجمع المكتبة السجل التفصيلي المقروء محلياً من ملف Excel: الحالات، إجراءات القرار، التدقيق الجنائي، الاعتراضات والردود، القوالب، الحسابات، وقائمة الإقفال. البحث يرشدك ولا يصدر حكماً تعاقدياً آلياً.", "This library gathers the detailed record read locally from the Excel workbook: cases, decision procedures, forensic checks, objections and replies, templates, calculations and close-out items. Search guides you; it does not issue an automated contractual decision.")}</p>
         </div>
         <LibraryBig size={26} />
       </div>
 
-      <article className="master-library-status" aria-label="حالة مصدر الموسوعة">
-        <div><ShieldCheck size={19} /><span><b>المصدر المرجعي محمّل للقراءة فقط.</b> تُضمَّن بيانات ملف Excel المرفوع داخل النسخة وقت البناء؛ لا يُعدّل الأصل ولا يُرسل إلى خادم أو خدمة خارجية. المتاح: {verifiedWorkbookCaseCount} سجلاً منظماً و{masterClaimIntelligenceSource.supportSheetCount} أوراق دعم.</span></div>
-        <span className="master-library-count">{verifiedWorkbookCaseCount} سجل Excel تفصيلي</span>
+      <article className="master-library-status" aria-label={txt("حالة مصدر الموسوعة", "Library source status")}>
+        <div><ShieldCheck size={19} /><span><b>{txt("المصدر المرجعي محمّل للقراءة فقط.", "The reference source is loaded read-only.")}</b> {txt("تُضمَّن بيانات ملف Excel المرفوع داخل النسخة وقت البناء؛ لا يُعدّل الأصل ولا يُرسل إلى خادم أو خدمة خارجية. المتاح: ", "The uploaded Excel data are embedded in the build; the original is not modified or sent to a server or external service. Available: ")}{verifiedWorkbookCaseCount}{txt(" سجلاً منظماً و", " structured records and ")}{masterClaimIntelligenceSource.supportSheetCount}{txt(" أوراق دعم.", " support sheets.")}</span></div>
+        <span className="master-library-count">{verifiedWorkbookCaseCount} {txt("سجل Excel تفصيلي", "detailed Excel records")}</span>
       </article>
-      <p className="case-source-note" aria-live="polite"><b>حالة الفهرسة:</b> الملف يحتوي {verifiedDCaseCount} حالة من سلسلة D و{verifiedRelatedCaseCount} سجلاً مرتبطاً فعلياً (DIS/CON/VAR/RES). لا يظهر فيه D-056 إلى D-088 كسجلات منظمة؛ تبقى {pendingDCaseCount} حالة من سلسلة D معلقة إلى أن يصل مصدر موثق، ولن تُنشأ بدائل عنها.</p>
+      <p className="case-source-note" aria-live="polite"><b>{txt("حالة الفهرسة:", "Index status:")}</b> {txt("الملف يحتوي ", "The workbook contains ")}{verifiedDCaseCount}{txt(" حالة من سلسلة D و", " D-series cases and ")}{verifiedRelatedCaseCount}{txt(" سجلاً مرتبطاً فعلياً (DIS/CON/VAR/RES). لا يظهر فيه D-056 إلى D-088 كسجلات منظمة؛ تبقى ", " related records (DIS/CON/VAR/RES). It does not contain D-056 to D-088 as structured records; ")}{pendingDCaseCount}{txt(" حالة من سلسلة D معلقة إلى أن يصل مصدر موثق، ولن تُنشأ بدائل عنها.", " D-series cases remain pending until a documented source is available, and no substitutes will be created.")}</p>
 
-      <section className="library-start-menu" aria-label="اختار أنت محتاج إيه من الموسوعة">
-        <div><p className="eyebrow">خدها خطوة خطوة</p><h3>إنت داخل تعمل إيه دلوقتي؟</h3><p>اختار حاجة واحدة، والباقي هيفضل بعيد عنك لحد ما تحتاجه.</p></div>
-        <div className="library-start-menu__choices" role="tablist" aria-label="أقسام الموسوعة المبسطة">
-          <button type="button" role="tab" aria-selected={librarySection === "start"} className={librarySection === "start" ? "selected" : ""} onClick={() => setLibrarySection("start")}><BookOpenCheck size={18} /><span><b>مش عارف أبدأ</b><small>جاوب سؤالين وأنا أرشح لك الطريق</small></span></button>
-          <button type="button" role="tab" aria-selected={librarySection === "cases"} className={librarySection === "cases" ? "selected" : ""} onClick={() => setLibrarySection("cases")}><Search size={18} /><span><b>بدور على حالة شبه مشكلتي</b><small>ابحث وشوف الأدلة والخطوة اللي بعدها</small></span></button>
-          <button type="button" role="tab" aria-selected={librarySection === "references"} className={librarySection === "references" ? "selected" : ""} onClick={() => setLibrarySection("references")}><FileText size={18} /><span><b>عايز المراجع والقوالب</b><small>FIDIC والسيناريوهات وأوراق الدعم</small></span></button>
+      <section className="library-start-menu" aria-label={txt("اختار أنت محتاج إيه من الموسوعة", "Choose what you need from the library")}>
+        <div><p className="eyebrow">{txt("خدها خطوة خطوة", "TAKE IT STEP BY STEP")}</p><h3>{txt("إنت داخل تعمل إيه دلوقتي؟", "What are you here to do?")}</h3><p>{txt("اختار حاجة واحدة، والباقي هيفضل بعيد عنك لحد ما تحتاجه.", "Choose one task; the rest stays out of your way until you need it.")}</p></div>
+        <div className="library-start-menu__choices" role="tablist" aria-label={txt("أقسام الموسوعة المبسطة", "Simplified library sections")}>
+          <button type="button" role="tab" aria-selected={librarySection === "start"} className={librarySection === "start" ? "selected" : ""} onClick={() => setLibrarySection("start")}><BookOpenCheck size={18} /><span><b>{txt("مش عارف أبدأ", "I am not sure where to start")}</b><small>{txt("جاوب سؤالين وأنا أرشح لك الطريق", "Answer two questions and I will suggest a route")}</small></span></button>
+          <button type="button" role="tab" aria-selected={librarySection === "cases"} className={librarySection === "cases" ? "selected" : ""} onClick={() => setLibrarySection("cases")}><Search size={18} /><span><b>{txt("بدور على حالة شبه مشكلتي", "I am looking for a similar case")}</b><small>{txt("ابحث وشوف الأدلة والخطوة اللي بعدها", "Search, then review the evidence and next step")}</small></span></button>
+          <button type="button" role="tab" aria-selected={librarySection === "references"} className={librarySection === "references" ? "selected" : ""} onClick={() => setLibrarySection("references")}><FileText size={18} /><span><b>{txt("عايز المراجع والقوالب", "I need references and templates")}</b><small>{txt("FIDIC والسيناريوهات وأوراق الدعم", "FIDIC, scenarios and support sheets")}</small></span></button>
         </div>
       </section>
 
@@ -207,48 +221,48 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
       <section className="interactive-decision-tree" aria-labelledby="interactive-decision-tree-title">
         <div className="interactive-decision-tree__heading">
           <BookOpenCheck size={22} />
-          <div><p className="eyebrow">ابدأ من سؤالك الحقيقي</p><h3 id="interactive-decision-tree-title">مش عارف أبدأ بأي طريقة؟ جاوب سؤالين بس</h3><p>دي أداة توجيه، مش حكم تعاقدي. بعد الإجابة هتفتح لك الرحلة المناسبة في البرنامج بدل ما تدخل في جداول كتير.</p></div>
+          <div><p className="eyebrow">{txt("ابدأ من سؤالك الحقيقي", "START WITH YOUR REAL QUESTION")}</p><h3 id="interactive-decision-tree-title">{txt("مش عارف أبدأ بأي طريقة؟ جاوب سؤالين بس", "Not sure which method to start with? Answer just two questions")}</h3><p>{txt("دي أداة توجيه، مش حكم تعاقدي. بعد الإجابة هتفتح لك الرحلة المناسبة في البرنامج بدل ما تدخل في جداول كتير.", "This is a guide, not a contractual decision. After answering, it opens the relevant journey instead of taking you through many tables.")}</p></div>
         </div>
         <div className="decision-question">
-          <b>١) طبيعة المشكلة إيه؟</b>
-          <div className="decision-options" role="group" aria-label="طبيعة المشكلة">
-            <button type="button" className={decisionChoice === "single" ? "selected" : ""} onClick={() => { setDecisionChoice("single"); setHasPreEventUpdate(null); }}>واقعة واحدة بتاريخ معروف</button>
-            <button type="button" className={decisionChoice === "period" ? "selected" : ""} onClick={() => { setDecisionChoice("period"); setHasPreEventUpdate(null); }}>تأخيرات متتابعة أو متزامنة</button>
-            <button type="button" className={decisionChoice === "disruption" ? "selected" : ""} onClick={() => { setDecisionChoice("disruption"); setHasPreEventUpdate(null); }}>إنتاجية وقعت أو التسلسل اتلخبط</button>
-            <button type="button" className={decisionChoice === "quantity" ? "selected" : ""} onClick={() => { setDecisionChoice("quantity"); setHasPreEventUpdate(null); }}>زيادة كميات أو تغيير نطاق</button>
+          <b>{txt("١) طبيعة المشكلة إيه؟", "1) What is the nature of the problem?")}</b>
+          <div className="decision-options" role="group" aria-label={txt("طبيعة المشكلة", "Nature of the problem")}>
+            <button type="button" className={decisionChoice === "single" ? "selected" : ""} onClick={() => { setDecisionChoice("single"); setHasPreEventUpdate(null); }}>{txt("واقعة واحدة بتاريخ معروف", "One event with a known date")}</button>
+            <button type="button" className={decisionChoice === "period" ? "selected" : ""} onClick={() => { setDecisionChoice("period"); setHasPreEventUpdate(null); }}>{txt("تأخيرات متتابعة أو متزامنة", "Sequential or concurrent delays")}</button>
+            <button type="button" className={decisionChoice === "disruption" ? "selected" : ""} onClick={() => { setDecisionChoice("disruption"); setHasPreEventUpdate(null); }}>{txt("إنتاجية وقعت أو التسلسل اتلخبط", "Productivity dropped or sequencing was disrupted")}</button>
+            <button type="button" className={decisionChoice === "quantity" ? "selected" : ""} onClick={() => { setDecisionChoice("quantity"); setHasPreEventUpdate(null); }}>{txt("زيادة كميات أو تغيير نطاق", "Quantity increase or scope change")}</button>
           </div>
         </div>
-        {decisionChoice === "single" ? <div className="decision-question decision-question--followup"><b>٢) معاك Update قريب قبل تاريخ الحدث؟</b><div className="decision-options" role="group" aria-label="وجود تحديث قبل الحدث"><button type="button" className={hasPreEventUpdate === true ? "selected" : ""} onClick={() => setHasPreEventUpdate(true)}>أيوه، معايا</button><button type="button" className={hasPreEventUpdate === false ? "selected" : ""} onClick={() => setHasPreEventUpdate(false)}>لأ، محتاج أجهزه</button></div></div> : null}
-        {decisionResult ? <div className="decision-result" aria-live="polite"><CheckCircle2 size={22} /><div><b>{decisionResult.title}</b><p>{decisionResult.detail}</p></div><Button onClick={beginDecisionRoute} disabled={!onBeginGuidedAnalysis}>افتح الخطوات المناسبة <ArrowLeft size={16} /></Button></div> : <p className="decision-empty">اختار وصف المشكلة الأول، وبعدها هقول لك تمشي في أنهي طريق جوه البرنامج.</p>}
+        {decisionChoice === "single" ? <div className="decision-question decision-question--followup"><b>{txt("٢) معاك Update قريب قبل تاريخ الحدث؟", "2) Do you have an update near the date before the event?")}</b><div className="decision-options" role="group" aria-label={txt("وجود تحديث قبل الحدث", "Availability of a pre-event update")}><button type="button" className={hasPreEventUpdate === true ? "selected" : ""} onClick={() => setHasPreEventUpdate(true)}>{txt("أيوه، معايا", "Yes, I do")}</button><button type="button" className={hasPreEventUpdate === false ? "selected" : ""} onClick={() => setHasPreEventUpdate(false)}>{txt("لأ، محتاج أجهزه", "No, I need to prepare one")}</button></div></div> : null}
+        {decisionResult ? <div className="decision-result" aria-live="polite"><CheckCircle2 size={22} /><div><b>{decisionResult.title}</b><p>{decisionResult.detail}</p></div><Button onClick={beginDecisionRoute} disabled={!onBeginGuidedAnalysis}>{txt("افتح الخطوات المناسبة", "Open the appropriate steps")} <ArrowLeft size={16} /></Button></div> : <p className="decision-empty">{txt("اختار وصف المشكلة الأول، وبعدها هقول لك تمشي في أنهي طريق جوه البرنامج.", "Choose the problem description first, then I will suggest the route inside the application.")}</p>}
       </section>
-      <section className="library-next-step" aria-label="بعد اختيار المسار">
-        <h3>بعد ما تختار الطريق</h3>
-        <ol><li>افتح رحلة التحليل المناسبة من الزر الأخضر.</li><li>ارفع النسخة الأساسية والـUpdate القريب من الواقعة.</li><li>وثّق الواقعة والأدلة، وبعدها اطلع التقرير للمراجعة.</li></ol>
-        <Button type="button" variant="outline" onClick={() => setLibrarySection("cases")}>أو دور على حالة من المكتبة <ArrowLeft size={16} /></Button>
+      <section className="library-next-step" aria-label={txt("بعد اختيار المسار", "After choosing a route")}>
+        <h3>{txt("بعد ما تختار الطريق", "After choosing the route")}</h3>
+        <ol><li>{txt("افتح رحلة التحليل المناسبة من الزر الأخضر.", "Open the relevant analysis journey from the green button.")}</li><li>{txt("ارفع النسخة الأساسية والـUpdate القريب من الواقعة.", "Upload the baseline and the update nearest to the event.")}</li><li>{txt("وثّق الواقعة والأدلة، وبعدها اطلع التقرير للمراجعة.", "Record the event and evidence, then produce the report for review.")}</li></ol>
+        <Button type="button" variant="outline" onClick={() => setLibrarySection("cases")}>{txt("أو دور على حالة من المكتبة", "Or search for a case in the library")} <ArrowLeft size={16} /></Button>
       </section>
       </> : null}
 
       {librarySection === "references" ? <>
-      <section className="fidic-reference-library" aria-label="مرجع بنود FIDIC 2017">
+      <section className="fidic-reference-library" aria-label={txt("مرجع بنود FIDIC 2017", "FIDIC 2017 clause reference")}>
         <div className="reference-library-heading">
           <FileText size={20} />
-          <div><p className="eyebrow">FIDIC 2017 · PLANNER REFERENCE</p><h3>مرجع بنود FIDIC 2017 للمخطط والمطالبة</h3><p>يعرض {fidicClaimReferences.length} بنداً موثقاً من ملفك: قراءة عملية للمخطط، الإجراء، السجلات، والملاحظات. هذه المراجع مستقلة عن حالات D ولا تُنشئ استحقاقاً قانونياً تلقائياً.</p></div>
+          <div><p className="eyebrow">FIDIC 2017 · PLANNER REFERENCE</p><h3>{txt("مرجع بنود FIDIC 2017 للمخطط والمطالبة", "FIDIC 2017 clause reference for planning and claims")}</h3><p>{txt("يعرض ", "Shows ")}{fidicClaimReferences.length}{txt(" بنداً موثقاً من ملفك: قراءة عملية للمخطط، الإجراء، السجلات، والملاحظات. هذه المراجع مستقلة عن حالات D ولا تُنشئ استحقاقاً قانونياً تلقائياً.", " documented clauses from your source: a practical planner view, action, records and notes. These references are separate from D cases and do not create automated legal entitlement.")}</p></div>
         </div>
         <div className="fidic-clause-grid">
           {fidicClaimReferences.map(reference => <button type="button" key={reference.clause} className={`fidic-clause-card ${reference.clause === selectedFidicReference?.clause ? "selected" : ""}`} onClick={() => setSelectedFidicClause(reference.clause)} aria-pressed={reference.clause === selectedFidicReference?.clause}>
-            <span>FIDIC {reference.clause}</span><b>{reference.title}</b><small>الأثر: {reference.adjustment || "غير مذكور"}</small>
+            <span>FIDIC {reference.clause}</span><b>{reference.title}</b><small>{txt("الأثر: ", "Effect: ")}{reference.adjustment || txt("غير مذكور", "Not specified")}</small>
           </button>)}
         </div>
         {selectedFidicReference ? <article className="fidic-reference-detail" aria-live="polite">
-          <div><span>FIDIC {selectedFidicReference.clause}</span><h4>{selectedFidicReference.title}</h4><b>{selectedFidicReference.adjustment || "الأثر غير مذكور في الملف"}</b></div>
+          <div><span>FIDIC {selectedFidicReference.clause}</span><h4>{selectedFidicReference.title}</h4><b>{selectedFidicReference.adjustment || txt("الأثر غير مذكور في الملف", "Effect not stated in the source")}</b></div>
           <div className="fidic-detail-grid">
-            <section><h5>شرح البند للمخطط</h5><p>{selectedFidicReference.plannerSummary || "لم يرد شرح مختصر في المصدر."}</p></section>
-            <section><h5>إجراء عملي</h5><p>{selectedFidicReference.plannerAction || "لم يرد إجراء عملي في المصدر."}</p></section>
-            <section><h5>السجلات والأدلة</h5><p>{selectedFidicReference.evidence || "لم تحدد سجلات في المصدر."}</p></section>
-            <section><h5>المرجع القانوني المصري المذكور</h5><p>{selectedFidicReference.egyptianLawReference || "لم يرد مرجع قانوني مصري في المصدر."}</p></section>
-            <section className="fidic-practical-notes"><h5>ملاحظات تطبيقية</h5><p>{selectedFidicReference.practicalNotes || "لم ترد ملاحظات تطبيقية إضافية في المصدر."}</p></section>
+            <section><h5>{txt("شرح البند للمخطط", "Planner summary")}</h5><p>{selectedFidicReference.plannerSummary || txt("لم يرد شرح مختصر في المصدر.", "No summary appears in the source.")}</p></section>
+            <section><h5>{txt("إجراء عملي", "Practical action")}</h5><p>{selectedFidicReference.plannerAction || txt("لم يرد إجراء عملي في المصدر.", "No practical action appears in the source.")}</p></section>
+            <section><h5>{txt("السجلات والأدلة", "Records and evidence")}</h5><p>{selectedFidicReference.evidence || txt("لم تحدد سجلات في المصدر.", "No records are specified in the source.")}</p></section>
+            <section><h5>{txt("المرجع القانوني المصري المذكور", "Egyptian legal reference stated")}</h5><p>{selectedFidicReference.egyptianLawReference || txt("لم يرد مرجع قانوني مصري في المصدر.", "No Egyptian legal reference appears in the source.")}</p></section>
+            <section className="fidic-practical-notes"><h5>{txt("ملاحظات تطبيقية", "Practical notes")}</h5><p>{selectedFidicReference.practicalNotes || txt("لم ترد ملاحظات تطبيقية إضافية في المصدر.", "No additional practical notes appear in the source.")}</p></section>
           </div>
-          <small className="reference-provenance">المصدر: {selectedFidicReference.source}. راجع العقد والشروط الخاصة والنص الأصلي قبل الاعتماد.</small>
+          <small className="reference-provenance">{txt("المصدر: ", "Source: ")}{selectedFidicReference.source}{txt(". راجع العقد والشروط الخاصة والنص الأصلي قبل الاعتماد.", ". Review the contract, particular conditions and original text before relying on it.")}</small>
         </article> : null}
       </section>
 
@@ -257,17 +271,17 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
       {librarySection === "cases" ? <>
       <article className="case-search-gate master-case-catalog">
         <div className="case-search-header">
-          <span><Search size={18} />ابحث في العناوين والوصف والأدلة والمساندات</span>
-          <b>70 سجلاً فعلياً من ملفك</b>
+          <span><Search size={18} />{txt("ابحث في العناوين والوصف والأدلة والمساندات", "Search titles, descriptions, evidence and support")}</span>
+          <b>{libraryCases.length} {txt("سجلاً فعلياً من ملفك", "actual records from your source")}</b>
         </div>
-        <Input value={query} onChange={event => setQuery(event.target.value)} placeholder="مثال: اعتماد، RFI، زيادة كميات، FIDIC، تعليق، توريد، تزامن…" />
+        <Input value={query} onChange={event => setQuery(event.target.value)} placeholder={txt("مثال: اعتماد، RFI، زيادة كميات، FIDIC، تعليق، توريد، تزامن…", "Example: approval, RFI, quantity increase, FIDIC, suspension, supply, concurrency…")} />
         <div className="case-catalog-toolbar">
-          <div><Label><SlidersHorizontal size={14} />المنهج المرجح</Label><Select value={methodFilter} onValueChange={value => setMethodFilter(value as AnalysisMethod | "all")}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل المناهج</SelectItem>{methods.map(method => <SelectItem key={method.id} value={method.id}>{method.label}</SelectItem>)}</SelectContent></Select></div>
-          <div><Label><FileText size={14} />تصنيف الواقعة</Label><Select value={categoryFilter} onValueChange={setCategoryFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل التصنيفات</SelectItem>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select></div>
-          <div><Label><LibraryBig size={14} />نوع السجل</Label><Select value={recordFamilyFilter} onValueChange={value => setRecordFamilyFilter(value as WorkbookRecordFamily)}><SelectTrigger aria-label="نوع السجل"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">كل السجلات: 70</SelectItem><SelectItem value="delay">حالات التأخير D: 55</SelectItem><SelectItem value="support">سجلات داعمة DIS/CON/VAR/RES: 15</SelectItem></SelectContent></Select></div>
-          <p><b>{matchingCases.length}</b> نتيجة من أصل {libraryCases.length} سجل مفهرس</p>
+          <div><Label><SlidersHorizontal size={14} />{txt("المنهج المرجح", "Suggested method")}</Label><Select value={methodFilter} onValueChange={value => setMethodFilter(value as AnalysisMethod | "all")}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{txt("كل المناهج", "All methods")}</SelectItem>{methods.map(method => <SelectItem key={method.id} value={method.id}>{method.label}</SelectItem>)}</SelectContent></Select></div>
+          <div><Label><FileText size={14} />{txt("تصنيف الواقعة", "Event category")}</Label><Select value={categoryFilter} onValueChange={setCategoryFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{txt("كل التصنيفات", "All categories")}</SelectItem>{categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent></Select></div>
+          <div><Label><LibraryBig size={14} />{txt("نوع السجل", "Record type")}</Label><Select value={recordFamilyFilter} onValueChange={value => setRecordFamilyFilter(value as WorkbookRecordFamily)}><SelectTrigger aria-label={txt("نوع السجل", "Record type")}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{txt("كل السجلات: ", "All records: ")}{libraryCases.length}</SelectItem><SelectItem value="delay">{txt("حالات التأخير D: ", "D delay cases: ")}{verifiedDCaseCount}</SelectItem><SelectItem value="support">{txt("سجلات داعمة DIS/CON/VAR/RES: ", "DIS/CON/VAR/RES support records: ")}{verifiedRelatedCaseCount}</SelectItem></SelectContent></Select></div>
+          <p><b>{matchingCases.length}</b> {txt("نتيجة من أصل ", "results from ")}{libraryCases.length} {txt("سجل مفهرس", "indexed records")}</p>
         </div>
-        <p className="catalog-record-legend"><b>كيف تقرأ القائمة:</b> سجلات <code>D</code> هي حالات التأخير المنظمة في المصدر؛ أما <code>DIS</code> و<code>CON</code> و<code>VAR</code> و<code>RES</code> فهي سجلات داعمة مرتبطة بالتعطيل أو التزامن أو التغيير أو الموارد، ولا تتحول تلقائياً إلى حالة TIA.</p>
+        <p className="catalog-record-legend"><b>{txt("كيف تقرأ القائمة:", "How to read the list:")}</b> {txt("سجلات ", "Records marked ")}<code>D</code>{txt(" هي حالات التأخير المنظمة في المصدر؛ أما ", " are structured delay cases in the source; ")}<code>DIS</code>{txt(" و", " and ")}<code>CON</code>{txt(" و", " and ")}<code>VAR</code>{txt(" و", " and ")}<code>RES</code>{txt(" فهي سجلات داعمة مرتبطة بالتعطيل أو التزامن أو التغيير أو الموارد، ولا تتحول تلقائياً إلى حالة TIA.", " are support records related to disruption, concurrency, change or resources, and do not automatically become TIA cases.")}</p>
 
         <div className="case-result-grid rich-case-grid">
           {matchingCases.length ? matchingCases.map(caseItem => {
@@ -276,10 +290,10 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
               <span className="case-number">{caseItem.id}</span>
               <b>{caseItem.title_ar}</b>
               <span>{caseItem.category}</span>
-              <em>{selectedMethodLabel(caseItem)} · {caseItem.delay_type}</em>
+              <em>{selectedMethodLabel(caseItem, methods)} · {caseItem.delay_type}</em>
               <small>{caseItem.description.slice(0, 150)}{caseItem.description.length > 150 ? "…" : ""}</small>
             </button>;
-          }) : <p className="case-empty">لا توجد نتيجة مطابقة. امسح بعض كلمات البحث أو غيّر التصفية لعرض جميع حالات الموسوعة.</p>}
+          }) : <p className="case-empty">{txt("لا توجد نتيجة مطابقة. امسح بعض كلمات البحث أو غيّر التصفية لعرض جميع حالات الموسوعة.", "No matching result. Clear some search terms or change the filter to show all library cases.")}</p>}
         </div>
       </article>
 
@@ -288,17 +302,17 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
           <div><span className="case-number">{selectedCase.id}</span><div><h3>{selectedCase.title_ar}</h3><p dir="ltr">{selectedCase.title_en}</p></div></div>
           <span>{selectedCase.category}</span>
         </div>
-        <div className="case-detail-meta"><span>{selectedCase.delay_type}</span><span>{selectedCase.methodology || "TIA"}</span><span>مرجع من الموسوعة المرفوعة</span></div>
+        <div className="case-detail-meta"><span>{selectedCase.delay_type}</span><span>{selectedCase.methodology || "TIA"}</span><span>{txt("مرجع من الموسوعة المرفوعة", "Reference from the uploaded library")}</span></div>
         <div className="method-selection detail-method-selection">
-          <div><Label>منهج التحليل الذي ستبدأ به</Label><Select value={selectedMethod} onValueChange={value => setMethodOverride(value as AnalysisMethod)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{methods.map(method => <SelectItem key={method.id} value={method.id}>{method.label}</SelectItem>)}</SelectContent></Select></div>
-          <div className="method-rationale"><b>{selectedMethodInfo.label}</b><p>{selectedMethodInfo.detail}</p><small><CheckCircle2 size={14} />المنهج الوارد في المصدر: {selectedMethodLabel(selectedCase)}. يمكنك تعديله بعد التحقق من العقد والوقائع.</small></div>
+          <div><Label>{txt("منهج التحليل الذي ستبدأ به", "Analysis method to start with")}</Label><Select value={selectedMethod} onValueChange={value => setMethodOverride(value as AnalysisMethod)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{methods.map(method => <SelectItem key={method.id} value={method.id}>{method.label}</SelectItem>)}</SelectContent></Select></div>
+          <div className="method-rationale"><b>{selectedMethodInfo.label}</b><p>{selectedMethodInfo.detail}</p><small><CheckCircle2 size={14} />{txt("المنهج الوارد في المصدر: ", "Method recorded in the source: ")}{selectedMethodLabel(selectedCase, methods)}{txt(". يمكنك تعديله بعد التحقق من العقد والوقائع.", ". You can change it after reviewing the contract and facts.")}</small></div>
         </div>
         <div className="case-detail-sections">
-          <section><h4>وصف الحالة</h4><p>{selectedCase.description}</p></section>
-          <section><h4>الأسباب الجذرية</h4><p>{selectedCase.root_cause}</p></section>
-          <section><h4>الأثر المتوقع على البرنامج</h4><p>{selectedCase.schedule_impact}</p></section>
-          <section className="contractual-reference"><h4>المساند التعاقدي والقوانين المذكورة في المصدر</h4><p>{selectedCase.contractual_basis}</p></section>
-          <section className="evidence-reference"><h4>الأدلة والمستندات المقترحة</h4><p>{selectedCase.burden_of_proof}</p></section>
+          <section><h4>{txt("وصف الحالة", "Case description")}</h4><p>{selectedCase.description}</p></section>
+          <section><h4>{txt("الأسباب الجذرية", "Root causes")}</h4><p>{selectedCase.root_cause}</p></section>
+          <section><h4>{txt("الأثر المتوقع على البرنامج", "Expected schedule impact")}</h4><p>{selectedCase.schedule_impact}</p></section>
+          <section className="contractual-reference"><h4>{txt("المساند التعاقدي والقوانين المذكورة في المصدر", "Contractual support and laws stated in the source")}</h4><p>{selectedCase.contractual_basis}</p></section>
+          <section className="evidence-reference"><h4>{txt("الأدلة والمستندات المقترحة", "Suggested evidence and records")}</h4><p>{selectedCase.burden_of_proof}</p></section>
           {selectedCase.source === "excel" ? <>
             <section><h4>الحل المقترح</h4><p>{selectedCase.recommended_solution || "لم يرد حل تفصيلي لهذه الحالة في ملف Excel."}</p></section>
             <section><h4>إجراءات الوقاية</h4><p>{selectedCase.mitigation || "لم ترد إجراءات وقاية لهذه الحالة في ملف Excel."}</p></section>
@@ -307,87 +321,87 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
           </> : null}
         </div>
         <div className="case-search-actions">
-          <span><ShieldCheck size={16} />هذه خلاصة مرجعية من ملفك؛ راجع نسخة العقد والشروط الخاصة قبل الاعتماد أو المطالبة.</span>
-          <Button className="run-button" type="button" onClick={applyCase} disabled={isApplying} aria-busy={isApplying}>{isApplying ? "جاري فتح رحلة التحليل…" : "طبّق هذه الحالة الآن"} <ArrowLeft size={16} /></Button>
+          <span><ShieldCheck size={16} />{txt("هذه خلاصة مرجعية من ملفك؛ راجع نسخة العقد والشروط الخاصة قبل الاعتماد أو المطالبة.", "This is a reference summary from your source; review the contract copy and particular conditions before relying on it or making a claim.")}</span>
+          <Button className="run-button" type="button" onClick={applyCase} disabled={isApplying} aria-busy={isApplying}>{isApplying ? txt("جاري فتح رحلة التحليل…", "Opening the analysis journey…") : txt("طبّق هذه الحالة الآن", "Apply this case now")} <ArrowLeft size={16} /></Button>
         </div>
       </article>
       </> : null}
 
       {librarySection === "references" ? <>
-      {selectedSupportSheet ? <section className="master-support-sheets" aria-label="أوراق الدعم من ملف Master Claim Intelligence">
-        <div className="reference-library-heading"><FileText size={20} /><div><p className="eyebrow">MASTER CLAIM INTELLIGENCE · SUPPORT SHEETS</p><h3>إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات</h3><p>هذه الأوراق الثمانية مستنسخة للقراءة من الملف المرفوع مع أسماء الروابط الداخلية كما وردت فيه. الصفوف معروضة داخل مساحة تمرير مستقلة للحفاظ على قراءة الهاتف.</p></div></div>
-        <div className="support-sheet-tabs" role="tablist" aria-label="اختيار ورقة دعم">{masterClaimSupportSheets.map(sheet => <button key={sheet.id} type="button" role="tab" aria-selected={sheet.id === selectedSupportSheet.id} className={sheet.id === selectedSupportSheet.id ? "selected" : ""} onClick={() => setSelectedSupportSheetId(sheet.id)}>{sheet.title}</button>)}</div>
+      {selectedSupportSheet ? <section className="master-support-sheets" aria-label={txt("أوراق الدعم من ملف Master Claim Intelligence", "Support sheets from the Master Claim Intelligence workbook")}>
+        <div className="reference-library-heading"><FileText size={20} /><div><p className="eyebrow">MASTER CLAIM INTELLIGENCE · SUPPORT SHEETS</p><h3>{txt("إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات", "Decision procedures, checks, objections, templates and calculations")}</h3><p>{txt("هذه الأوراق الثمانية مستنسخة للقراءة من الملف المرفوع مع أسماء الروابط الداخلية كما وردت فيه. الصفوف معروضة داخل مساحة تمرير مستقلة للحفاظ على قراءة الهاتف.", "These eight sheets are copied read-only from the uploaded workbook with their internal-link labels as recorded. Rows are shown in a separate scroll area to preserve mobile readability.")}</p></div></div>
+        <div className="support-sheet-tabs" role="tablist" aria-label={txt("اختيار ورقة دعم", "Choose a support sheet")}>{masterClaimSupportSheets.map(sheet => <button key={sheet.id} type="button" role="tab" aria-selected={sheet.id === selectedSupportSheet.id} className={sheet.id === selectedSupportSheet.id ? "selected" : ""} onClick={() => setSelectedSupportSheetId(sheet.id)}>{sheet.title}</button>)}</div>
         <article className="support-sheet-reader" role="tabpanel">
-          <div className="support-sheet-reader-heading"><div><span>{selectedSupportSheet.id}</span><h4>{selectedSupportSheet.title}</h4></div><small>{selectedSupportSheet.rows.length} صفاً · {selectedSupportSheet.links.length} رابطاً داخلياً</small></div>
+          <div className="support-sheet-reader-heading"><div><span>{selectedSupportSheet.id}</span><h4>{selectedSupportSheet.title}</h4></div><small>{selectedSupportSheet.rows.length} {txt("صفاً", "rows")} · {selectedSupportSheet.links.length} {txt("رابطاً داخلياً", "internal links")}</small></div>
           <div className="support-sheet-table-wrap"><table><tbody>{selectedSupportSheet.rows.map((row, rowIndex) => <tr key={`${selectedSupportSheet.id}-${rowIndex}`}>{row.map((cell, cellIndex) => rowIndex === 0 ? <th key={`${rowIndex}-${cellIndex}`} scope="col">{cell || "—"}</th> : <td key={`${rowIndex}-${cellIndex}`}>{cell || "—"}</td>)}</tr>)}</tbody></table></div>
-          {selectedSupportSheet.links.length ? <div className="support-sheet-links"><b>الروابط الداخلية الواردة في المصدر</b><ul>{selectedSupportSheet.links.map(link => <li key={`${link.cell}-${link.target}`}><code>{link.cell}</code><span>{link.label || "رابط داخلي"}</span><small>{link.target}</small></li>)}</ul></div> : <p className="support-sheet-empty">لا توجد روابط داخلية مسجلة لهذه الورقة.</p>}
+          {selectedSupportSheet.links.length ? <div className="support-sheet-links"><b>{txt("الروابط الداخلية الواردة في المصدر", "Internal links recorded in the source")}</b><ul>{selectedSupportSheet.links.map(link => <li key={`${link.cell}-${link.target}`}><code>{link.cell}</code><span>{link.label || txt("رابط داخلي", "Internal link")}</span><small>{link.target}</small></li>)}</ul></div> : <p className="support-sheet-empty">{txt("لا توجد روابط داخلية مسجلة لهذه الورقة.", "No internal links are recorded for this sheet.")}</p>}
         </article>
       </section> : null}
 
       <div className="learning-path-grid reference-paths">
-        <article className="learning-path"><BookOpenCheck size={20} /><h3>كيف تستخدم المكتبة؟</h3><p>ابحث عن الحالة، اقرأ الوصف والأثر والأدلة، ثم اضغط «طبّق هذه الحالة الآن» للانتقال إلى رحلة Workshop 8.</p></article>
-        <article className="learning-path"><CheckCircle2 size={20} /><h3>ما الذي ينتقل إلى التحليل؟</h3><p>رقم الحالة والعنوان والمنهج المختار فقط. تبقى البيانات الحسابية مبنية على ملفات P6 وExcel التي ترفعها في الرحلة.</p></article>
-        <article className="learning-path"><ShieldCheck size={20} /><h3>حدود المكتبة</h3><p>الموسوعة دليل عملي وتعليمي. لا تستبدل العقد أو الرأي القانوني أو التحقق من شروط المشروع الخاصة.</p></article>
+        <article className="learning-path"><BookOpenCheck size={20} /><h3>{txt("كيف تستخدم المكتبة؟", "How do you use the library?")}</h3><p>{txt("ابحث عن الحالة، اقرأ الوصف والأثر والأدلة، ثم اضغط «طبّق هذه الحالة الآن» للانتقال إلى رحلة Workshop 8.", "Find the case, read the description, impact and evidence, then select “Apply this case now” to move to the Workshop 8 journey.")}</p></article>
+        <article className="learning-path"><CheckCircle2 size={20} /><h3>{txt("ما الذي ينتقل إلى التحليل؟", "What moves into analysis?")}</h3><p>{txt("رقم الحالة والعنوان والمنهج المختار فقط. تبقى البيانات الحسابية مبنية على ملفات P6 وExcel التي ترفعها في الرحلة.", "Only the case number, title and chosen method. Calculation data remain based on the P6 and Excel files you upload in the journey.")}</p></article>
+        <article className="learning-path"><ShieldCheck size={20} /><h3>{txt("حدود المكتبة", "Library limits")}</h3><p>{txt("الموسوعة دليل عملي وتعليمي. لا تستبدل العقد أو الرأي القانوني أو التحقق من شروط المشروع الخاصة.", "The library is a practical educational guide. It does not replace the contract, legal advice or review of project-specific conditions.")}</p></article>
       </div>
 
-      <section className="claim-training-scenarios" aria-label="سيناريوهات تدريب المطالبات">
-        <div className="reference-library-heading"><BookOpenCheck size={20} /><div><p className="eyebrow">دليل تدريبي مستخرج من المصدر</p><h3>خمسة سيناريوهات لتدريب عين المخطط</h3><p>أسئلة تطبيقية من الدليل العربي المرفوع تساعد على فهم المسار الحرج والـ Float والسببية والتزامن؛ لا تضيف وقائع إلى مشروعك ولا تستبدل فحص البرنامج الفعلي.</p></div></div>
+      <section className="claim-training-scenarios" aria-label={txt("سيناريوهات تدريب المطالبات", "Claim training scenarios")}>
+        <div className="reference-library-heading"><BookOpenCheck size={20} /><div><p className="eyebrow">{txt("دليل تدريبي مستخرج من المصدر", "TRAINING GUIDE EXTRACTED FROM THE SOURCE")}</p><h3>{txt("خمسة سيناريوهات لتدريب عين المخطط", "Five scenarios to train the planner's eye")}</h3><p>{txt("أسئلة تطبيقية من الدليل العربي المرفوع تساعد على فهم المسار الحرج والـ Float والسببية والتزامن؛ لا تضيف وقائع إلى مشروعك ولا تستبدل فحص البرنامج الفعلي.", "Applied questions from the uploaded Arabic guide to help explain the critical path, float, causation and concurrency; they do not add facts to your project or replace an actual schedule check.")}</p></div></div>
         <div className="claim-scenario-grid">
-          {claimTrainingScenarios.map((scenario, index) => <article key={scenario.id}><span>سيناريو {index + 1}</span><h4>{scenario.title}</h4><p>{scenario.content}</p><small>المصدر: {scenario.source}</small></article>)}
+          {claimTrainingScenarios.map((scenario, index) => <article key={scenario.id}><span>{txt("سيناريو ", "Scenario ")}{index + 1}</span><h4>{scenario.title}</h4><p>{scenario.content}</p><small>{txt("المصدر: ", "Source: ")}{scenario.source}</small></article>)}
         </div>
       </section>
 
-      <section className="text-training-guides" aria-label="إرشادات رفع P6 وإدخال Excel">
-        <div className="text-training-guides-heading"><FileText size={20} /><div><p className="eyebrow">تدريب عملي مكتوب</p><h3>دليل سريع حتى يتاح الفيديوان المستقلان</h3></div></div>
+      <section className="text-training-guides" aria-label={txt("إرشادات رفع P6 وإدخال Excel", "P6 upload and Excel-entry guidance")}>
+        <div className="text-training-guides-heading"><FileText size={20} /><div><p className="eyebrow">{txt("تدريب عملي مكتوب", "WRITTEN PRACTICAL TRAINING")}</p><h3>{txt("دليل سريع حتى يتاح الفيديوان المستقلان", "A quick guide while the two standalone videos are unavailable")}</h3></div></div>
         <div className="text-training-guide-grid">
           <article>
-            <span>01 · رفع برنامج P6</span>
-            <h4>Baseline ثم Update قبل الحدث</h4>
-            <ol><li>من رحلة TIA اختر ملف Baseline بصيغة XER أو XML.</li><li>راجع عدادات الأنشطة والعلاقات والتقويم قبل الاعتماد.</li><li>أضف Update الأقرب قبل تاريخ الواقعة، ثم التحديثات اللاحقة عند وجودها.</li></ol>
-            <p>لا يُعدّل الملف الأصلي؛ يعمل المحرك على نسخ تحليلية مستقلة فقط.</p>
+            <span>01 · {txt("رفع برنامج P6", "P6 schedule upload")}</span>
+            <h4>{txt("Baseline ثم Update قبل الحدث", "Baseline, then the update before the event")}</h4>
+            <ol><li>{txt("من رحلة TIA اختر ملف Baseline بصيغة XER أو XML.", "From the TIA journey, choose a Baseline file in XER or XML format.")}</li><li>{txt("راجع عدادات الأنشطة والعلاقات والتقويم قبل الاعتماد.", "Review activity counts, relationships and calendar before relying on it.")}</li><li>{txt("أضف Update الأقرب قبل تاريخ الواقعة، ثم التحديثات اللاحقة عند وجودها.", "Add the update nearest before the event date, followed by later updates where available.")}</li></ol>
+            <p>{txt("لا يُعدّل الملف الأصلي؛ يعمل المحرك على نسخ تحليلية مستقلة فقط.", "The original file is not changed; the engine uses independent analysis copies only.")}</p>
           </article>
           <article>
-            <span>02 · إدخال واقعة Excel</span>
-            <h4>وثّق الواقعة قبل إنشاء Fragnet</h4>
-            <ol><li>اكتب رقم القضية والوصف وتاريخ البدء والمدة والمسؤولية.</li><li>اختر الأنشطة ونقاط الربط من بيانات البرنامج المستورد، لا من أمثلة ثابتة.</li><li>راجع صفوف Excel ثم اعرض تقسيم Pre / Event / Post قبل الحساب.</li></ol>
-            <p>لا تنتقل الرحلة عند نقص الحقول الجوهرية، حتى يبقى سجل الواقعة قابلاً للمراجعة.</p>
+            <span>02 · {txt("إدخال واقعة Excel", "Excel event entry")}</span>
+            <h4>{txt("وثّق الواقعة قبل إنشاء Fragnet", "Record the event before creating a Fragnet")}</h4>
+            <ol><li>{txt("اكتب رقم القضية والوصف وتاريخ البدء والمدة والمسؤولية.", "Enter the case number, description, start date, duration and responsibility.")}</li><li>{txt("اختر الأنشطة ونقاط الربط من بيانات البرنامج المستورد، لا من أمثلة ثابتة.", "Choose activities and tie-in points from imported schedule data, not fixed examples.")}</li><li>{txt("راجع صفوف Excel ثم اعرض تقسيم Pre / Event / Post قبل الحساب.", "Review Excel rows, then show the Pre / Event / Post split before calculation.")}</li></ol>
+            <p>{txt("لا تنتقل الرحلة عند نقص الحقول الجوهرية، حتى يبقى سجل الواقعة قابلاً للمراجعة.", "The journey does not proceed when key fields are missing, so the event record remains reviewable.")}</p>
           </article>
         </div>
       </section>
 
-      <section className="training-resource-downloads" aria-label="حزمة التدريب والبرومبتات">
-        <div className="training-resource-heading"><Download size={20} /><div><p className="eyebrow">موارد تدريب قابلة للتنزيل</p><h3>حزمة آمنة للتجربة وإنتاج الفيديو خارج المنصة</h3><p>هذه ملفات تعليمية مصطنعة وليست برنامج مشروع أو مطالبة فعلية. لا ترفعها إلى Primavera؛ استخدمها داخل TIA Studio لفهم البيانات والحساب والتحقق فقط.</p></div></div>
+      <section className="training-resource-downloads" aria-label={txt("حزمة التدريب والبرومبتات", "Training and prompt package")}>
+        <div className="training-resource-heading"><Download size={20} /><div><p className="eyebrow">{txt("موارد تدريب قابلة للتنزيل", "DOWNLOADABLE TRAINING RESOURCES")}</p><h3>{txt("حزمة آمنة للتجربة وإنتاج الفيديو خارج المنصة", "A safe package for practice and off-platform video production")}</h3><p>{txt("هذه ملفات تعليمية مصطنعة وليست برنامج مشروع أو مطالبة فعلية. لا ترفعها إلى Primavera؛ استخدمها داخل TIA Studio لفهم البيانات والحساب والتحقق فقط.", "These are synthetic training files, not a project schedule or an actual claim. Do not import them into Primavera; use them inside TIA Studio only to understand data, calculation and validation.")}</p></div></div>
         <div className="training-resource-grid">
           <article>
-            <span>01 · برومبتات فيديو عربية</span>
-            <h4>فيديو رفع P6 وفيديو Excel — 5 إلى 6 دقائق</h4>
-            <p>نصوص مشهدية جاهزة لأداة فيديو خارجية، بصوت أنثوي مصري دافئ وحيوي وواضح مهنيًا، مع منع استخدام أي بيانات مشروع أو صياغة استحقاق قانوني قاطع.</p>
-            <a className="training-download-link" href="/manus-storage/google-video-prompts-ar_8d21a82e.md" download><Download size={15} />تنزيل حزمة البرومبتات</a>
+            <span>01 · {txt("برومبتات فيديو عربية", "Arabic video prompts")}</span>
+            <h4>{txt("فيديو رفع P6 وفيديو Excel — 5 إلى 6 دقائق", "P6 upload and Excel videos — 5 to 6 minutes")}</h4>
+            <p>{txt("نصوص مشهدية جاهزة لأداة فيديو خارجية، بصوت أنثوي مصري دافئ وحيوي وواضح مهنيًا، مع منع استخدام أي بيانات مشروع أو صياغة استحقاق قانوني قاطع.", "Scene scripts for an external video tool, with a warm, lively Egyptian female voice and clear professional delivery, while prohibiting project data and conclusive legal-entitlement language.")}</p>
+            <a className="training-download-link" href="/manus-storage/google-video-prompts-ar_8d21a82e.md" download><Download size={15} />{txt("تنزيل حزمة البرومبتات", "Download the prompt package")}</a>
           </article>
           <article>
-            <span>02 · مشروع TIA تدريبي</span>
-            <h4>تأخير اعتماد بسيط بنتيجة متوقعة</h4>
-            <p>استورد الـ Baseline بصيغة JSON من تبويب الاستيراد، ثم استخدم بطاقة الحدث في رحلة TIA. النتيجة المتوقعة موثقة ومغطاة باختبار انحدار.</p>
-            <div className="training-download-group"><a href="/manus-storage/05-training-tia-baseline_65e0778b.json" download>Baseline JSON</a><a href="/manus-storage/06-training-tia-event_7550a22f.json" download>بطاقة الحدث JSON</a></div>
+            <span>02 · {txt("مشروع TIA تدريبي", "Training TIA project")}</span>
+            <h4>{txt("تأخير اعتماد بسيط بنتيجة متوقعة", "A simple approval delay with an expected result")}</h4>
+            <p>{txt("استورد الـ Baseline بصيغة JSON من تبويب الاستيراد، ثم استخدم بطاقة الحدث في رحلة TIA. النتيجة المتوقعة موثقة ومغطاة باختبار انحدار.", "Import the JSON Baseline from the import tab, then use the event card in the TIA journey. The expected result is documented and covered by a regression test.")}</p>
+            <div className="training-download-group"><a href="/manus-storage/05-training-tia-baseline_65e0778b.json" download>Baseline JSON</a><a href="/manus-storage/06-training-tia-event_7550a22f.json" download>{txt("بطاقة الحدث JSON", "Event card JSON")}</a></div>
           </article>
           <article>
-            <span>03 · مشروع تزامن تدريبي</span>
-            <h4>حدثان متداخلان للفحص الفني</h4>
-            <p>نموذج مصطنع يوضح قراءة أثر حدثين متزامنين تقنيًا. هو مرشح فني تعليمي ولا يوزع المسؤولية أو الاستحقاق التعاقدي.</p>
-            <div className="training-download-group"><a href="/manus-storage/07-training-concurrency-baseline_98d84044.json" download>Baseline JSON</a><a href="/manus-storage/08-training-concurrency-events_8b000149.json" download>بطاقتا الحدث JSON</a></div>
+            <span>03 · {txt("مشروع تزامن تدريبي", "Training concurrency project")}</span>
+            <h4>{txt("حدثان متداخلان للفحص الفني", "Two overlapping events for technical review")}</h4>
+            <p>{txt("نموذج مصطنع يوضح قراءة أثر حدثين متزامنين تقنيًا. هو مرشح فني تعليمي ولا يوزع المسؤولية أو الاستحقاق التعاقدي.", "A synthetic model showing the technical reading of two concurrent events. It is an educational technical screen and does not allocate responsibility or contractual entitlement.")}</p>
+            <div className="training-download-group"><a href="/manus-storage/07-training-concurrency-baseline_98d84044.json" download>Baseline JSON</a><a href="/manus-storage/08-training-concurrency-events_8b000149.json" download>{txt("بطاقتا الحدث JSON", "Two event cards JSON")}</a></div>
           </article>
         </div>
       </section>
 
-      <article className="training-video-card" aria-label="فيديو تمهيدي لرحلة TIA">
+      <article className="training-video-card" aria-label={txt("فيديو تمهيدي لرحلة TIA", "Introductory video for the TIA journey")}>
         <div>
-          <p className="eyebrow">فيديو تدريبي · Workshop 8</p>
-          <h3>رحلة TIA في ثماني ثوانٍ</h3>
-          <p>شاهد التسلسل العملي: ابحث في الموسوعة، اختر المنهج، ثم ثبّت Baseline وUpdate وExcel وقسّم النشاط إلى Pre / Event / Post قبل الحساب.</p>
+          <p className="eyebrow">{txt("فيديو تدريبي · Workshop 8", "TRAINING VIDEO · WORKSHOP 8")}</p>
+          <h3>{txt("رحلة TIA في ثماني ثوانٍ", "TIA journey in eight seconds")}</h3>
+          <p>{txt("شاهد التسلسل العملي: ابحث في الموسوعة، اختر المنهج، ثم ثبّت Baseline وUpdate وExcel وقسّم النشاط إلى Pre / Event / Post قبل الحساب.", "Watch the working sequence: search the library, choose a method, then set Baseline, Update and Excel, and split the activity into Pre / Event / Post before calculation.")}</p>
         </div>
-        <video controls preload="metadata" className="training-video" aria-label="فيديو توضيحي لمسار تحليل الأثر الزمني TIA">
+        <video controls preload="metadata" className="training-video" aria-label={txt("فيديو توضيحي لمسار تحليل الأثر الزمني TIA", "Illustrative video for the TIA workflow")}>
           <source src="/manus-storage/tia-workshop8-guided-workflow_21ac3c32.mp4" type="video/mp4" />
-          متصفحك لا يدعم تشغيل الفيديو.
+          {txt("متصفحك لا يدعم تشغيل الفيديو.", "Your browser does not support video playback.")}
         </video>
       </article>
       </> : null}

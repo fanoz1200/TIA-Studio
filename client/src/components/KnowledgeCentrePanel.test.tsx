@@ -1,10 +1,16 @@
 // @vitest-environment jsdom
 import React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render as renderUi, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { KnowledgeCentrePanel } from "./KnowledgeCentrePanel";
 
 afterEach(() => cleanup());
+beforeEach(() => window.localStorage.setItem("tia-studio-interface-language", "ar"));
+
+function render(ui: React.ReactElement) {
+  return renderUi(<LanguageProvider>{ui}</LanguageProvider>);
+}
 
 vi.mock("@/lib/master-claim-excel", () => ({
   enrichHtmlCase: (item: Record<string, unknown>) => ({
@@ -204,6 +210,24 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
 
     expect(screen.getAllByRole("heading", { name: "خمسة سيناريوهات لتدريب عين المخطط" }).length).toBeGreaterThan(0);
     expect(screen.getAllByText("سيناريو 1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/الحالة \(1\): نشاط حرج/).length).toBeGreaterThan(0);
+  });
+
+  it("يعرض واجهة الموسوعة بالإنجليزية واتجاه LTR مع حفظ معرفات الحالات وروابط التدريب الأصلية", () => {
+    window.localStorage.setItem("tia-studio-interface-language", "en");
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    const library = screen.getByLabelText("Methodology and case library");
+    expect(library.getAttribute("dir")).toBe("ltr");
+    expect(screen.getByRole("heading", { name: "Methodology and practical case library" })).toBeTruthy();
+    expect(screen.getByText("I am looking for a similar case")).toBeTruthy();
+
+    openLibrarySection(/similar case/);
+    expect(screen.getAllByText("D-001").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/55 D-series cases/).length).toBeGreaterThan(0);
+
+    openLibrarySection(/references and templates/);
+    expect(screen.getAllByRole("link", { name: /Download the prompt package/ }).at(-1)?.getAttribute("href")).toBe("/manus-storage/google-video-prompts-ar_8d21a82e.md");
     expect(screen.getAllByText(/الحالة \(1\): نشاط حرج/).length).toBeGreaterThan(0);
   });
 });
