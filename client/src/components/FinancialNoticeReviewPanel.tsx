@@ -58,6 +58,24 @@ type NoticeStatus = "draft" | "under_review" | "sent" | "overdue" | "cancelled";
 const uiText = (language: AppLanguage, ar: string, en: string) =>
   language === "en" ? en : ar;
 
+export function getNoticeValidationText(
+  language: AppLanguage,
+  key: "selectEvent" | "writeNarrative"
+) {
+  const messages = {
+    selectEvent: [
+      "اختار واقعة تأخير الأول ثم اضغط «تجهيز مسودة قابلة للتحرير».",
+      "Select a delay event first, then choose “Prepare editable draft”.",
+    ],
+    writeNarrative: [
+      "اكتب وصف الواقعة أو اضغط «تجهيز مسودة قابلة للتحرير» الأول.",
+      "Write the event description or choose “Prepare editable draft” first.",
+    ],
+  } as const;
+  const [ar, en] = messages[key];
+  return uiText(language, ar, en);
+}
+
 const resourceLabels: Record<AppLanguage, Record<string, string>> = {
   ar: {
     labor: "عمالة",
@@ -347,11 +365,11 @@ export function FinancialNoticeReviewPanel({
   };
   const downloadLocalNoticeDraft = () => {
     if (!selectedNoticeEvent) {
-      toast.error("اختار واقعة تأخير الأول ثم اضغط «تجهيز مسودة قابلة للتحرير».");
+      toast.error(getNoticeValidationText(interfaceLanguage, "selectEvent"));
       return;
     }
     if (!noticeNarrative.trim()) {
-      toast.error("اكتب وصف الواقعة أو اضغط «تجهيز مسودة قابلة للتحرير» الأول.");
+      toast.error(getNoticeValidationText(interfaceLanguage, "writeNarrative"));
       return;
     }
     const isEnglishDraft = noticeDraftLanguage === "en";

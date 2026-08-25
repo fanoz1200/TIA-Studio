@@ -26,7 +26,7 @@ vi.mock("@/lib/trpc", () => ({
   },
 }));
 
-import { FinancialNoticeReviewPanel } from "./FinancialNoticeReviewPanel";
+import { FinancialNoticeReviewPanel, getNoticeValidationText } from "./FinancialNoticeReviewPanel";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const schedule: Schedule = {
@@ -160,5 +160,16 @@ describe("تنزيل مسودة Notice محلية", () => {
     expect(screen.getByRole("button", { name: "Prepare editable draft" })).toBeTruthy();
     expect(container.querySelector("section")?.getAttribute("dir")).toBe("ltr");
     expect(mocks.startLogin).not.toHaveBeenCalled();
+  });
+
+  it("يترجم رسائل تحقق مسودة Notice الثابتة فقط ويُبقي بيانات المشروع خارج المنسق", () => {
+    expect(getNoticeValidationText("en", "selectEvent")).toBe(
+      "Select a delay event first, then choose “Prepare editable draft”."
+    );
+    expect(getNoticeValidationText("en", "writeNarrative")).toBe(
+      "Write the event description or choose “Prepare editable draft” first."
+    );
+    expect(schedule.name).toBe("برنامج اختبار Notice");
+    expect(event.title).toBe("تأخر اعتماد رسم");
   });
 });
