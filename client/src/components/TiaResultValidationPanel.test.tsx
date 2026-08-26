@@ -34,12 +34,12 @@ afterEach(() => {
 });
 
 describe("لوحة تحقق نتيجة TIA", () => {
-  it("تعرض نصوص الواجهة بالعربية مع بقاء قيمة التقدير رقماً يمر إلى المعالج", () => {
+  it("تعرض العناوين المهنية بالعربية · English مع بقاء قيمة التقدير رقماً يمر إلى المعالج", () => {
     const onAnalystExpectedDaysChange = vi.fn();
     renderPanel(onAnalystExpectedDaysChange);
 
-    expect(screen.getByText("لوحة تحقق النتيجة وقواعد القرار")).toBeTruthy();
-    fireEvent.change(screen.getByLabelText("تقدير المحلل (أيام عمل، اختياري)"), { target: { value: "7" } });
+    expect(screen.getByText("لوحة تحقق النتيجة وقواعد القرار · Result validation and decision rules")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("تقدير المحلل (أيام عمل، اختياري) · Analyst estimate (working days, optional)"), { target: { value: "7" } });
     expect(onAnalystExpectedDaysChange).toHaveBeenCalledWith("7");
   });
 
