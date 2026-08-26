@@ -106,8 +106,10 @@ describe("تنزيل مسودة Notice محلية", () => {
     );
 
     expect(screen.getByText(/تقدر تجهز وتنزل مسودة محلية من غير حساب/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "تجهيز مسودة قابلة للتحرير" }));
-    const downloadButton = screen.getByRole("button", { name: "تنزيل مسودة Notice محلية" });
+    expect(screen.getByRole("heading", { name: "سجل الإشعارات التعاقدية · Contractual Notice register" })).toBeTruthy();
+    expect(screen.getByText("حدث التأخير المرجعي · Reference delay event")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "تجهيز مسودة قابلة للتحرير · Prepare editable draft" }));
+    const downloadButton = screen.getByRole("button", { name: "تنزيل مسودة Notice محلية · Download local Notice draft" });
     expect((downloadButton as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(downloadButton);
 
@@ -131,10 +133,10 @@ describe("تنزيل مسودة Notice محلية", () => {
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) { download = this.download; });
 
     render(<LanguageProvider><FinancialNoticeReviewPanel view="notices" schedule={schedule} events={[event]} selectedEvent={event} activeImpactDays={3} isAuthenticated={false} /></LanguageProvider>);
-    fireEvent.click(screen.getByRole("button", { name: "تجهيز مسودة قابلة للتحرير" }));
-    fireEvent.click(screen.getByRole("combobox", { name: "لغة مسودة التنزيل" }));
-    fireEvent.click(screen.getByRole("option", { name: "الإنجليزية" }));
-    fireEvent.click(screen.getByRole("button", { name: "تنزيل مسودة Notice محلية" }));
+    fireEvent.click(screen.getByRole("button", { name: "تجهيز مسودة قابلة للتحرير · Prepare editable draft" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "لغة مسودة التنزيل · Draft language" }));
+    fireEvent.click(screen.getByRole("option", { name: "الإنجليزية · English" }));
+    fireEvent.click(screen.getByRole("button", { name: "تنزيل مسودة Notice محلية · Download local Notice draft" }));
 
     expect(mocks.startLogin).not.toHaveBeenCalled();
     expect(download).toBe("TIA-Notice-N-001.txt");
@@ -178,7 +180,7 @@ describe("تنزيل مسودة Notice محلية", () => {
   });
 
   it("يعرض أسماء لغات المسودة حسب لغة الواجهة مع إبقاء قيم الاختيار منفصلة", () => {
-    expect(formatNoticeDraftLanguageOption("ar", "en")).toBe("الإنجليزية");
+    expect(formatNoticeDraftLanguageOption("ar", "en")).toBe("الإنجليزية · English");
     expect(formatNoticeDraftLanguageOption("en", "ar")).toBe("Arabic");
     expect("en").toBe("en");
     expect("ar").toBe("ar");

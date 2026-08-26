@@ -31,7 +31,7 @@ import {
   type Fragnet,
   type Schedule,
 } from "@/lib/cpm";
-import type { AppLanguage } from "@/lib/language";
+import { bilingualUiLabel, type AppLanguage } from "@/lib/language";
 import { trpc } from "@/lib/trpc";
 import { ProjectMembersPanel } from "@/components/ProjectMembersPanel";
 
@@ -85,7 +85,7 @@ export function formatNoticeDraftLanguageOption(
     en: ["الإنجليزية", "English"],
   } as const;
   const [ar, en] = labels[draftLanguage];
-  return uiText(interfaceLanguage, ar, en);
+  return bilingualUiLabel(interfaceLanguage, ar, en);
 }
 
 const resourceLabels: Record<AppLanguage, Record<string, string>> = {
@@ -182,6 +182,8 @@ export function FinancialNoticeReviewPanel({
   unifiedNarrative?: string;
 }) {
   const { language: interfaceLanguage, direction } = useAppLanguage();
+  const bi = (ar: string, en: string) =>
+    bilingualUiLabel(interfaceLanguage, ar, en);
   const [noticeNo, setNoticeNo] = useState("N-001");
   const [noticeEventKey, setNoticeEventKey] = useState("");
   const [sender, setSender] = useState("");
@@ -465,8 +467,18 @@ export function FinancialNoticeReviewPanel({
       ...assignment
     }) => assignment
   );
-  const reviewLabel = (value: string) =>
-    reviewLabels[interfaceLanguage][value] ?? value;
+  const reviewLabel = (value: string) => {
+    const arabic = reviewLabels.ar[value];
+    const english = reviewLabels.en[value];
+    return arabic && english ? bi(arabic, english) : value;
+  };
+  const noticeStatusLabel = (value: NoticeStatus) =>
+    bi(noticeStatusLabels.ar[value], noticeStatusLabels.en[value]);
+  const resourceLabel = (type: string) =>
+    bi(
+      resourceLabels.ar[type] ?? resourceLabels.ar.unknown,
+      resourceLabels.en[type] ?? resourceLabels.en.unknown
+    );
 
   if (view === "members")
     return (
@@ -481,13 +493,9 @@ export function FinancialNoticeReviewPanel({
       <section className="workflow-panel" dir={direction}>
         <div className="workflow-heading">
           <div>
-            <p className="eyebrow">{uiText(interfaceLanguage, "أثر تكلفة P6", "P6 COST EXPOSURE")}</p>
+            <p className="eyebrow">{bi("أثر تكلفة P6", "P6 COST EXPOSURE")}</p>
             <h2>
-              {uiText(
-                interfaceLanguage,
-                "الأثر المالي التشغيلي",
-                "Operational financial exposure"
-              )}
+              {bi("الأثر المالي التشغيلي", "Operational financial exposure")}
             </h2>
             <p>
               {uiText(
@@ -501,7 +509,7 @@ export function FinancialNoticeReviewPanel({
         </div>
         <div className="workflow-metrics">
           <div>
-            <span>{uiText(interfaceLanguage, "إسنادات ضمن نطاق الحدث", "Assignments within the event scope")}</span>
+            <span>{bi("إسنادات ضمن نطاق الحدث", "Assignments within the event scope")}</span>
             <b>{resources.length}</b>
             <small>
               {selectedEvent
@@ -510,12 +518,12 @@ export function FinancialNoticeReviewPanel({
             </small>
           </div>
           <div>
-            <span>{uiText(interfaceLanguage, "التكلفة اليومية", "Daily cost")}</span>
+            <span>{bi("التكلفة اليومية", "Daily cost")}</span>
             <b>{money(financial.dailyCost, interfaceLanguage)}</b>
             <small>{uiText(interfaceLanguage, "وحدة نقدية حسب ملف P6", "Currency units from the P6 file")}</small>
           </div>
           <div className="is-accent">
-            <span>{uiText(interfaceLanguage, "تعرض التمديد", "Extension exposure")}</span>
+            <span>{bi("تعرض التمديد", "Extension exposure")}</span>
             <b>{money(financial.extensionCost, interfaceLanguage)}</b>
             <small>{uiText(interfaceLanguage, `${Math.max(0, activeImpactDays)} يوم تأخير محسوب`, `${Math.max(0, activeImpactDays)} calculated delay day(s)`)}</small>
           </div>
@@ -523,10 +531,10 @@ export function FinancialNoticeReviewPanel({
         <div className="financial-breakdown">
           {Object.entries(financial.byResourceType).map(([type, bucket]) => (
             <div key={type}>
-              <span>{resourceLabels[interfaceLanguage][type] ?? resourceLabels[interfaceLanguage].unknown}</span>
+              <span>{resourceLabel(type)}</span>
               <b>{uiText(interfaceLanguage, `${bucket.assignmentCount} إسناد`, `${bucket.assignmentCount} assignment(s)`)}</b>
               <small>
-                {uiText(interfaceLanguage, "يومي", "Daily")}: {money(bucket.dailyCost, interfaceLanguage)} · {uiText(interfaceLanguage, "تمديد", "Extension")}:{" "}
+                {bi("يومي", "Daily")}: {money(bucket.dailyCost, interfaceLanguage)} · {bi("تمديد", "Extension")}:{" "}
                 {money(bucket.extensionCost, interfaceLanguage)}
               </small>
             </div>
@@ -551,7 +559,7 @@ export function FinancialNoticeReviewPanel({
           <div className="workflow-warning">
             <FileWarning size={18} />
             <div>
-              <b>{uiText(interfaceLanguage, "تنبيهات جودة بيانات التكلفة", "Cost-data quality warnings")}</b>
+              <b>{bi("تنبيهات جودة بيانات التكلفة", "Cost-data quality warnings")}</b>
               <p>{financial.warnings.join(" ")}</p>
             </div>
           </div>
@@ -584,12 +592,12 @@ export function FinancialNoticeReviewPanel({
               }
             >
               <Database size={16} />
-              {uiText(interfaceLanguage, "حفظ لقطة الموارد", "Save resource snapshot")}
+              {bi("حفظ لقطة الموارد", "Save resource snapshot")}
             </Button>
           ) : (
             <Button variant="outline" onClick={startLogin}>
               <LogIn size={16} />
-              {uiText(interfaceLanguage, "تسجيل الدخول للحفظ", "Sign in to save")}
+              {bi("تسجيل الدخول للحفظ", "Sign in to save")}
             </Button>
           )}
         </div>
@@ -610,8 +618,8 @@ export function FinancialNoticeReviewPanel({
       <section className="workflow-panel" dir={direction}>
         <div className="workflow-heading">
           <div>
-            <p className="eyebrow">{uiText(interfaceLanguage, "سجل الإشعارات", "NOTICE REGISTER")}</p>
-            <h2>{uiText(interfaceLanguage, "سجل الإشعارات التعاقدية", "Contractual Notice register")}</h2>
+            <p className="eyebrow">{bi("سجل الإشعارات", "NOTICE REGISTER")}</p>
+            <h2>{bi("سجل الإشعارات التعاقدية", "Contractual Notice register")}</h2>
             <p>
               {uiText(interfaceLanguage, "يُنشئ مسودة مرتبطة بالحدث مع تاريخ العلم والاستحقاق والأدلة. لا يرسل التطبيق مراسلات خارجية أو يقرر الاستحقاق التعاقدي.", "Creates a draft linked to the event, awareness date, due date, and evidence. The application does not send external communications or decide contractual entitlement.")}
             </p>
@@ -625,13 +633,13 @@ export function FinancialNoticeReviewPanel({
               {uiText(interfaceLanguage, "تقدر تجهز وتنزل مسودة محلية من غير حساب. سجّل الدخول فقط لو عايز تحفظ الإشعار وتتابع سجله وأدلته داخل المشروع.", "You can prepare and download a local draft without an account. Sign in only to save the Notice and track its record and evidence inside the project.")}
             </span>
             <Button className="run-button" onClick={startLogin}>
-              {uiText(interfaceLanguage, "تسجيل الدخول", "Sign in")}
+              {bi("تسجيل الدخول", "Sign in")}
             </Button>
           </div>
         ) : null}
             <div className="workflow-toolbar">
               <Button variant="outline" onClick={resetNoticeFromEvent}>
-                {uiText(interfaceLanguage, "تجهيز مسودة قابلة للتحرير", "Prepare editable draft")}
+                {bi("تجهيز مسودة قابلة للتحرير", "Prepare editable draft")}
               </Button>
               <span>
                 {uiText(interfaceLanguage, `أثر الحدث: ${Math.max(0, activeImpactDays)} يوم · ${money(financial.extensionCost, interfaceLanguage)} وحدة نقدية`, `Event impact: ${Math.max(0, activeImpactDays)} day(s) · ${money(financial.extensionCost, interfaceLanguage)} currency units`)}
@@ -639,7 +647,7 @@ export function FinancialNoticeReviewPanel({
             </div>
             <div className="notice-form">
               <div>
-                <Label>{uiText(interfaceLanguage, "رقم الإشعار", "Notice number")}</Label>
+                <Label>{bi("رقم الإشعار", "Notice number")}</Label>
                 <Input
                   value={noticeNo}
                   onChange={event => setNoticeNo(event.target.value)}
@@ -647,7 +655,7 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "حدث التأخير المرجعي", "Reference delay event")}</Label>
+                <Label>{bi("حدث التأخير المرجعي", "Reference delay event")}</Label>
                 <Select
                   value={noticeEventKey || selectedEvent?.id || "none"}
                   onValueChange={value =>
@@ -655,10 +663,10 @@ export function FinancialNoticeReviewPanel({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={uiText(interfaceLanguage, "اختر حدثاً", "Choose an event")} />
+                    <SelectValue placeholder={bi("اختر حدثاً", "Choose an event")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">{uiText(interfaceLanguage, "اختر حدثاً", "Choose an event")}</SelectItem>
+                    <SelectItem value="none">{bi("اختر حدثاً", "Choose an event")}</SelectItem>
                     {events.map(event => (
                       <SelectItem key={event.id} value={event.id}>
                         {event.id} — {event.title}
@@ -668,7 +676,7 @@ export function FinancialNoticeReviewPanel({
                 </Select>
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "مدة الإشعار التعاقدية (يوم)", "Contractual Notice period (days)")}</Label>
+                <Label>{bi("مدة الإشعار التعاقدية (يوم)", "Contractual Notice period (days)")}</Label>
                 <Input
                   type="number"
                   min="0"
@@ -682,11 +690,7 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div>
-                <Label>
-                  {interfaceLanguage === "en"
-                    ? "Draft language"
-                    : "لغة مسودة التنزيل"}
-                </Label>
+                <Label>{bi("لغة مسودة التنزيل", "Draft language")}</Label>
                 <Select
                   value={noticeDraftLanguage}
                   onValueChange={value =>
@@ -694,11 +698,7 @@ export function FinancialNoticeReviewPanel({
                   }
                 >
                   <SelectTrigger
-                    aria-label={
-                      interfaceLanguage === "en"
-                        ? "Draft language"
-                        : "لغة مسودة التنزيل"
-                    }
+                    aria-label={bi("لغة مسودة التنزيل", "Draft language")}
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -713,7 +713,7 @@ export function FinancialNoticeReviewPanel({
                 </Select>
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "المرسل", "Sender")}</Label>
+                <Label>{bi("المرسل", "Sender")}</Label>
                 <Input
                   value={sender}
                   onChange={event => setSender(event.target.value)}
@@ -721,7 +721,7 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "المستلم", "Recipient")}</Label>
+                <Label>{bi("المستلم", "Recipient")}</Label>
                 <Input
                   value={recipient}
                   onChange={event => setRecipient(event.target.value)}
@@ -729,7 +729,7 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "بند العقد", "Contract clause")}</Label>
+                <Label>{bi("بند العقد", "Contract clause")}</Label>
                 <Input
                   value={contractClause}
                   onChange={event => setContractClause(event.target.value)}
@@ -737,7 +737,7 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "الحالة", "Status")}</Label>
+                <Label>{bi("الحالة", "Status")}</Label>
                 <Select
                   value={noticeStatus}
                   onValueChange={value =>
@@ -748,16 +748,16 @@ export function FinancialNoticeReviewPanel({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">{noticeStatusLabels[interfaceLanguage].draft}</SelectItem>
-                    <SelectItem value="under_review">{noticeStatusLabels[interfaceLanguage].under_review}</SelectItem>
-                    <SelectItem value="sent">{noticeStatusLabels[interfaceLanguage].sent}</SelectItem>
-                    <SelectItem value="overdue">{noticeStatusLabels[interfaceLanguage].overdue}</SelectItem>
-                    <SelectItem value="cancelled">{noticeStatusLabels[interfaceLanguage].cancelled}</SelectItem>
+                    <SelectItem value="draft">{noticeStatusLabel("draft")}</SelectItem>
+                    <SelectItem value="under_review">{noticeStatusLabel("under_review")}</SelectItem>
+                    <SelectItem value="sent">{noticeStatusLabel("sent")}</SelectItem>
+                    <SelectItem value="overdue">{noticeStatusLabel("overdue")}</SelectItem>
+                    <SelectItem value="cancelled">{noticeStatusLabel("cancelled")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "تاريخ العلم", "Awareness date")}</Label>
+                <Label>{bi("تاريخ العلم", "Awareness date")}</Label>
                 <Input
                   type="date"
                   dir="ltr"
@@ -766,7 +766,7 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "آخر موعد للإشعار", "Notice due date")}</Label>
+                <Label>{bi("آخر موعد للإشعار", "Notice due date")}</Label>
                 <Input
                   type="date"
                   dir="ltr"
@@ -775,7 +775,7 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div>
-                <Label>{uiText(interfaceLanguage, "تاريخ الإرسال", "Sent date")}</Label>
+                <Label>{bi("تاريخ الإرسال", "Sent date")}</Label>
                 <Input
                   type="date"
                   dir="ltr"
@@ -784,7 +784,7 @@ export function FinancialNoticeReviewPanel({
                 />
               </div>
               <div className="notice-form-wide">
-                <Label>{uiText(interfaceLanguage, "الأدلة المرجعية للحدث", "Event evidence references")}</Label>
+                <Label>{bi("الأدلة المرجعية للحدث", "Event evidence references")}</Label>
                 {eventEvidence.isLoading ? (
                   <p className="workflow-subtle">{uiText(interfaceLanguage, "جار تحميل أدلة الحدث…", "Loading event evidence…")}</p>
                 ) : eventEvidence.data?.length ? (
@@ -812,7 +812,7 @@ export function FinancialNoticeReviewPanel({
                 )}
               </div>
               <div className="notice-form-wide">
-                <Label>{uiText(interfaceLanguage, "السرد المختصر وحفظ الحقوق", "Brief narrative and reservation of rights")}</Label>
+                <Label>{bi("السرد المختصر وحفظ الحقوق", "Brief narrative and reservation of rights")}</Label>
                 <Textarea
                   rows={3}
                   value={noticeNarrative}
@@ -832,9 +832,7 @@ export function FinancialNoticeReviewPanel({
                   onClick={downloadLocalNoticeDraft}
                 >
                   <Download size={16} />
-                  {interfaceLanguage === "en"
-                    ? "Download local Notice draft"
-                    : "تنزيل مسودة Notice محلية"}
+                  {bi("تنزيل مسودة Notice محلية", "Download local Notice draft")}
                 </Button>
                 {isAuthenticated ? (
                   <>
@@ -858,7 +856,7 @@ export function FinancialNoticeReviewPanel({
                   }
                 >
                   <BellRing size={16} />
-                  {uiText(interfaceLanguage, "إنشاء مسودة تلقائية", "Create automatic draft")}
+                  {bi("إنشاء مسودة تلقائية", "Create automatic draft")}
                 </Button>
                 <Button
                   className="run-button"
@@ -889,7 +887,7 @@ export function FinancialNoticeReviewPanel({
                   }
                 >
                   <Send size={16} />
-                  {uiText(interfaceLanguage, "حفظ الإشعار", "Save Notice")}
+                  {bi("حفظ الإشعار", "Save Notice")}
                 </Button>
                   </>
                 ) : (
@@ -908,11 +906,11 @@ export function FinancialNoticeReviewPanel({
                   <div key={notice.id}>
                     <b>{notice.noticeNo}</b>
                     <span>
-                      {notice.eventKey} · {noticeStatusLabels[interfaceLanguage][notice.computedStatus as NoticeStatus] ?? notice.computedStatus} · {uiText(interfaceLanguage, "استحقاق", "Due")}: {dateText(notice.noticeDueDate, interfaceLanguage)}
+                      {notice.eventKey} · {noticeStatusLabels.ar[notice.computedStatus as NoticeStatus] && noticeStatusLabels.en[notice.computedStatus as NoticeStatus] ? noticeStatusLabel(notice.computedStatus as NoticeStatus) : notice.computedStatus} · {bi("استحقاق", "Due")}: {dateText(notice.noticeDueDate, interfaceLanguage)}
                     </span>
                     <small>{notice.narrative}</small>
                     <small>
-                      {uiText(interfaceLanguage, "مراجع الأدلة", "Evidence references")}:{" "}
+                      {bi("مراجع الأدلة", "Evidence references")}:{" "}
                       {notice.evidenceReferenceIds
                         ? JSON.parse(notice.evidenceReferenceIds).length
                         : 0}
@@ -950,8 +948,8 @@ export function FinancialNoticeReviewPanel({
       <section className="workflow-panel" dir={direction}>
         <div className="workflow-heading">
           <div>
-            <p className="eyebrow">{uiText(interfaceLanguage, "مراجعة المطالبة الإلكترونية", "ELECTRONIC CLAIM REVIEW")}</p>
-            <h2>{uiText(interfaceLanguage, "مسار الاعتماد الإلكتروني", "Electronic approval workflow")}</h2>
+            <p className="eyebrow">{bi("مراجعة المطالبة الإلكترونية", "ELECTRONIC CLAIM REVIEW")}</p>
+            <h2>{bi("مسار الاعتماد الإلكتروني", "Electronic approval workflow")}</h2>
             <p>
               {uiText(interfaceLanguage, "مسودة ← مراجعة التخطيط ← مراجعة العقود ← اعتماد مدير المطالبات ← جاهزة للتصدير. لا يجيز النظام قرار المرحلة إلا للمراجع المعيّن لها.", "Draft → planning review → contract review → claims manager approval → ready to export. The system permits a stage decision only to its assigned reviewer.")}
             </p>
@@ -963,7 +961,7 @@ export function FinancialNoticeReviewPanel({
             <LogIn size={18} />
             <span>{uiText(interfaceLanguage, "سجّل الدخول لإنشاء مسار المراجعة وحفظ قراراته.", "Sign in to create the review workflow and save its decisions.")}</span>
             <Button className="run-button" onClick={startLogin}>
-              {uiText(interfaceLanguage, "تسجيل الدخول", "Sign in")}
+              {bi("تسجيل الدخول", "Sign in")}
             </Button>
           </div>
         ) : !current ? (
@@ -981,7 +979,7 @@ export function FinancialNoticeReviewPanel({
               }
             >
               <CheckCircle2 size={16} />
-              {uiText(interfaceLanguage, "إنشاء مسار الاعتماد", "Create approval workflow")}
+              {bi("إنشاء مسار الاعتماد", "Create approval workflow")}
             </Button>
           </div>
         ) : (
@@ -1014,14 +1012,14 @@ export function FinancialNoticeReviewPanel({
               ))}
             </div>
             <div className="review-status">
-              <b>{uiText(interfaceLanguage, "الحالة", "Status")}: {reviewLabel(current.status)}</b>
+              <b>{bi("الحالة", "Status")}: {reviewLabel(current.status)}</b>
               <span>
-                {uiText(interfaceLanguage, "المرحلة الحالية", "Current stage")}: {reviewLabel(current.currentStage)}
+                {bi("المرحلة الحالية", "Current stage")}: {reviewLabel(current.currentStage)}
               </span>
             </div>
             {review.data?.isOwner ? (
               <div className="review-assignments">
-                <h3>{uiText(interfaceLanguage, "تعيين مراجعي المراحل", "Assign stage reviewers")}</h3>
+                <h3>{bi("تعيين مراجعي المراحل", "Assign stage reviewers")}</h3>
                 <p>
                   {uiText(interfaceLanguage, "أضف الأعضاء من لوحة «أعضاء المشروع» ثم اختر الاسم المناسب لكل مرحلة. يسجل النظام الإسناد في سجل التدقيق.", "Add members from the Project members panel, then choose the appropriate person for each stage. The system records the assignment in the audit log.")}
                 </p>
@@ -1038,10 +1036,10 @@ export function FinancialNoticeReviewPanel({
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder={uiText(interfaceLanguage, "اختر عضواً", "Choose a member")} />
+                        <SelectValue placeholder={bi("اختر عضواً", "Choose a member")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="unassigned">{uiText(interfaceLanguage, "اختر عضواً", "Choose a member")}</SelectItem>
+                        <SelectItem value="unassigned">{bi("اختر عضواً", "Choose a member")}</SelectItem>
                         {projectMembers.data?.map(member => (
                           <SelectItem
                             key={member.memberUserId}
@@ -1069,7 +1067,7 @@ export function FinancialNoticeReviewPanel({
                         })
                       }
                     >
-                      {uiText(interfaceLanguage, "حفظ المراجع", "Save reviewer")}
+                      {bi("حفظ المراجع", "Save reviewer")}
                     </Button>
                   </div>
                 ))}
@@ -1081,7 +1079,7 @@ export function FinancialNoticeReviewPanel({
             )}
             {current.currentStage !== "ready_to_export" ? (
               <>
-                <Label>{uiText(interfaceLanguage, "تعليق القرار (اختياري)", "Decision comment (optional)")}</Label>
+                <Label>{bi("تعليق القرار (اختياري)", "Decision comment (optional)")}</Label>
                 <Textarea
                   rows={2}
                   value={reviewComment}
@@ -1102,10 +1100,10 @@ export function FinancialNoticeReviewPanel({
                       }
                     >
                       {action === "submitted"
-                        ? uiText(interfaceLanguage, "إحالة إلى التخطيط", "Submit to planning")
+                        ? bi("إحالة إلى التخطيط", "Submit to planning")
                         : action === "reopened"
-                          ? uiText(interfaceLanguage, "إعادة فتح المسار", "Reopen workflow")
-                          : uiText(interfaceLanguage, "اعتماد والانتقال للمرحلة التالية", "Approve and move to the next stage")}
+                          ? bi("إعادة فتح المسار", "Reopen workflow")
+                          : bi("اعتماد والانتقال للمرحلة التالية", "Approve and move to the next stage")}
                     </Button>
                   ) : null}
                   <Button
@@ -1121,7 +1119,7 @@ export function FinancialNoticeReviewPanel({
                       })
                     }
                   >
-                    {uiText(interfaceLanguage, "تسجيل تعليق", "Record comment")}
+                    {bi("تسجيل تعليق", "Record comment")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -1134,7 +1132,7 @@ export function FinancialNoticeReviewPanel({
                       })
                     }
                   >
-                    {uiText(interfaceLanguage, "رفض", "Reject")}
+                    {bi("رفض", "Reject")}
                   </Button>
                 </div>
               </>
@@ -1147,7 +1145,7 @@ export function FinancialNoticeReviewPanel({
               </div>
             )}
             <div className="audit-log">
-              <h3>{uiText(interfaceLanguage, "سجل التدقيق غير القابل للتحرير", "Immutable audit log")}</h3>
+              <h3>{bi("سجل التدقيق غير القابل للتحرير", "Immutable audit log")}</h3>
               {audit.map(entry => (
                 <div key={entry.id}>
                   <b>{reviewLabel(entry.decision)}</b>
