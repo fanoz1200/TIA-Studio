@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   CircleHelp,
   Download,
@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { startLogin } from "@/const";
 import { useAppLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
@@ -50,6 +51,10 @@ import { ScheduleComparisonPanel } from "@/components/ScheduleComparisonPanel";
 import {
   evaluateWorkflowReadiness,
   workflowReadinessSummary,
+  claimReviewDisclosureDefinitions,
+  createClaimReviewDisclosures,
+  type ClaimReviewDisclosureId,
+  type ClaimReviewDisclosures,
   type WorkflowCheckState,
 } from "@/lib/workflow-validation";
 import { evaluateTiaResultQuality } from "@/lib/tia-result-validation";
@@ -118,6 +123,28 @@ function sourceLabel(source?: Schedule["source"]) {
       : source?.toUpperCase() || "MANUAL";
 }
 
+function claimReviewDisclosureStorageKey(projectKey: string, claimKey: string) {
+  return `tia-studio:claim-review-disclosures:${projectKey}:${claimKey}`;
+}
+
+function loadClaimReviewDisclosures(storageKey: string): ClaimReviewDisclosures {
+  const fallback = createClaimReviewDisclosures();
+  try {
+    const saved = window.localStorage.getItem(storageKey);
+    if (!saved) return fallback;
+    const candidate = JSON.parse(saved) as Partial<ClaimReviewDisclosures>;
+    return claimReviewDisclosureDefinitions.reduce<ClaimReviewDisclosures>(
+      (result, definition) => ({
+        ...result,
+        [definition.id]: candidate[definition.id] === true,
+      }),
+      fallback
+    );
+  } catch {
+    return fallback;
+  }
+}
+
 export function P6EvidenceReportPanel({
   view,
   schedule,
@@ -177,6 +204,21 @@ export function P6EvidenceReportPanel({
     () => activeClaimKey || `${schedule.id}:delay-claim`,
     [activeClaimKey, schedule.id]
   );
+  const disclosureStorageKey = useMemo(
+    () => claimReviewDisclosureStorageKey(schedule.id, claimKey),
+    [claimKey, schedule.id]
+  );
+  const [reviewDisclosures, setReviewDisclosures] = useState<ClaimReviewDisclosures>(() =>
+    loadClaimReviewDisclosures(
+      claimReviewDisclosureStorageKey(
+        schedule.id,
+        activeClaimKey || `${schedule.id}:delay-claim`
+      )
+    )
+  );
+  useEffect(() => {
+    setReviewDisclosures(loadClaimReviewDisclosures(disclosureStorageKey));
+  }, [disclosureStorageKey]);
   const notices = trpc.notice.list.useQuery(
     { projectKey: schedule.id, claimKey },
     { enabled: isAuthenticated && view === "report" }
@@ -220,6 +262,7 @@ export function P6EvidenceReportPanel({
             template.recipient.trim() &&
             template.contractReference.trim()
           ),
+          reviewDisclosures,
       }, interfaceLanguage),
     [
       activeResult,
@@ -233,6 +276,7 @@ export function P6EvidenceReportPanel({
       template.contractReference,
       template.recipient,
       template.title,
+      reviewDisclosures,
     ]
   );
   const resultQuality = useMemo(
@@ -251,6 +295,14 @@ export function P6EvidenceReportPanel({
   const exportBlocked =
     workflowChecks.some(check => check.state === "blocked") ||
     resultQuality.state === "rejected";
+
+  function updateReviewDisclosure(id: ClaimReviewDisclosureId, checked: boolean) {
+    setReviewDisclosures(current => {
+      const next = { ...current, [id]: checked };
+      window.localStorage.setItem(disclosureStorageKey, JSON.stringify(next));
+      return next;
+    });
+  }
 
   async function importXml(file: File) {
     setIsImporting(true);
@@ -765,6 +817,11 @@ export function P6EvidenceReportPanel({
           <FileText size={22} />
         </div>
         <WorkflowQualityGate checks={workflowChecks} language={interfaceLanguage} />
+        <ReviewerDisclosureChecklist
+          language={interfaceLanguage}
+          disclosures={reviewDisclosures}
+          onChange={updateReviewDisclosure}
+        />
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
           <Label htmlFor="document-language" className="font-semibold">
             {txt("لغة المخرجات", "Output language")}
@@ -1030,6 +1087,62 @@ function WorkflowQualityGate({
               <p>{check.detail}</p>
             </div>
           </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ReviewerDisclosureChecklist({
+  language,
+  disclosures,
+  onChange,
+}: {
+  language: "ar" | "en";
+  disclosures: ClaimReviewDisclosures;
+  onChange: (id: ClaimReviewDisclosureId, checked: boolean) => void;
+}) {
+  const txt = (ar: string, en: string) => (language === "en" ? en : ar);
+  const uiLabel = (ar: string, en: string) => bilingualUiLabel(language, ar, en);
+  return (
+    <section
+      className="mb-4 rounded-xl border border-amber-200 bg-amber-50/50 p-4"
+      aria-label={txt("إفصاحات المراجع", "Reviewer disclosures")}
+    >
+      <header className="mb-3">
+        <p className="eyebrow">{txt("إفصاح المراجع", "REVIEWER DISCLOSURE")}</p>
+        <h3 className="text-base font-bold text-slate-900">
+          {uiLabel("نقاط مراجعة مهنية قبل التصدير", "Professional review points before export")}
+        </h3>
+        <p className="m-0 text-sm text-slate-700">
+          {txt(
+            "هذه العلامات تُحفظ محلياً في هذا المتصفح للمراجع فقط. هي لا تثبت السبب أو المسؤولية أو الاستحقاق، ولا تحول التزامن إلى توزيع آلي.",
+            "These acknowledgements are saved locally in this browser for reviewer use only. They do not prove cause, responsibility or entitlement, and they do not turn concurrency into automatic allocation."
+          )}
+        </p>
+      </header>
+      <div className="grid gap-3 md:grid-cols-2">
+        {claimReviewDisclosureDefinitions.map(definition => (
+          <label
+            key={definition.id}
+            className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-white p-3"
+          >
+            <Checkbox
+              checked={disclosures[definition.id]}
+              onCheckedChange={checked =>
+                onChange(definition.id, checked === true)
+              }
+              aria-label={txt(definition.title.ar, definition.title.en)}
+            />
+            <span>
+              <b className="block text-sm text-slate-900">
+                {uiLabel(definition.title.ar, definition.title.en)}
+              </b>
+              <small className="mt-1 block text-slate-600">
+                {txt(definition.detail.ar, definition.detail.en)}
+              </small>
+            </span>
+          </label>
         ))}
       </div>
     </section>

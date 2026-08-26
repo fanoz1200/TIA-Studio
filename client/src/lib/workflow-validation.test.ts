@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Schedule } from "./cpm";
-import { evaluateWorkflowReadiness, workflowReadinessSummary } from "./workflow-validation";
+import { createClaimReviewDisclosures, evaluateWorkflowReadiness, workflowReadinessSummary } from "./workflow-validation";
 
 const schedule: Schedule = {
   id: "baseline",
@@ -33,7 +33,20 @@ describe("evaluateWorkflowReadiness", () => {
     const checks = evaluateWorkflowReadiness({ schedule, selectedEvent: event, analysis: completedAnalysis, evidenceCount: 2, noticeCount: 1, reviewStatus: "ready_to_export", isAuthenticated: true, hasEventResources: true, templateReady: true });
     expect(checks.find((item) => item.id === "schedule-quality")?.state).toBe("pass");
     expect(checks.filter((item) => item.state === "pass")).toHaveLength(11);
-    expect(workflowReadinessSummary(checks)).toContain("اجتازت");
+    expect(checks.find((item) => item.id === "review-concurrency")?.state).toBe("attention");
+    expect(workflowReadinessSummary(checks)).toContain("تحتاج مراجعة");
+  });
+
+  it("يعرض إفصاحات المراجع كنقاط مراجعة ولا يحولها إلى مانع أو حكم تلقائي", () => {
+    const event = { id: "EV-03", title: "حدث اختبار", occurrenceDate: "2026-01-10", cause: "employer", activities: [{ id: "F-3", name: "حدث", duration: 1 }], relationships: [] } as never;
+    const disclosures = createClaimReviewDisclosures();
+    disclosures.concurrency = true;
+    disclosures.mitigation = true;
+    const checks = evaluateWorkflowReadiness({ schedule, selectedEvent: event, analysis: completedAnalysis, evidenceCount: 1, noticeCount: 1, reviewStatus: "ready_to_export", isAuthenticated: true, hasEventResources: true, templateReady: true, reviewDisclosures: disclosures });
+    expect(checks.find((item) => item.id === "review-concurrency")?.state).toBe("pass");
+    expect(checks.find((item) => item.id === "review-mitigation")?.state).toBe("pass");
+    expect(checks.find((item) => item.id === "review-quantum")?.state).toBe("attention");
+    expect(checks.some((item) => item.id.startsWith("review-") && item.state === "blocked")).toBe(false);
   });
 
   it("يعرض نصوص بوابة العمل الثابتة بالإنجليزية من دون تغيير حالة الحساب", () => {

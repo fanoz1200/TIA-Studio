@@ -5,6 +5,57 @@ import { evaluateTiaResultQuality } from "./tia-result-validation";
 
 export type WorkflowCheckState = "pass" | "attention" | "blocked" | "info";
 
+export type ClaimReviewDisclosureId =
+  | "cause-basis"
+  | "change-authority"
+  | "mitigation"
+  | "concurrency"
+  | "quantum";
+
+export type ClaimReviewDisclosures = Record<ClaimReviewDisclosureId, boolean>;
+
+export const claimReviewDisclosureDefinitions: Array<{
+  id: ClaimReviewDisclosureId;
+  title: { ar: string; en: string };
+  detail: { ar: string; en: string };
+}> = [
+  {
+    id: "cause-basis",
+    title: { ar: "أساس السبب والوقائع", en: "Cause and factual basis" },
+    detail: { ar: "راجع أن التسلسل الزمني والوثائق يبيّنان الوقائع، لا مجرد وجود تأخير.", en: "Confirm that the chronology and documents establish facts, not merely that delay occurred." },
+  },
+  {
+    id: "change-authority",
+    title: { ar: "تفويض التغيير", en: "Change authority" },
+    detail: { ar: "راجع وجود تعليمات أو مراسلات أو أساس تعاقدي قبل وصف التغيير في المطالبة.", en: "Review instructions, correspondence or contractual basis before describing a change in the claim." },
+  },
+  {
+    id: "mitigation",
+    title: { ar: "التخفيف والسجل المعاصر", en: "Mitigation and contemporaneous record" },
+    detail: { ar: "سجّل ما جُرّب للتخفيف وما إذا كانت مستندات الفترة المعاصرة متاحة للمراجع.", en: "Record mitigation steps and whether contemporaneous records are available to the reviewer." },
+  },
+  {
+    id: "concurrency",
+    title: { ar: "إفصاح التزامن", en: "Concurrency disclosure" },
+    detail: { ar: "افحص احتمال تزامن أسباب مستقلة ولا تحوّل الإفصاح إلى توزيع مسؤولية آلي.", en: "Assess possible independent concurrent causes; this disclosure is not an automated responsibility allocation." },
+  },
+  {
+    id: "quantum",
+    title: { ar: "أساس الكمية أو التكلفة", en: "Quantum or cost basis" },
+    detail: { ar: "راجع مصدر الكميات والتكاليف وافصلها عن الأثر الزمني وقرار الاستحقاق.", en: "Review the source of quantities and costs; keep them separate from time impact and entitlement decisions." },
+  },
+];
+
+export function createClaimReviewDisclosures(): ClaimReviewDisclosures {
+  return {
+    "cause-basis": false,
+    "change-authority": false,
+    mitigation: false,
+    concurrency: false,
+    quantum: false,
+  };
+}
+
 export type WorkflowCheck = {
   id: string;
   title: string;
@@ -22,6 +73,7 @@ type WorkflowValidationInput = {
   isAuthenticated: boolean;
   hasEventResources: boolean;
   templateReady: boolean;
+  reviewDisclosures?: Partial<ClaimReviewDisclosures>;
 };
 
 export function evaluateWorkflowReadiness(
@@ -33,6 +85,10 @@ export function evaluateWorkflowReadiness(
   const impactDays = input.analysis ? ("totalImpactDays" in input.analysis ? input.analysis.totalImpactDays : input.analysis.impactDays) : null;
   const engineQuality = evaluateTiaResultQuality({ schedule: input.schedule, selectedEvent: input.selectedEvent, analysis: input.analysis });
   const scheduleQuality = assessScheduleQuality(input.schedule);
+  const reviewDisclosures = {
+    ...createClaimReviewDisclosures(),
+    ...input.reviewDisclosures,
+  };
 
   return [
     {
@@ -105,6 +161,14 @@ export function evaluateWorkflowReadiness(
       state: input.templateReady ? "pass" : "attention",
       detail: input.templateReady ? txt("الحقول الأساسية للقالب جاهزة لتوليد Word أو PDF.", "The template's core fields are ready to generate Word or PDF.") : txt("أكمل عنوان التقرير والمخاطب والمرجع التعاقدي قبل التصدير الرسمي.", "Complete the report title, recipient and contract reference before formal export."),
     },
+    ...claimReviewDisclosureDefinitions.map(definition => ({
+      id: `review-${definition.id}`,
+      title: txt(definition.title.ar, definition.title.en),
+      state: reviewDisclosures[definition.id] ? "pass" as const : "attention" as const,
+      detail: reviewDisclosures[definition.id]
+        ? txt("تم إقرار هذه النقطة للمراجعة المهنية؛ لا تعد نتيجة آلية أو قرار استحقاق.", "This item has been acknowledged for professional review; it is not an automated finding or entitlement decision.")
+        : txt(definition.detail.ar, definition.detail.en),
+    })),
   ];
 }
 

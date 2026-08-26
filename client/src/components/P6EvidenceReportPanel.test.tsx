@@ -132,6 +132,16 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     expect(mocks.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ language: "en" }));
   });
 
+  it("يعرض إفصاحات المراجع ويحفظ إقرارها محلياً من دون حجب زر Excel", () => {
+    renderPanel("report");
+    expect(screen.getByText("إفصاح المراجع")).toBeTruthy();
+    expect(screen.getByText(/لا تثبت السبب أو المسؤولية أو الاستحقاق/)).toBeTruthy();
+    const concurrency = screen.getByRole("checkbox", { name: "إفصاح التزامن" });
+    fireEvent.click(concurrency);
+    expect(JSON.parse(window.localStorage.getItem("tia-studio:claim-review-disclosures:p6-test:p6-test:delay-claim") || "{}")).toMatchObject({ concurrency: true });
+    expect((screen.getByRole("button", { name: "تصدير التقرير النهائي Excel" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
   it("يعرض مسار التقرير بالإنجليزية واتجاه LTR عندما تختار لغة الواجهة English", () => {
     const { container } = renderPanel("report", vi.fn(), "en");
     expect(container.querySelector(".claim-export-panel")?.getAttribute("dir")).toBe("ltr");
