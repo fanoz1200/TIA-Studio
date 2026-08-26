@@ -3,6 +3,7 @@ import React from "react";
 import { BookOpenCheck, Boxes, Download, FileArchive, FileCode2, FileText, GitBranch, HardDriveDownload, Info, ListChecks, Network, ShieldCheck, WifiOff, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resolveResourceDownloadHref } from "@/lib/download-links";
+import { bilingualUiLabel } from "@/lib/language";
 import { ENGLISH_LOCAL_RELEASE, englishEngineGuide, englishMethodologyGuide, englishReleaseChanges, englishSystemLinks, englishWorkflowGuide, engineGuide, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
 import { WORKSHOP_NO8_TRAINING_REFERENCE } from "@/lib/workshop-training-reference";
 import { useAppLanguage } from "@/contexts/LanguageContext";
@@ -154,6 +155,7 @@ const resourceCopy = {
 
 export function ProjectResourcesPanel({ view }: { view: string }) {
   const { language, direction } = useAppLanguage();
+  const bi = (arabic: string, english: string) => bilingualUiLabel(language, arabic, english);
   const [installEvent, setInstallEvent] = useState<DeferredInstallPrompt | null>(null);
   const [installed, setInstalled] = useState(false);
 
@@ -191,71 +193,71 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
   const visibleSystemLinks = language === "en" ? englishSystemLinks : systemLinks;
   const visibleReleaseChanges = language === "en" ? englishReleaseChanges : releaseChanges;
 
-  return <div className="view-stack resources-view" dir={direction} aria-label={copy.resourcesAria}>
+  return <div className="view-stack resources-view" dir={direction} aria-label={bi(copy.resourcesAria, resourceCopy.en.resourcesAria)}>
     <section className="page-heading resources-hero">
       <div>
         <p className="eyebrow">{copy.heroEyebrow}</p>
-        <h1>{copy.heroTitle}</h1>
+        <h1>{bi(copy.heroTitle, resourceCopy.en.heroTitle)}</h1>
         <p>{copy.heroDescription}</p>
       </div>
       <div className="heading-actions">
         {installEvent || installed ? (
-          <Button className="run-button" disabled={!installEvent || installed} onClick={requestInstall} title={copy.installTitle}><HardDriveDownload size={16} />{installed ? copy.installed : copy.installFromBrowser}</Button>
+          <Button className="run-button" disabled={!installEvent || installed} onClick={requestInstall} title={bi(copy.installTitle, resourceCopy.en.installTitle)}><HardDriveDownload size={16} />{installed ? bi(copy.installed, resourceCopy.en.installed) : bi(copy.installFromBrowser, resourceCopy.en.installFromBrowser)}</Button>
         ) : (
-          <Button className="run-button" asChild title={copy.fallbackInstallTitle}><a href={windowsSetupHref} target="_blank" rel="noreferrer"><HardDriveDownload size={16} />{copy.fallbackInstall}</a></Button>
+          <Button className="run-button" asChild title={bi(copy.fallbackInstallTitle, resourceCopy.en.fallbackInstallTitle)}><a href={windowsSetupHref} target="_blank" rel="noreferrer"><HardDriveDownload size={16} />{bi(copy.fallbackInstall, resourceCopy.en.fallbackInstall)}</a></Button>
         )}
       </div>
     </section>
 
     <section className="local-use-banner">
       <WifiOff size={22} />
-      <div><b>{copy.localTitle}</b><p>{copy.localDescription}</p></div>
+      <div><b>{bi(copy.localTitle, resourceCopy.en.localTitle)}</b><p>{copy.localDescription}</p></div>
     </section>
 
-    <section className="desktop-download-quick" aria-label={copy.desktopAria}>
-      <div><HardDriveDownload size={24} /><div><b>{copy.desktopTitle}</b><p>{copy.desktopDescription}</p></div></div>
+    <section className="desktop-download-quick" aria-label={bi(copy.desktopAria, resourceCopy.en.desktopAria)}>
+      <div><HardDriveDownload size={24} /><div><b>{bi(copy.desktopTitle, resourceCopy.en.desktopTitle)}</b><p>{copy.desktopDescription}</p></div></div>
       <div className="desktop-download-quick__actions">
-        <a className="desktop-download-quick__primary" href={windowsSetupHref} target="_blank" rel="noreferrer"><Download size={17} />{copy.setup}</a>
-        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} target="_blank" rel="noreferrer"><Download size={17} />{copy.portable}</a>
+        <a className="desktop-download-quick__primary" href={windowsSetupHref} target="_blank" rel="noreferrer"><Download size={17} />{bi(copy.setup, resourceCopy.en.setup)}</a>
+        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} target="_blank" rel="noreferrer"><Download size={17} />{bi(copy.portable, resourceCopy.en.portable)}</a>
       </div>
     </section>
 
     <section id="release-guide" className="panel release-guide" aria-labelledby="release-guide-title">
       <div className="release-guide__heading">
-        <div><p className="eyebrow">{copy.releaseEyebrow} · {visibleRelease.version}</p><h2 id="release-guide-title">{copy.releaseTitle}</h2><p>{copy.releaseDescription}</p></div>
-        <div className="release-stamp"><b>{copy.releaseVersion} {visibleRelease.version}</b><span>{visibleRelease.publishedOn}</span><small>{visibleRelease.channel}</small></div>
+        <div><p className="eyebrow">{copy.releaseEyebrow} · {visibleRelease.version}</p><h2 id="release-guide-title">{bi(copy.releaseTitle, resourceCopy.en.releaseTitle)}</h2><p>{copy.releaseDescription}</p></div>
+        <div className="release-stamp"><b>{bi(copy.releaseVersion, resourceCopy.en.releaseVersion)} {visibleRelease.version}</b><span>{visibleRelease.publishedOn}</span><small>{visibleRelease.channel}</small></div>
       </div>
-      <div className="release-launcher"><HardDriveDownload size={20} /><div><b>{copy.launchTitle}</b><p>{visibleRelease.launcher} {language === "en" ? "After download, open the file directly; you do not need to run Node.js or write commands. A protection message may appear because the packages are not digitally signed, so verify the file from the official link before allowing it to run." : "بعد التنزيل افتح الملف مباشرة؛ لا تحتاج إلى تشغيل Node.js أو كتابة أوامر. تظهر أي رسالة حماية لأنها حزم غير موقعة رقمياً؛ افحص الملف من الرابط الرسمي فقط قبل السماح له بالتشغيل."}</p></div></div>
+      <div className="release-launcher"><HardDriveDownload size={20} /><div><b>{bi(copy.launchTitle, resourceCopy.en.launchTitle)}</b><p>{visibleRelease.launcher} {language === "en" ? "After download, open the file directly; you do not need to run Node.js or write commands. A protection message may appear because the packages are not digitally signed, so verify the file from the official link before allowing it to run." : "بعد التنزيل افتح الملف مباشرة؛ لا تحتاج إلى تشغيل Node.js أو كتابة أوامر. تظهر أي رسالة حماية لأنها حزم غير موقعة رقمياً؛ افحص الملف من الرابط الرسمي فقط قبل السماح له بالتشغيل."}</p></div></div>
       <div className="guide-card-grid">
-        <article><div className="guide-card-title"><BookOpenCheck size={18} /><h3>{copy.methodologyTitle}</h3></div>{visibleMethodologyGuide.map(method => <div className="guide-item" key={method.title}><b>{method.title}</b><p>{method.purpose}</p><small><strong>{language === "en" ? "Used when:" : "يستخدم عندما:"}</strong> {method.useWhen}</small></div>)}</article>
-        <article><div className="guide-card-title"><Boxes size={18} /><h3>{copy.enginesTitle}</h3></div>{visibleEngineGuide.map(engine => <div className="engine-row" key={engine.name}><b>{engine.name}</b><span><strong>{language === "en" ? "Input:" : "يدخل:"}</strong> {engine.input}</span><span><strong>{language === "en" ? "Output:" : "ينتج:"}</strong> {engine.output}</span></div>)}</article>
+        <article><div className="guide-card-title"><BookOpenCheck size={18} /><h3>{bi(copy.methodologyTitle, resourceCopy.en.methodologyTitle)}</h3></div>{visibleMethodologyGuide.map(method => <div className="guide-item" key={method.title}><b>{method.title}</b><p>{method.purpose}</p><small><strong>{language === "en" ? "Used when:" : "يستخدم عندما:"}</strong> {method.useWhen}</small></div>)}</article>
+        <article><div className="guide-card-title"><Boxes size={18} /><h3>{bi(copy.enginesTitle, resourceCopy.en.enginesTitle)}</h3></div>{visibleEngineGuide.map(engine => <div className="engine-row" key={engine.name}><b>{engine.name}</b><span><strong>{language === "en" ? "Input:" : "يدخل:"}</strong> {engine.input}</span><span><strong>{language === "en" ? "Output:" : "ينتج:"}</strong> {engine.output}</span></div>)}</article>
       </div>
       <div className="guide-flow-grid">
-        <article><div className="guide-card-title"><Workflow size={18} /><h3>{copy.flowTitle}</h3></div><ol className="live-workflow">{visibleWorkflowGuide.map(step => <li key={step}>{step}</li>)}</ol></article>
-        <article><div className="guide-card-title"><Network size={18} /><h3>{copy.linksTitle}</h3></div><ul className="system-links">{visibleSystemLinks.map(link => <li key={link}>{link}</li>)}</ul></article>
+        <article><div className="guide-card-title"><Workflow size={18} /><h3>{bi(copy.flowTitle, resourceCopy.en.flowTitle)}</h3></div><ol className="live-workflow">{visibleWorkflowGuide.map(step => <li key={step}>{step}</li>)}</ol></article>
+        <article><div className="guide-card-title"><Network size={18} /><h3>{bi(copy.linksTitle, resourceCopy.en.linksTitle)}</h3></div><ul className="system-links">{visibleSystemLinks.map(link => <li key={link}>{link}</li>)}</ul></article>
       </div>
-      <div className="release-changelog"><div className="guide-card-title"><GitBranch size={18} /><h3>{copy.changesTitle}</h3></div><ul>{visibleReleaseChanges.map(change => <li key={change}>{change}</li>)}</ul><p><ListChecks size={16} />{copy.changeRule}</p></div>
+      <div className="release-changelog"><div className="guide-card-title"><GitBranch size={18} /><h3>{bi(copy.changesTitle, resourceCopy.en.changesTitle)}</h3></div><ul>{visibleReleaseChanges.map(change => <li key={change}>{change}</li>)}</ul><p><ListChecks size={16} />{copy.changeRule}</p></div>
     </section>
 
-    <section className="resources-grid" aria-label={copy.resourcesAria}>
-      {visibleResources.map((resource) => { const Icon = resource.icon; const href = resolveResourceDownloadHref(resource.href); const isExternal = /^https?:\/\//i.test(href); return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{resource.title}</h2><p>{resource.description}</p></div><a className="resource-download" href={href} download={isExternal ? undefined : true} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noreferrer" : undefined}><Download size={16} />{copy.download}</a></article>; })}
+    <section className="resources-grid" aria-label={bi(copy.resourcesAria, resourceCopy.en.resourcesAria)}>
+      {visibleResources.map((resource, index) => { const Icon = resource.icon; const href = resolveResourceDownloadHref(resource.href); const isExternal = /^https?:\/\//i.test(href); return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{bi(resource.title, englishResources[index].title)}</h2><p>{resource.description}</p></div><a className="resource-download" href={href} download={isExternal ? undefined : true} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noreferrer" : undefined}><Download size={16} />{bi(copy.download, resourceCopy.en.download)}</a></article>; })}
     </section>
 
     <section className="panel examples-panel">
-      <div className="panel-heading"><div><p className="eyebrow">{copy.examplesEyebrow}</p><h2>{copy.examplesTitle}</h2><p>{copy.examplesDescription}</p></div></div>
+      <div className="panel-heading"><div><p className="eyebrow">{copy.examplesEyebrow}</p><h2>{bi(copy.examplesTitle, resourceCopy.en.examplesTitle)}</h2><p>{copy.examplesDescription}</p></div></div>
       <div className="example-downloads">{visibleExamples.map((example) => <a key={example.href} href={resolveResourceDownloadHref(example.href)} download><FileArchive size={16} /><span>{example.name}</span><small>{example.type}</small><Download size={15} /></a>)}</div>
     </section>
 
     <section className="panel workshop-training-reference" aria-labelledby="workshop-training-title">
       <div className="panel-heading"><div><p className="eyebrow">{language === "en" ? "PRIVATE TRAINING REFERENCE · P6 23.12" : "مرجع تدريبي خاص · P6 23.12"}</p><h2 id="workshop-training-title">{WORKSHOP_NO8_TRAINING_REFERENCE.title}</h2><p>{copy.trainingDescription}</p></div><ShieldCheck size={24} /></div>
       <div className="workshop-training-reference__facts" aria-label={copy.trainingAria}>
-        <div><span>{copy.baseline}</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.activities} {copy.activity} / {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.relationships} {copy.relationship}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.calendars} {copy.calendar}</small></div>
-        <div><span>{copy.postTia}</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.activities} {copy.activity} / {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.relationships} {copy.relationship}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.calendars} {copy.calendar}</small></div>
-        <div><span>{copy.localDelta}</span><b>+{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.durationDeltaDays} {copy.workingDays}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.baselineDurationDays} → {WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.postTiaDurationDays} {language === "en" ? "days" : "يوم"}</small></div>
+        <div><span>{bi(copy.baseline, resourceCopy.en.baseline)}</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.activities} {bi(copy.activity, resourceCopy.en.activity)} / {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.relationships} {bi(copy.relationship, resourceCopy.en.relationship)}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.baseline.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.baseline.calendars} {bi(copy.calendar, resourceCopy.en.calendar)}</small></div>
+        <div><span>{bi(copy.postTia, resourceCopy.en.postTia)}</span><b>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.activities} {bi(copy.activity, resourceCopy.en.activity)} / {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.relationships} {bi(copy.relationship, resourceCopy.en.relationship)}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.postTia.wbs} WBS · {WORKSHOP_NO8_TRAINING_REFERENCE.postTia.calendars} {bi(copy.calendar, resourceCopy.en.calendar)}</small></div>
+        <div><span>{bi(copy.localDelta, resourceCopy.en.localDelta)}</span><b>+{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.durationDeltaDays} {bi(copy.workingDays, resourceCopy.en.workingDays)}</b><small>{WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.baselineDurationDays} → {WORKSHOP_NO8_TRAINING_REFERENCE.localEngine.postTiaDurationDays} {language === "en" ? "days" : "يوم"}</small></div>
       </div>
       <p className="workshop-training-reference__boundary"><b>{copy.verification}</b> {WORKSHOP_NO8_TRAINING_REFERENCE.status} {language === "en" ? `The Excel declaration records planned completion on ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.asPlannedCompletion}, completion on ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.completion}, and a declared cumulative impact of ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.cumulativeImpactDays} days; this does not replace scheduling results inside Primavera.` : `ملف Excel يبيّن اكتمالاً مخططاً في ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.asPlannedCompletion} واكتمالاً في ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.completion} وأثراً تراكمياً معلناً قدره ${WORKSHOP_NO8_TRAINING_REFERENCE.excelDeclared.cumulativeImpactDays} يوماً؛ لا يستبدل ذلك نتيجة الجدولة داخل Primavera.`}</p>
       <div className="workshop-training-reference__review" aria-labelledby="workshop-review-title">
-        <div><ListChecks size={18} /><h3 id="workshop-review-title">{copy.reviewTitle}</h3></div>
+        <div><ListChecks size={18} /><h3 id="workshop-review-title">{bi(copy.reviewTitle, resourceCopy.en.reviewTitle)}</h3></div>
         <p>{WORKSHOP_NO8_TRAINING_REFERENCE.calendarScope}</p>
         <ol>{WORKSHOP_NO8_TRAINING_REFERENCE.manualP6Checks.map((check) => <li key={check}>{check}</li>)}</ol>
       </div>
@@ -263,7 +265,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     </section>
 
     <section className="panel resources-boundary">
-      <div><p className="eyebrow">{copy.boundaryEyebrow}</p><h2>{copy.boundaryTitle}</h2></div>
+      <div><p className="eyebrow">{copy.boundaryEyebrow}</p><h2>{bi(copy.boundaryTitle, resourceCopy.en.boundaryTitle)}</h2></div>
       <p><b>{language === "en" ? "The current engine does not rely on artificial intelligence to reach an analysis result." : "لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل."}</b> {language === "en" ? "Network calculation, critical-path analysis, Fragnets, concurrency, update comparison, and P6 import are reviewable deterministic software operations. A future assistant could help with wording or a format check only; it must not replace professional judgment or contract documents." : "حساب الشبكة، المسار الحرج، الـFragnets، التزامن، مقارنة التحديثات، واستيراد P6 هي عمليات برمجية حتمية قابلة للمراجعة. يمكن إضافة مساعد ذكي مستقبلاً لاقتراح صياغة أو فحص شكلي فقط، ولا ينبغي أن يحل محل الحكم المهني أو مستندات العقد."}</p>
     </section>
   </div>;
