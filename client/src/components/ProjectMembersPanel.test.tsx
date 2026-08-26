@@ -26,12 +26,12 @@ describe("لوحة أعضاء المشروع", () => {
   it("تعرض مدة الوصول في الدعوة وحالة العضوية المنتهية وحدود النسخة المحلية", () => {
     render(<LanguageProvider><ProjectMembersPanel projectKey="P-TIA" isAuthenticated /></LanguageProvider>);
 
-    expect(screen.getByText("أعضاء المشروع")).toBeTruthy();
-    expect(screen.getByText("مدة الوصول بعد القبول")).toBeTruthy();
-    expect(screen.getByText(/الوصول 14 يوماً بعد القبول/)).toBeTruthy();
-    expect(screen.getByText(/انتهى الوصول في/)).toBeTruthy();
+    expect(screen.getByText("أعضاء المشروع · PROJECT MEMBERS")).toBeTruthy();
+    expect(screen.getByText("مدة الوصول بعد القبول · Access duration after acceptance")).toBeTruthy();
+    expect(screen.getByText(/الوصول · Access 14 يوماً · days بعد القبول · after acceptance/)).toBeTruthy();
+    expect(screen.getByText(/انتهى الوصول في · Access expired on/)).toBeTruthy();
     expect(screen.getByText(/لا تتحكم في نسخة سطح المكتب المحلية/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /تمديد وصول م. كريم/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /تمديد وصول · Extend access م. كريم/ })).toBeTruthy();
   });
 
   it("تظهر الواجهة بالإنجليزية واتجاه LTR مع بقاء اسم العضو العربي كما هو", () => {
@@ -44,6 +44,7 @@ describe("لوحة أعضاء المشروع", () => {
     expect(screen.getByText("Member email")).toBeTruthy();
     expect(screen.getByText("Invitations")).toBeTruthy();
     expect(container.textContent).toContain("م. كريم");
+    expect(container.textContent).toContain("planner@example.com");
   });
 
   it("تُخرج رسائل إجراءات العضوية الثابتة بالإنجليزية دون تضمين بيانات العضو", () => {
