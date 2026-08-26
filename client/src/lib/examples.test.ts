@@ -6,6 +6,24 @@ import { importXerSchedule } from "./xer";
 
 const examplePath = (name: string) => resolve(process.cwd(), "examples", name);
 
+const minimalResourceXerFixture = `%T\tPROJECT
+%F\tproj_short_name\tplan_start_date
+%R\tمشروع تدريب موارد\t2026-03-01
+%E
+%T\tTASK
+%F\ttask_id\ttask_code\ttask_name\ttarget_drtn_hr_cnt\tremain_drtn_hr_cnt\twbs_id\tearly_start_date
+%R\tT-100\tA100\tأعمال الأساسات\t80\t40\tW-01\t2026-03-01
+%E
+%T\tRSRC
+%F\trsrc_id\trsrc_name\trsrc_type
+%R\tR-EXC\tحفار\tNonLabor
+%E
+%T\tTASKRSRC
+%F\ttaskrsrc_id\ttask_id\trsrc_id\trsrc_type\ttarget_cost\tremain_cost\tact_reg_cost\tact_ot_cost\ttarget_qty\tremain_qty\tcost_per_qty\tremain_qty_per_hr\tacct_id\twbs_id
+%R\tTR-01\tT-100\tR-EXC\tNonLabor\t5000\t2500\t1000\t200\t100\t50\t50\t1\tAC-01\tW-01
+%E
+`;
+
 describe("مثالات التدريب", () => {
   it("يشغل برنامج الأساس JSON في محرك CPM", () => {
     const schedule = JSON.parse(readFileSync(examplePath("01-baseline-schedule.json"), "utf8")) as Schedule;
@@ -20,8 +38,7 @@ describe("مثالات التدريب", () => {
   });
 
   it("يقرأ ملف XER المصغر مورد TASKRSRC وتكلفته", () => {
-    const source = readFileSync(examplePath("04-minimal-p6-resource.xer"), "utf8");
-    const { schedule, summary } = importXerSchedule(source, "04-minimal-p6-resource.xer");
+    const { schedule, summary } = importXerSchedule(minimalResourceXerFixture, "training-resource-fixture");
 
     expect(summary.resourceAssignmentsRead).toBe(1);
     expect(schedule.resourceAssignments?.[0]).toMatchObject({
