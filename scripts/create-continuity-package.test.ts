@@ -6,6 +6,7 @@ const projectRoot = resolve(import.meta.dirname, "..");
 const packageJson = JSON.parse(readFileSync(resolve(projectRoot, "package.json"), "utf8"));
 const generatorSource = readFileSync(resolve(projectRoot, "scripts", "create-continuity-package.mjs"), "utf8");
 const handoverGuide = readFileSync(resolve(projectRoot, "docs", "CONTINUITY_AND_HANDOVER_AR.md"), "utf8");
+const archiveAttributes = readFileSync(resolve(projectRoot, ".gitattributes"), "utf8");
 
 describe("حزمة الاستمرارية اليدوية", () => {
   it("تعرض أمراً يدوياً واضحاً في package.json", () => {
@@ -24,5 +25,14 @@ describe("حزمة الاستمرارية اليدوية", () => {
     expect(generatorSource).toContain("raw XER/XML/XLSX");
     expect(handoverGuide).toContain("لا تنشئ نسخاً احتياطية تلقائية");
     expect(handoverGuide).toContain("ملفات العميل الخام");
+  });
+
+  it("يستبعد مواد المراجعة وملفات العميل الخام من git archive", () => {
+    expect(archiveAttributes).toContain(".review-extract export-ignore");
+    expect(archiveAttributes).toContain("*.xer export-ignore");
+    expect(archiveAttributes).toContain("*.xml export-ignore");
+    expect(archiveAttributes).toContain("*.xlsx export-ignore");
+    expect(archiveAttributes).toContain("*.docx export-ignore");
+    expect(archiveAttributes).toContain("*.pdf export-ignore");
   });
 });

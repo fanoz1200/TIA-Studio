@@ -1,0 +1,19 @@
+# Privacy boundary for git archive used by pnpm backup:manual.
+# Keep tracked code and reusable documentation, but never export raw schedules,
+# office documents, or archived claim-review material into a manual backup.
+.review-extract export-ignore
+.review-extract/** export-ignore
+*.xer export-ignore
+**/*.xer export-ignore
+*.xml export-ignore
+**/*.xml export-ignore
+*.xls export-ignore
+**/*.xls export-ignore
+*.xlsx export-ignore
+**/*.xlsx export-ignore
+*.doc export-ignore
+**/*.doc export-ignore
+*.docx export-ignore
+**/*.docx export-ignore
+*.pdf export-ignore
+**/*.pdf export-ignore
