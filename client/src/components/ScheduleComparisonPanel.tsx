@@ -11,6 +11,7 @@ import { exportExperimentalXer, validateExperimentalXerRoundTrip } from "@/lib/x
 import { insertFragnet, type Fragnet, type Schedule } from "@/lib/cpm";
 import { assessScheduleQuality } from "@/lib/schedule-quality";
 import { useAppLanguage } from "@/contexts/LanguageContext";
+import { bilingualUiLabel } from "@/lib/language";
 
 type SourceSlot = "baseline" | "update";
 
@@ -30,6 +31,7 @@ function parseSchedule(raw: string, name: string): Schedule {
 
 export function ScheduleComparisonPanel({ currentSchedule, selectedEvent }: { currentSchedule: Schedule; selectedEvent?: Fragnet | null }) {
   const { language, direction } = useAppLanguage();
+  const bi = (arabic: string, english: string) => bilingualUiLabel(language, arabic, english);
   const tx = language === "en" ? {
     eyebrow: "UPDATE VARIANCE WORKSPACE", title: "Schedule update comparison", description: "Compare two defined schedules from your files, then review activity, duration, and completion-date variances. The comparison is technical and does not determine contractual entitlement by itself.",
     context: "The XER downloads below are exchange-only and experimental: review them separately in Primavera and do not treat them as a source-file replacement.", useOpen: "Use the open schedule as baseline", preXer: "Download Pre-TIA XER", postXer: "Download Post-TIA XER",
@@ -38,11 +40,11 @@ export function ScheduleComparisonPanel({ currentSchedule, selectedEvent }: { cu
     emptyTitle: "Load two schedules to start comparing", emptyDescription: "Choose a baseline version and then an update for the same project. You can use the open schedule as a baseline or load XER/XML/JSON.",
     loadSuccess: "Loaded", openSuccess: "The open schedule was loaded as the baseline.", genericReadError: "Could not read the schedule file.", xerQualityBlocked: "XER download stopped: correct schedule-quality blockers first", xerRoundTripBlocked: "XER download stopped:", xerRoundTripFallback: "Round-trip import validation failed.", xerDownloadSuccess: "Experimental", preTiaSnapshot: "Pre-TIA", postTiaSnapshot: "Post-TIA", xerDownloaded: "XER was downloaded after round-trip import validation:", relationships: "relationships", conjunction: "and", xerCreateError: "Could not create the experimental XER file.", xerReview: "Review calendar constraints and unsupported P6 fields in the download message before using the file externally.",
   } : {
-    eyebrow: "UPDATE VARIANCE WORKSPACE", title: "مقارنة تحديثات البرنامج", description: "قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.",
-    context: "تنزيل XER أدناه تبادلي وتجريبي: يُراجع في Primavera منفصل ولا يستبدل ملف المصدر.", useOpen: "استخدم البرنامج المفتوح كأساس", preXer: "تنزيل Pre-TIA XER", postXer: "تنزيل Post-TIA XER",
-    baseline: "البرنامج المرجعي / السابق", update: "تحديث البرنامج / اللاحق", notLoaded: "لم يُحمّل بعد", activities: "نشاط", starts: "يبدأ", support: "يدعم XER وP6 XML وJSON. لا تغادر الملفات المتصفح أثناء المقارنة.",
-    loading: "جارِ القراءة…", upload: "تحميل ملف", remove: "إزالة", transfer: "قارن نفس نطاق المشروع قدر الإمكان", durationVariance: "فرق مدة المشروع", changedActivities: "أنشطة مُعدّلة", scopeChanges: "تغييرات نطاق", from: "من أصل", inUpdate: "نشاط في التحديث", added: "مضاف", removed: "محذوف", days: "يوم",
-    emptyTitle: "حمّل برنامجين لبدء المقارنة", emptyDescription: "اختر نسخة مرجعية ثم تحديثاً لنفس المشروع. يمكنك استخدام البرنامج المفتوح كأساس أو تحميل XER/XML/JSON.",
+    eyebrow: bi("مساحة عمل فروق التحديثات", "UPDATE VARIANCE WORKSPACE"), title: bi("مقارنة تحديثات البرنامج", "Schedule update comparison"), description: "قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.",
+    context: "تنزيل XER أدناه تبادلي وتجريبي: يُراجع في Primavera منفصل ولا يستبدل ملف المصدر.", useOpen: bi("استخدم البرنامج المفتوح كأساس", "Use the open schedule as baseline"), preXer: bi("تنزيل XER قبل TIA", "Download Pre-TIA XER"), postXer: bi("تنزيل XER بعد TIA", "Download Post-TIA XER"),
+    baseline: bi("البرنامج المرجعي / السابق", "Baseline / previous schedule"), update: bi("تحديث البرنامج / اللاحق", "Update / later schedule"), notLoaded: bi("لم يُحمّل بعد", "Not loaded yet"), activities: bi("نشاط", "activities"), starts: bi("يبدأ", "starts"), support: "يدعم XER وP6 XML وJSON. لا تغادر الملفات المتصفح أثناء المقارنة.",
+    loading: bi("جارِ القراءة…", "Reading…"), upload: bi("تحميل ملف", "Upload file"), remove: bi("إزالة", "Remove"), transfer: "قارن نفس نطاق المشروع قدر الإمكان", durationVariance: bi("فرق مدة المشروع", "Project duration variance"), changedActivities: bi("أنشطة مُعدّلة", "Changed activities"), scopeChanges: bi("تغييرات نطاق", "Scope changes"), from: bi("من أصل", "out of"), inUpdate: bi("نشاط في التحديث", "activities in the update"), added: bi("مضاف", "added"), removed: bi("محذوف", "removed"), days: bi("يوم", "days"),
+    emptyTitle: bi("حمّل برنامجين لبدء المقارنة", "Load two schedules to start comparing"), emptyDescription: "اختر نسخة مرجعية ثم تحديثاً لنفس المشروع. يمكنك استخدام البرنامج المفتوح كأساس أو تحميل XER/XML/JSON.",
     loadSuccess: "تم تحميل", openSuccess: "حُمّل البرنامج المفتوح كبرنامج مرجعي.", genericReadError: "تعذر قراءة ملف البرنامج.", xerQualityBlocked: "أُوقف تنزيل XER: صحح موانع جودة البرنامج أولاً", xerRoundTripBlocked: "أُوقف تنزيل XER:", xerRoundTripFallback: "فشل فحص الاستيراد العكسي.", xerDownloadSuccess: "تم تنزيل", preTiaSnapshot: "قبل TIA", postTiaSnapshot: "بعد TIA", xerDownloaded: "التجريبي بعد فحص الاستيراد العكسي:", relationships: "علاقة", conjunction: "و", xerCreateError: "تعذر إنشاء ملف XER التجريبي.", xerReview: "راجِع قيود التقويم وحقول P6 غير المدعومة في رسالة التنزيل قبل استخدام الملف خارجياً.",
   };
   const [baseline, setBaseline] = useState<Schedule | null>(null);

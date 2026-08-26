@@ -42,7 +42,8 @@ describe("واجهة مقارنة التحديثات", () => {
     const updateText = readFileSync(resolve(process.cwd(), "examples", "02-update-after-foundation.json"), "utf8");
     const { container } = renderComparison(baseline);
 
-    await user.click(screen.getByRole("button", { name: /استخدم البرنامج المفتوح كأساس/ }));
+    expect(screen.getByRole("heading", { name: "مقارنة تحديثات البرنامج · Schedule update comparison" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "استخدم البرنامج المفتوح كأساس · Use the open schedule as baseline" }));
     const updateFile = new File([updateText], "02-update-after-foundation.json", { type: "application/json" });
     Object.defineProperty(updateFile, "text", { value: async () => updateText });
     const inputs = container.querySelectorAll('input[type="file"]');
@@ -53,7 +54,7 @@ describe("واجهة مقارنة التحديثات", () => {
     expect(screen.getByText("مخطط زمني تفاعلي: الأساس والتحديث")).toBeTruthy();
     expect(screen.getByText("A200")).toBeTruthy();
     expect(screen.getAllByText("+3 يوم").length).toBeGreaterThan(0);
-    expect(screen.getByText(/فرق مدة المشروع/)).toBeTruthy();
+    expect(screen.getByText("فرق مدة المشروع · Project duration variance")).toBeTruthy();
     expect(screen.getByTestId("gantt-bar-baseline-A200")).toBeTruthy();
     expect(screen.getByTestId("gantt-bar-update-A200")).toBeTruthy();
 
