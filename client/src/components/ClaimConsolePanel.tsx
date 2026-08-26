@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppLanguage } from "@/contexts/LanguageContext";
-import type { AppLanguage } from "@/lib/language";
+import { bilingualUiLabel, type AppLanguage } from "@/lib/language";
 import { trpc } from "@/lib/trpc";
 import type { Schedule } from "@/lib/cpm";
 
@@ -43,6 +43,7 @@ function SourceBadge({ status, language }: { status: SourceStatus; language: App
 export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate, onActiveClaimChange }: { view: string; schedule: Schedule; isAuthenticated: boolean; onNavigate: (view: "notices" | "report") => void; onActiveClaimChange: (claimKey: string, narrative: string) => void }) {
   const { language, direction } = useAppLanguage();
   const toastText = claimConsoleToastText(language);
+  const bi = (ar: string, en: string) => bilingualUiLabel(language, ar, en);
   const copy = language === "en" ? {
     accessTitle: "Contract profile and risk register",
     accessBody: "Sign in to save this register in the project workspace and share it through the review workflow. No sample data is added automatically.",
@@ -64,7 +65,7 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
     candidateTitle: "مرشح مطالبة قابل للتتبع", candidateBody: "الربط هنا يثبت مسار المراجعة بين مخاطر وواقعة وسلسلة مطالبة؛ ولا يحولها تلقائياً إلى Claim مستحق أو Notice جاهز للإرسال.",
     deadlineTitle: "متابع موعد يحتاج مراجعة عقدية", deadlineBody: "إما تاريخ يدوي موثق أو تاريخ مرجعي + عدد أيام تقويمية أدخله المستخدم. «تجاوز الموعد» لا يساوي سقوط الحق في هذا البرنامج.",
   };
-  const txt = (ar: string, en: string) => language === "en" ? en : ar;
+  const txt = (ar: string, en: string) => bi(ar, en);
   const utils = trpc.useUtils();
   const projectInput = useMemo(() => ({ projectKey: schedule.id }), [schedule.id]);
   const consoleData = trpc.claimConsole.list.useQuery(projectInput, { enabled: isAuthenticated && view === "claimConsole" });
@@ -86,7 +87,7 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
   const createDeadline = trpc.claimConsole.createDeadline.useMutation({ onSuccess: () => { invalidate(); setDeadline(previous => ({ ...previous, title: "", ruleDescription: "", sourceReference: "", reviewNotes: "", dueDate: "", calendarDays: "" })); toast.success(toastText.deadlineSaved); }, onError: error => toast.error(error.message) });
 
   if (view !== "claimConsole") return null;
-  if (!isAuthenticated) return <section className="workflow-panel" dir={direction}><div className="workflow-heading"><div><p className="eyebrow">{txt("منصة المطالبات", "Claim Console")}</p><h2>{copy.accessTitle}</h2><p>{copy.accessBody}</p></div><ShieldAlert size={30} /></div></section>;
+  if (!isAuthenticated) return <section className="workflow-panel" dir={direction}><div className="workflow-heading"><div><p className="eyebrow">{txt("منصة المطالبات", "Claim Console")}</p><h2>{bi("ملف العقد وسجل المخاطر", "Contract profile and risk register")}</h2><p>{copy.accessBody}</p></div><ShieldAlert size={30} /></div></section>;
 
   const data = consoleData.data;
   const openRisks = data?.risks.filter(item => item.status !== "closed").length ?? 0;
@@ -106,18 +107,18 @@ export function ClaimConsolePanel({ view, schedule, isAuthenticated, onNavigate,
     <section className="hero-panel border border-amber-200 bg-amber-50/70 text-slate-900">
       <div className="hero-copy">
         <p className="eyebrow">{txt("منصة المطالبات · نسخة أولية", "CLAIM CONSOLE · MVP")}</p>
-        <h1>{copy.heroTitle}</h1>
+        <h1>{bi("من المخاطرة إلى الواقعة ثم مرشح المطالبة", "From risk, to issue, to a claim candidate")}</h1>
         <p>{copy.heroBody}</p>
       </div>
       <div className="hero-side-grid">
-        <div><small>{copy.openRisks}</small><strong>{openRisks}</strong></div>
-        <div><small>{copy.reviewDeadlines}</small><strong>{reviewDeadlines}</strong></div>
-        <div><small>{copy.contractProfile}</small><strong>{data?.profile?.sourceStatus === "sourced" ? copy.verified : copy.review}</strong></div>
+        <div><small>{bi("مخاطر مفتوحة", "Open risks")}</small><strong>{openRisks}</strong></div>
+        <div><small>{bi("مواعيد تحتاج مراجعة", "Deadlines needing review")}</small><strong>{reviewDeadlines}</strong></div>
+        <div><small>{bi("ملف العقد", "Contract profile")}</small><strong>{data?.profile?.sourceStatus === "sourced" ? bi("موثق", "Verified") : bi("راجع", "Review")}</strong></div>
       </div>
     </section>
 
     <section className="workflow-panel">
-      <div className="workflow-heading"><div><p className="eyebrow">01 · {txt("ملف العقد", "Contract Profile")}</p><h2>{copy.contractTitle}</h2><p>{copy.contractBody}</p></div><FileCheck2 size={28} /></div>
+      <div className="workflow-heading"><div><p className="eyebrow">01 · {txt("ملف العقد", "Contract Profile")}</p><h2>{bi("ملف العقد المرجعي للمشروع", "Reference contract profile")}</h2><p>{copy.contractBody}</p></div><FileCheck2 size={28} /></div>
       <div className="form-grid three-col">
         <div><Label htmlFor="cc-contract-title">{txt("اسم/عنوان العقد", "Contract name / title")}</Label><Input id="cc-contract-title" value={contract.contractTitle} onChange={event => setContract({ ...contract, contractTitle: event.target.value })} /></div>
         <div><Label htmlFor="cc-contract-form">{txt("نموذج العقد", "Contract form")}</Label><Input id="cc-contract-form" placeholder={txt("مثال: وفق النسخة الموقعة", "Example: as executed")} value={contract.contractForm} onChange={event => setContract({ ...contract, contractForm: event.target.value })} /></div>

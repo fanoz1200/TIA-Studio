@@ -34,15 +34,15 @@ describe("عارض XER المحلي", () => {
   it("يعرض النسخ والفرق وحدود المراجعة ويربط العمل بالشاشات الحقيقية", () => {
     const onNavigate = renderViewer("ar");
 
-    expect(screen.getByRole("heading", { name: "عارض XER والنسخ" })).toBeTruthy();
-    expect(screen.getByRole("region", { name: "عارض XER والنسخ" }).getAttribute("dir")).toBe("rtl");
+    expect(screen.getByRole("heading", { name: "عارض XER والنسخ · XER and snapshot viewer" })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "عارض XER والنسخ · XER and snapshot viewer" }).getAttribute("dir")).toBe("rtl");
     expect(screen.getByText(/لا يعدّل ملف XER الأصلي/)).toBeTruthy();
     expect(screen.getByText("baseline.xer")).toBeTruthy();
     expect(screen.getByText("update.xer")).toBeTruthy();
-    expect(screen.getByText("أنشطة أُضيفت")).toBeTruthy();
+    expect(screen.getByText("أنشطة أُضيفت · Activities added")).toBeTruthy();
     expect(screen.getAllByText("A200").length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole("button", { name: "افتح المقارنة" }));
-    fireEvent.click(screen.getByRole("button", { name: "ارفع أو استبدل ملف" }));
+    fireEvent.click(screen.getByRole("button", { name: "افتح المقارنة · Open comparison" }));
+    fireEvent.click(screen.getByRole("button", { name: "ارفع أو استبدل ملف · Upload or replace file" }));
     expect(onNavigate).toHaveBeenNthCalledWith(1, "compare");
     expect(onNavigate).toHaveBeenNthCalledWith(2, "schedule");
   });

@@ -32,8 +32,8 @@ describe("Claim Console", () => {
     window.localStorage.removeItem("tia-studio-interface-language");
     render(<LanguageProvider><ClaimConsolePanel view="claimConsole" schedule={schedule} isAuthenticated={false} onNavigate={vi.fn()} onActiveClaimChange={vi.fn()} /></LanguageProvider>);
 
-    expect(screen.getByText("منصة المطالبات")).toBeTruthy();
-    expect(screen.getByText("ملف العقد وسجل المخاطر")).toBeTruthy();
+    expect(screen.getByText("منصة المطالبات · Claim Console")).toBeTruthy();
+    expect(screen.getByText("ملف العقد وسجل المخاطر · Contract profile and risk register")).toBeTruthy();
     expect(screen.getByText(/سجّل الدخول لحفظ هذا السجل/)).toBeTruthy();
     expect(screen.queryByText("إضافة مخاطرة")).toBeNull();
   });
