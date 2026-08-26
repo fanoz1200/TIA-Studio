@@ -113,6 +113,7 @@ import {
 import { UserGuidePanel } from "@/components/UserGuidePanel";
 import { XerViewerPanel } from "@/components/XerViewerPanel";
 import { TimeSliceWindowAnalysisPanel } from "@/components/TimeSliceWindowAnalysisPanel";
+import { HalfZeroStepAnalysisPanel } from "@/components/HalfZeroStepAnalysisPanel";
 import "./home-mobile-nav.css";
 import "../components/regional-calendar.css";
 
@@ -3207,6 +3208,11 @@ export default function Home() {
             <TimeSliceWindowAnalysisPanel
               baselineSnapshot={baselineSnapshot}
               updateSnapshots={updateSnapshots}
+            />
+            <HalfZeroStepAnalysisPanel
+              baselineSnapshot={baselineSnapshot}
+              updateSnapshots={updateSnapshots}
+              onAddDraft={addSupportSheetDraft}
             />
           </div>
         )}

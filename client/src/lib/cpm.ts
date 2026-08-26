@@ -2,6 +2,7 @@
  * TIA Studio — غرفة التحكم المعمارية
  * محرك CPM/TIA محلي قابل للتتبع: تقويم واضح، Fragnets موثقة، ونوافذ تحليل.
  */
+import { createUpdateToUpdatePair } from "@/lib/update-to-update-analysis";
 
 export type RelationshipType = "FS" | "SS" | "FF" | "SF";
 export type DelayCause = "employer" | "contractor" | "neutral" | "concurrent";
@@ -833,19 +834,24 @@ function compareTimeSliceActivities(fromSchedule: Schedule, toSchedule: Schedule
  * يعدل الشبكة: هو Time Slice/Windows رصدي لتحديد ما تغير داخل النافذة فقط.
  */
 export function runTimeSliceWindowAnalysis(window: TimeSliceWindow): TimeSliceWindowResult {
-  const fromDataDate = window.fromSnapshot.schedule.dataDate ?? window.fromSnapshot.schedule.startDate;
-  const toDataDate = window.toSnapshot.schedule.dataDate ?? window.toSnapshot.schedule.startDate;
+  const pair = createUpdateToUpdatePair({
+    id: window.id,
+    previous: window.fromSnapshot,
+    current: window.toSnapshot,
+  });
+  const fromDataDate = pair.previous.effectiveDate;
+  const toDataDate = pair.current.effectiveDate;
   parseIsoDate(fromDataDate);
   parseIsoDate(toDataDate);
   if (fromDataDate > toDataDate) {
     throw new Error("تاريخ Data Date للنسخة الأولى يجب أن يسبق أو يساوي النسخة التالية في Time Slice Window.");
   }
 
-  const from = runCPM(window.fromSnapshot.schedule);
-  const to = runCPM(window.toSnapshot.schedule);
+  const from = runCPM(pair.previous.schedule);
+  const to = runCPM(pair.current.schedule);
   const calendarsComparable = calendarSignature(from.calendar) === calendarSignature(to.calendar);
   const completionShiftCalendarDays = calendarDaysBetween(from.completionDate, to.completionDate);
-  const activityChanges = compareTimeSliceActivities(window.fromSnapshot.schedule, window.toSnapshot.schedule, from, to);
+  const activityChanges = compareTimeSliceActivities(pair.previous.schedule, pair.current.schedule, from, to);
   const warnings = [
     "هذه نتيجة رصدية بين نسختين من البرنامج، وليست قياس TIA بإدراج Fragnet.",
     "تغير تاريخ الإكمال أو المسار الحرج لا يثبت بمفرده السبب أو المسؤولية أو الاستحقاق التعاقدي.",
@@ -856,7 +862,7 @@ export function runTimeSliceWindowAnalysis(window: TimeSliceWindow): TimeSliceWi
   if (!activityChanges.length) {
     warnings.push("لم يرصد المقارن تغيراً في المدة أو العلاقات أو الحالة الحرجة حسب معرّفات الأنشطة؛ راجع نطاق الاستيراد وData Date ومحتوى النسختين.");
   }
-  if (window.fromSnapshot.schedule.id !== window.toSnapshot.schedule.id) {
+  if (pair.previous.schedule.id !== pair.current.schedule.id) {
     warnings.push("معرّف البرنامج مختلف بين النسختين؛ تأكد أن النسختين تخصان المشروع والنطاق نفسيهما قبل اعتماد القراءة.");
   }
   const notes = [
