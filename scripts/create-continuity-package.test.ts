@@ -21,7 +21,7 @@ describe("حزمة الاستمرارية اليدوية", () => {
 
   it("يوثق بوضوح عدم شمول البيانات الحساسة أو النسخ الاحتياطي التلقائي", () => {
     expect(generatorSource).toContain('automaticBackup: false');
-    expect(generatorSource).toContain('"raw XER/XML/XLSX"');
+    expect(generatorSource).toContain("raw XER/XML/XLSX");
     expect(handoverGuide).toContain("لا تنشئ نسخاً احتياطية تلقائية");
     expect(handoverGuide).toContain("ملفات العميل الخام");
   });
