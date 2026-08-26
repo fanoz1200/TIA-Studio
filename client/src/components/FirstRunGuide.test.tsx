@@ -27,9 +27,9 @@ describe("شاشة شرح أول تشغيل", () => {
     renderGuide();
 
     expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(screen.getByText("اختار طريقك")).toBeTruthy();
-    expect(screen.getByText("ارفع الـ Baseline")).toBeTruthy();
-    expect(screen.getByText("نزّل التقرير")).toBeTruthy();
+    expect(screen.getByText("اختار طريقك · Choose your route")).toBeTruthy();
+    expect(screen.getByText("ارفع الـ Baseline · Upload the baseline")).toBeTruthy();
+    expect(screen.getByText("نزّل التقرير · Download the report")).toBeTruthy();
   });
 
   it("يحفظ الإخفاء وينقل المستخدم لبداية رحلة التحليل عند «ابدأ معايا»", () => {
@@ -37,7 +37,7 @@ describe("شاشة شرح أول تشغيل", () => {
     const onStartAnalysis = vi.fn();
     renderGuide(onOpenChange, onStartAnalysis);
 
-    fireEvent.click(screen.getByRole("button", { name: "ابدأ معايا" }));
+    fireEvent.click(screen.getByRole("button", { name: "ابدأ معايا · Start the analysis" }));
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(onStartAnalysis).toHaveBeenCalledTimes(1);
@@ -51,7 +51,7 @@ describe("شاشة شرح أول تشغيل", () => {
     renderGuide(onOpenChange, onStartAnalysis);
 
     fireEvent.click(
-      screen.getByRole("button", { name: "فهمت، افتح البرنامج" })
+      screen.getByRole("button", { name: "فهمت، افتح البرنامج · Got it, open the workspace" })
     );
 
     expect(onOpenChange).toHaveBeenCalledWith(false);

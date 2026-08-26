@@ -10,10 +10,12 @@ import type { DetailedMasterClaimCase } from "@/lib/master-claim-excel";
 import { masterClaimIntelligenceCases, masterClaimIntelligenceSource, masterClaimSupportSheets } from "@/lib/master-claim-intelligence-data";
 import { claimTrainingScenarios, fidicClaimReferences } from "@/lib/user-claim-references";
 import { useAppLanguage } from "@/contexts/LanguageContext";
+import { bilingualUiLabel } from "@/lib/language";
 import "./knowledge-centre.css";
 import "./knowledge-centre-record-filters.css";
 import "./knowledge-decision-tree.css";
 import "./training-video.css";
+import { qwenCaseIntakeCases, qwenCaseIntakeSource } from "@/lib/qwen-case-intake-data";
 
 export type AnalysisMethod = "tia" | "windows" | "disruption" | "quantity";
 type WorkbookRecordFamily = "all" | "delay" | "support";
@@ -71,10 +73,23 @@ function journeyFor(method: AnalysisMethod): "issue" | "direct" {
 
 const requestedCaseCount = 88;
 const workbookCases: DetailedMasterClaimCase[] = masterClaimIntelligenceCases.map(item => ({ ...item, source: "excel" }));
+const qwenIntakeCases: DetailedMasterClaimCase[] = qwenCaseIntakeCases.map(item => ({ ...item, source: "qwen-intake" }));
+
+function sourceLabel(source: DetailedMasterClaimCase["source"], language: "ar" | "en") {
+  if (source === "qwen-intake") {
+    return language === "en"
+      ? "Qwen user-provided intake — original citation pending verification"
+      : "مادة Qwen المرفقة من المستخدم · Qwen user-provided intake — المصدر الأصلي قيد التحقق";
+  }
+  return language === "en"
+    ? "Reference from the uploaded Excel library"
+    : "مرجع من مكتبة Excel المرفوعة · Reference from the uploaded Excel library";
+}
 
 export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: string; projectKey: string; isAuthenticated: boolean; onBeginGuidedAnalysis?: (route: KnowledgeRoute) => void }) {
   const { language, direction } = useAppLanguage();
   const txt = (ar: string, en: string) => language === "en" ? en : ar;
+  const label = (ar: string, en: string) => bilingualUiLabel(language, ar, en);
   const methods = methodsFor(language);
   const [query, setQuery] = useState("");
   const [methodFilter, setMethodFilter] = useState<AnalysisMethod | "all">("all");
@@ -89,11 +104,12 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const [hasPreEventUpdate, setHasPreEventUpdate] = useState<boolean | null>(null);
   const [librarySection, setLibrarySection] = useState<LibrarySection>("start");
 
-  const libraryCases = workbookCases;
+  const libraryCases = [...workbookCases, ...qwenIntakeCases];
   const verifiedWorkbookCaseCount = masterClaimIntelligenceSource.caseCount;
   const verifiedDCaseCount = masterClaimIntelligenceSource.caseGroups.D;
   const verifiedRelatedCaseCount = verifiedWorkbookCaseCount - verifiedDCaseCount;
-  const pendingDCaseCount = Math.max(0, requestedCaseCount - verifiedDCaseCount);
+  const qwenIntakeDCaseCount = qwenIntakeCases.filter(item => item.id.startsWith("D-")).length;
+  const pendingDCaseCount = Math.max(0, requestedCaseCount - verifiedDCaseCount - qwenIntakeDCaseCount);
 
   const categories = useMemo(() => Array.from(new Set(libraryCases.map(item => item.category))).filter(Boolean).sort((a, b) => a.localeCompare(b, "ar")), [libraryCases]);
   const selectedCase = libraryCases.find(item => item.id === selectedId) ?? libraryCases[0];
@@ -196,7 +212,7 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
       <div className="workflow-heading">
         <div>
           <p className="eyebrow">MASTER CLAIM INTELLIGENCE · READ ONLY</p>
-          <h2>{txt("مكتبة المنهجيات والحالات العملية", "Methodology and practical case library")}</h2>
+          <h2>{label("مكتبة المنهجيات والحالات العملية", "Methodology and practical case library")}</h2>
           <p>{txt("تجمع المكتبة السجل التفصيلي المقروء محلياً من ملف Excel: الحالات، إجراءات القرار، التدقيق الجنائي، الاعتراضات والردود، القوالب، الحسابات، وقائمة الإقفال. البحث يرشدك ولا يصدر حكماً تعاقدياً آلياً.", "This library gathers the detailed record read locally from the Excel workbook: cases, decision procedures, forensic checks, objections and replies, templates, calculations and close-out items. Search guides you; it does not issue an automated contractual decision.")}</p>
         </div>
         <LibraryBig size={26} />
@@ -206,7 +222,15 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
         <div><ShieldCheck size={19} /><span><b>{txt("المصدر المرجعي محمّل للقراءة فقط.", "The reference source is loaded read-only.")}</b> {txt("تُضمَّن بيانات ملف Excel المرفوع داخل النسخة وقت البناء؛ لا يُعدّل الأصل ولا يُرسل إلى خادم أو خدمة خارجية. المتاح: ", "The uploaded Excel data are embedded in the build; the original is not modified or sent to a server or external service. Available: ")}{verifiedWorkbookCaseCount}{txt(" سجلاً منظماً و", " structured records and ")}{masterClaimIntelligenceSource.supportSheetCount}{txt(" أوراق دعم.", " support sheets.")}</span></div>
         <span className="master-library-count">{verifiedWorkbookCaseCount} {txt("سجل Excel تفصيلي", "detailed Excel records")}</span>
       </article>
-      <p className="case-source-note" aria-live="polite"><b>{txt("حالة الفهرسة:", "Index status:")}</b> {txt("الملف يحتوي ", "The workbook contains ")}{verifiedDCaseCount}{txt(" حالة من سلسلة D و", " D-series cases and ")}{verifiedRelatedCaseCount}{txt(" سجلاً مرتبطاً فعلياً (DIS/CON/VAR/RES). لا يظهر فيه D-056 إلى D-088 كسجلات منظمة؛ تبقى ", " related records (DIS/CON/VAR/RES). It does not contain D-056 to D-088 as structured records; ")}{pendingDCaseCount}{txt(" حالة من سلسلة D معلقة إلى أن يصل مصدر موثق، ولن تُنشأ بدائل عنها.", " D-series cases remain pending until a documented source is available, and no substitutes will be created.")}</p>
+      <article className="case-source-note qwen-intake-note" aria-live="polite">
+        <b>{label("ملحق حالات Qwen", "Qwen case intake")}</b>
+        <span>{language === "en"
+          ? `${qwenCaseIntakeSource.caseCount} D-series cases supplied by the user were added as review intake. Their cited original document was not supplied, so they are not presented as independently verified legal authority.`
+          : `تمت إضافة ${qwenCaseIntakeSource.caseCount} حالة من سلسلة D من ملحق Qwen الذي أرسله المستخدم كمدخل مراجعة. المستند الأصلي المشار إليه لم يُرفق، ولذلك لا تُعرض الحالات كمرجع قانوني متحقق منه مستقلاً.`}</span>
+      </article>
+      <p className="case-source-note" aria-live="polite"><b>{label("حالة الفهرسة", "Index status")}</b> {language === "en"
+        ? `The uploaded Excel workbook contains ${verifiedDCaseCount} D-series cases and ${verifiedRelatedCaseCount} related records (DIS/CON/VAR/RES). With the ${qwenIntakeDCaseCount} Qwen intake records, ${pendingDCaseCount} D-series cases remain pending an original documented source.`
+        : `ملف Excel المرفوع يحتوي ${verifiedDCaseCount} حالة من سلسلة D و${verifiedRelatedCaseCount} سجلاً مرتبطاً فعلياً (DIS/CON/VAR/RES). ومع ${qwenIntakeDCaseCount} سجلات Qwen المرفقة، تبقى ${pendingDCaseCount} حالة من سلسلة D معلقة إلى أن يصل المصدر الأصلي الموثق.`}</p>
 
       <section className="library-start-menu" aria-label={txt("اختار أنت محتاج إيه من الموسوعة", "Choose what you need from the library")}>
         <div><p className="eyebrow">{txt("خدها خطوة خطوة", "TAKE IT STEP BY STEP")}</p><h3>{txt("إنت داخل تعمل إيه دلوقتي؟", "What are you here to do?")}</h3><p>{txt("اختار حاجة واحدة، والباقي هيفضل بعيد عنك لحد ما تحتاجه.", "Choose one task; the rest stays out of your way until you need it.")}</p></div>
@@ -302,17 +326,17 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
           <div><span className="case-number">{selectedCase.id}</span><div><h3>{selectedCase.title_ar}</h3><p dir="ltr">{selectedCase.title_en}</p></div></div>
           <span>{selectedCase.category}</span>
         </div>
-        <div className="case-detail-meta"><span>{selectedCase.delay_type}</span><span>{selectedCase.methodology || "TIA"}</span><span>{txt("مرجع من الموسوعة المرفوعة", "Reference from the uploaded library")}</span></div>
+        <div className="case-detail-meta"><span>{selectedCase.delay_type}</span><span>{selectedCase.methodology || "TIA"}</span><span>{sourceLabel(selectedCase.source, language)}</span></div>
         <div className="method-selection detail-method-selection">
           <div><Label>{txt("منهج التحليل الذي ستبدأ به", "Analysis method to start with")}</Label><Select value={selectedMethod} onValueChange={value => setMethodOverride(value as AnalysisMethod)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{methods.map(method => <SelectItem key={method.id} value={method.id}>{method.label}</SelectItem>)}</SelectContent></Select></div>
           <div className="method-rationale"><b>{selectedMethodInfo.label}</b><p>{selectedMethodInfo.detail}</p><small><CheckCircle2 size={14} />{txt("المنهج الوارد في المصدر: ", "Method recorded in the source: ")}{selectedMethodLabel(selectedCase, methods)}{txt(". يمكنك تعديله بعد التحقق من العقد والوقائع.", ". You can change it after reviewing the contract and facts.")}</small></div>
         </div>
         <div className="case-detail-sections">
-          <section><h4>{txt("وصف الحالة", "Case description")}</h4><p>{selectedCase.description}</p></section>
-          <section><h4>{txt("الأسباب الجذرية", "Root causes")}</h4><p>{selectedCase.root_cause}</p></section>
-          <section><h4>{txt("الأثر المتوقع على البرنامج", "Expected schedule impact")}</h4><p>{selectedCase.schedule_impact}</p></section>
-          <section className="contractual-reference"><h4>{txt("المساند التعاقدي والقوانين المذكورة في المصدر", "Contractual support and laws stated in the source")}</h4><p>{selectedCase.contractual_basis}</p></section>
-          <section className="evidence-reference"><h4>{txt("الأدلة والمستندات المقترحة", "Suggested evidence and records")}</h4><p>{selectedCase.burden_of_proof}</p></section>
+          <section><h4>{label("وصف الحالة", "Case description")}</h4><p>{selectedCase.description}</p></section>
+          <section><h4>{label("الأسباب الجذرية", "Root causes")}</h4><p>{selectedCase.root_cause}</p></section>
+          <section><h4>{label("الأثر المتوقع على البرنامج", "Expected schedule impact")}</h4><p>{selectedCase.schedule_impact}</p></section>
+          <section className="contractual-reference"><h4>{label("المساند التعاقدي والقوانين المذكورة في المصدر", "Contractual support and laws stated in the source")}</h4><p>{selectedCase.contractual_basis}</p></section>
+          <section className="evidence-reference"><h4>{label("الأدلة والمستندات المقترحة", "Suggested evidence and records")}</h4><p>{selectedCase.burden_of_proof}</p></section>
           {selectedCase.source === "excel" ? <>
             <section><h4>الحل المقترح</h4><p>{selectedCase.recommended_solution || "لم يرد حل تفصيلي لهذه الحالة في ملف Excel."}</p></section>
             <section><h4>إجراءات الوقاية</h4><p>{selectedCase.mitigation || "لم ترد إجراءات وقاية لهذه الحالة في ملف Excel."}</p></section>

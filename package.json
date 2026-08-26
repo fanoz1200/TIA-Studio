@@ -28,6 +28,7 @@
     "content:refresh": "node scripts/inventory-user-claim-sources.mjs && node scripts/generate-user-claim-references.mjs",
     "content:audit": "node scripts/audit-duplicate-user-claim-sources.mjs && node scripts/compare-master-claim-source-versions.mjs",
     "content:master-claim": "node scripts/inventory-master-claim-intelligence.mjs && node scripts/generate-master-claim-intelligence.mjs",
+    "content:qwen-intake": "node scripts/generate-qwen-case-intake.mjs",
     "content:workshop": "node scripts/inventory-workshop-training.mjs",
     "verify:workshop": "tsx scripts/verify-workshop-no8-engine.mjs",
     "continuity:package": "node scripts/create-continuity-package.mjs"

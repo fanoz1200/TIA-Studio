@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAppLanguage } from "@/contexts/LanguageContext";
+import { bilingualUiLabel } from "@/lib/language";
 
 export const FIRST_RUN_GUIDE_STORAGE_KEY = "tia-onboarding-v1-seen";
 
@@ -167,36 +168,37 @@ export function FirstRunGuide({ open, onOpenChange, onStartAnalysis }: Props) {
       <DialogContent
         dir={direction}
         showCloseButton={false}
-        className={`max-h-[calc(100dvh-1.5rem)] max-w-3xl gap-5 overflow-y-auto border-[#d7e1e8] bg-[#fbfcfd] p-5 shadow-2xl sm:p-7 ${direction === "rtl" ? "text-right" : "text-left"}`}
+        className={`max-h-[calc(100dvh-1.5rem)] max-w-[calc(100%-1.5rem)] gap-5 overflow-y-auto border-[#d7e1e8] bg-[#fbfcfd] p-5 shadow-2xl sm:max-w-3xl sm:p-7 ${direction === "rtl" ? "text-right" : "text-left"}`}
       >
         <DialogHeader className={`items-start gap-3 ${direction === "rtl" ? "text-right" : "text-left"}`}>
           <span className="rounded-full bg-[#eaf2f7] px-3 py-1 text-xs font-bold tracking-wide text-[#24506b]">
-            {copy.eyebrow}
+            {bilingualUiLabel(language, copy.eyebrow, "First time here? We will take it step by step")}
           </span>
-          <DialogTitle className="text-2xl leading-tight text-[#16364a] sm:text-3xl">
-            {copy.title}
+          <DialogTitle className="w-full max-w-full break-words whitespace-normal text-2xl leading-tight text-[#16364a] sm:text-3xl">
+            {bilingualUiLabel(language, copy.title, "Welcome to TIA Studio")}
           </DialogTitle>
           <DialogDescription className={`max-w-2xl text-sm leading-6 text-[#536775] sm:text-base ${direction === "rtl" ? "text-right" : "text-left"}`}>
             {copy.description}
           </DialogDescription>
         </DialogHeader>
 
-        <ol className="grid gap-2 sm:grid-cols-2" aria-label={copy.stepsLabel}>
+        <ol className="grid gap-2 sm:grid-cols-2" aria-label={bilingualUiLabel(language, copy.stepsLabel, "TIA Studio workflow steps")}>
           {steps.map((step, index) => {
             const Icon = step.icon;
             const stepCopy = step.copy[language];
+            const stepTitle = bilingualUiLabel(language, step.copy.ar.title, step.copy.en.title);
             return (
               <li
-                key={stepCopy.title}
+                key={stepTitle}
                 className={`flex items-start gap-3 rounded-xl border border-[#dce6ec] bg-white p-3.5 shadow-sm ${direction === "rtl" ? "text-right" : "text-left"}`}
               >
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#eaf2f7] text-sm font-extrabold text-[#1d5976]">
                   {index + 1}
                 </span>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[#17394d]">
+                  <div className="flex min-w-0 items-start gap-2 text-[#17394d]">
                     <Icon size={17} aria-hidden="true" />
-                    <h3 className="font-bold">{stepCopy.title}</h3>
+                    <h3 className="min-w-0 flex-1 break-words whitespace-normal font-bold leading-5">{stepTitle}</h3>
                   </div>
                   <p className="mt-1 text-sm leading-5 text-[#586b78]">{stepCopy.description}</p>
                 </div>
@@ -212,10 +214,10 @@ export function FirstRunGuide({ open, onOpenChange, onStartAnalysis }: Props) {
         <DialogFooter className={`gap-3 sm:flex-row ${direction === "rtl" ? "sm:justify-end" : "sm:justify-start"}`}>
           <Button type="button" className="run-button" onClick={start}>
             <Play size={16} fill="currentColor" />
-            {copy.start}
+            {bilingualUiLabel(language, copy.start, "Start the analysis")}
           </Button>
           <Button type="button" variant="outline" className="outline-action" onClick={dismiss}>
-            {copy.dismiss}
+            {bilingualUiLabel(language, copy.dismiss, "Got it, open the workspace")}
           </Button>
         </DialogFooter>
       </DialogContent>

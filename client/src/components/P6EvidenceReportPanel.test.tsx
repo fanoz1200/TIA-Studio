@@ -102,6 +102,7 @@ describe("واجهة استيراد P6 وتصدير التقرير", () => {
     mocks.exportDocx.mockImplementation(() => new Promise<void>((resolve) => { completeExport = resolve; }));
     renderPanel("report");
 
+    expect(screen.getByText("قالب المطالبة وتصدير التقرير · Claim template and report export")).toBeTruthy();
     expect(screen.getByText("مخرجات المطالبة")).toBeTruthy();
     expect(screen.getByText("لغة المخرجات")).toBeTruthy();
     expect((screen.getByRole("button", { name: "ملف مطابقة P6 (JSON)" }) as HTMLButtonElement).disabled).toBe(true);

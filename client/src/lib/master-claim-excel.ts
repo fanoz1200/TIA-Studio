@@ -15,7 +15,7 @@ export type DetailedMasterClaimCase = MasterClaimCase & {
   float_rule: string;
   update_procedure: string;
   recovery_procedure: string;
-  source: "excel" | "html";
+  source: "excel" | "html" | "qwen-intake";
 };
 
 type ExcelRow = Record<string, unknown>;

@@ -45,7 +45,7 @@ import {
   type ClaimTemplateDraft,
 } from "@/lib/claim-export";
 import { exportAnalysisExcel } from "@/lib/analysis-excel";
-import type { DocumentLanguage } from "@/lib/language";
+import { bilingualUiLabel, type DocumentLanguage } from "@/lib/language";
 import { ScheduleComparisonPanel } from "@/components/ScheduleComparisonPanel";
 import {
   evaluateWorkflowReadiness,
@@ -142,6 +142,8 @@ export function P6EvidenceReportPanel({
   const { language: interfaceLanguage, direction } = useAppLanguage();
   const txt = (ar: string, en: string) =>
     interfaceLanguage === "en" ? en : ar;
+  const uiLabel = (ar: string, en: string) =>
+    bilingualUiLabel(interfaceLanguage, ar, en);
   const xmlInput = useRef<HTMLInputElement>(null);
   const evidenceInput = useRef<HTMLInputElement>(null);
   const [xmlSummary, setXmlSummary] = useState<P6XmlImportSummary | null>(null);
@@ -537,7 +539,7 @@ export function P6EvidenceReportPanel({
       <section className="p6-ops-panel" dir={direction}>
         <div className="p6-ops-copy">
           <p className="eyebrow">{txt("استيراد P6 الموسّع", "P6 EXTENDED IMPORT")}</p>
-          <h2>{txt("بيانات التقدم وWBS من Primavera", "Progress data and WBS from Primavera")}</h2>
+          <h2>{uiLabel("بيانات التقدم وWBS من Primavera", "Progress data and WBS from Primavera")}</h2>
           <p>{txt(
             "يدعم المستورد P6 XML عناصر Project وActivity وRelationship وWBS، ويعرض النسب كما وردت دون تحويلها إلى حكم استحقاق.",
             "The P6 XML importer supports Project, Activity, Relationship and WBS records and displays progress as received without turning it into an entitlement finding."
@@ -618,7 +620,7 @@ export function P6EvidenceReportPanel({
         <div className="evidence-header">
           <div>
             <p className="eyebrow">{txt("سجل الأدلة", "EVIDENCE REGISTER")}</p>
-            <h2>{txt("أدلة حدث التأخير", "Delay-event evidence")}</h2>
+            <h2>{uiLabel("أدلة حدث التأخير", "Delay-event evidence")}</h2>
             <p>
               {selectedEvent
                 ? `${txt("ربط الوثائق بالحدث", "Link documents to event")} ${selectedEvent.id}: ${selectedEvent.title}`
@@ -642,7 +644,7 @@ export function P6EvidenceReportPanel({
           <>
             <div className="evidence-form">
               <div>
-                <Label>{txt("عنوان الدليل", "Evidence title")}</Label>
+                <Label>{uiLabel("عنوان الدليل", "Evidence title")}</Label>
                 <Input
                   value={evidenceTitle}
                   onChange={event => setEvidenceTitle(event.target.value)}
@@ -650,7 +652,7 @@ export function P6EvidenceReportPanel({
                 />
               </div>
               <div>
-                <Label>{txt("نوع الدليل", "Evidence type")}</Label>
+                <Label>{uiLabel("نوع الدليل", "Evidence type")}</Label>
                 <Select
                   value={evidenceType}
                   onValueChange={value =>
@@ -672,7 +674,7 @@ export function P6EvidenceReportPanel({
                 </Select>
               </div>
               <div>
-                <Label>{txt("تاريخ الاستلام", "Date received")}</Label>
+                <Label>{uiLabel("تاريخ الاستلام", "Date received")}</Label>
                 <Input
                   type="date"
                   dir="ltr"
@@ -681,7 +683,7 @@ export function P6EvidenceReportPanel({
                 />
               </div>
               <div className="evidence-form-wide">
-                <Label>{txt("وصف وسبب الصلة بالحدث", "Description and relevance to the event")}</Label>
+                <Label>{uiLabel("وصف وسبب الصلة بالحدث", "Description and relevance to the event")}</Label>
                 <Textarea
                   rows={2}
                   value={evidenceDescription}
@@ -753,7 +755,7 @@ export function P6EvidenceReportPanel({
         <div className="claim-export-header">
           <div>
             <p className="eyebrow">{txt("مخرجات المطالبة", "CLAIM OUTPUT")}</p>
-            <h2>{txt("قالب المطالبة وتصدير التقرير", "Claim template and report export")}</h2>
+            <h2>{uiLabel("قالب المطالبة وتصدير التقرير", "Claim template and report export")}</h2>
             <p>{txt("حرّر القالب ثم صدّر Full Claim ثابتاً بصيغة Word أو PDF أو التقرير النهائي Excel متعدد الأوراق، أو Fact Pack محلي JSON. يُدرج التقرير السرد ونتائج TIA وسجل الأحداث وأدلة الحدث المحدد، ويظهر أي نقص بوضوح.", "Edit the template, then export a fixed Full Claim in Word or PDF, a multi-sheet Excel final report, or a local JSON Fact Pack. The report includes the narrative, TIA results, event register and selected-event evidence, and clearly shows any gap.")}</p>
             <p className="context-tip">
               <CircleHelp size={15} />
@@ -788,7 +790,7 @@ export function P6EvidenceReportPanel({
         </div>
         <div className="claim-template-grid">
           <div>
-            <Label>{txt("اسم القالب", "Template name")}</Label>
+            <Label>{uiLabel("اسم القالب", "Template name")}</Label>
             <Input
               value={template.title}
               onChange={event =>
@@ -797,7 +799,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div>
-            <Label>{txt("المخاطب", "Recipient")}</Label>
+            <Label>{uiLabel("المخاطب", "Recipient")}</Label>
             <Input
               value={template.recipient}
               onChange={event =>
@@ -806,7 +808,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>{txt("مرجع العقد", "Contract reference")}</Label>
+            <Label>{uiLabel("مرجع العقد", "Contract reference")}</Label>
             <Input
               value={template.contractReference}
               onChange={event =>
@@ -818,7 +820,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>{txt("التمهيد", "Introduction")}</Label>
+            <Label>{uiLabel("التمهيد", "Introduction")}</Label>
             <Textarea
               rows={3}
               value={template.introduction}
@@ -828,7 +830,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>{txt("الموقف التعاقدي", "Contract position")}</Label>
+            <Label>{uiLabel("الموقف التعاقدي", "Contract position")}</Label>
             <Textarea
               rows={3}
               value={template.entitlementPosition}
@@ -841,7 +843,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>{txt("التمديد/الإغاثة المطلوبة", "Extension / relief requested")}</Label>
+            <Label>{uiLabel("التمديد/الإغاثة المطلوبة", "Extension / relief requested")}</Label>
             <Textarea
               rows={3}
               value={template.reliefRequested}
@@ -854,7 +856,7 @@ export function P6EvidenceReportPanel({
             />
           </div>
           <div className="claim-template-wide">
-            <Label>{txt("الخاتمة", "Closing")}</Label>
+            <Label>{uiLabel("الخاتمة", "Closing")}</Label>
             <Textarea
               rows={2}
               value={template.closing}
@@ -996,6 +998,7 @@ function WorkflowQualityGate({
   language: "ar" | "en";
 }) {
   const txt = (ar: string, en: string) => (language === "en" ? en : ar);
+  const uiLabel = (ar: string, en: string) => bilingualUiLabel(language, ar, en);
   const iconFor = (state: WorkflowCheckState) =>
     state === "pass"
       ? "✓"
@@ -1009,7 +1012,7 @@ function WorkflowQualityGate({
       <header>
         <div>
           <p className="eyebrow">{txt("بوابة جودة سير العمل", "WORKFLOW QUALITY GATE")}</p>
-          <h3>{txt("قائمة تحقق قبل التصدير", "Pre-export checklist")}</h3>
+          <h3>{uiLabel("قائمة تحقق قبل التصدير", "Pre-export checklist")}</h3>
         </div>
         <span className="workflow-quality-summary">
           {workflowReadinessSummary(checks, language)}

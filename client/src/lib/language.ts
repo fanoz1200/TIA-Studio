@@ -13,3 +13,12 @@ export function languageDirection(language: AppLanguage) {
 export function documentLocale(language: DocumentLanguage) {
   return languageMeta[language].locale;
 }
+
+/**
+ * UI chrome only: Arabic mode keeps the English professional term beside its
+ * Arabic equivalent. User-entered data, imported schedule content and engine
+ * output must not be passed to this formatter.
+ */
+export function bilingualUiLabel(language: AppLanguage, arabic: string, english: string) {
+  return language === "en" ? english : `${arabic} · ${english}`;
+}

@@ -81,7 +81,7 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
 
     openLibrarySection(/بدور على حالة شبه مشكلتي/);
 
-    expect(screen.getByRole("heading", { name: "مكتبة المنهجيات والحالات العملية" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /مكتبة المنهجيات والحالات العملية.*Methodology and practical case library/ })).toBeTruthy();
     expect(screen.getByText(/سجل مفهرس/)).toBeTruthy();
     expect(screen.getByText(/ابحث في العناوين والوصف والأدلة والمساندات/)).toBeTruthy();
     expect(screen.getByText(/نتيجة من أصل/)).toBeTruthy();
@@ -140,8 +140,8 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
 
     expect(screen.getAllByText("70 سجل Excel تفصيلي").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/55 حالة من سلسلة D/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("المساند التعاقدي والقوانين المذكورة في المصدر").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("الأدلة والمستندات المقترحة").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/المساند التعاقدي والقوانين المذكورة في المصدر.*Contractual support/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/الأدلة والمستندات المقترحة.*Suggested evidence/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("الحل المقترح").length).toBeGreaterThan(0);
     expect(screen.getAllByText("WBS و Fragnet وقواعد TIA").length).toBeGreaterThan(0);
   });
@@ -151,7 +151,7 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
 
     openLibrarySection(/بدور على حالة شبه مشكلتي/);
 
-    expect(screen.getAllByText("70 سجلاً فعلياً من ملفك").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/33 حالة من سلسلة D من ملحق Qwen/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/15 سجلاً مرتبطاً فعلياً/).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByLabelText("نوع السجل"));

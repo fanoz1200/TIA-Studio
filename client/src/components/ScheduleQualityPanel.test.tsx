@@ -35,8 +35,8 @@ describe("بوابة جودة الجدول الثنائية", () => {
   it("تعرض العناوين العربية واتجاه RTL افتراضياً", () => {
     const { container } = renderPanel("ar");
     expect(container.querySelector(".view-stack")?.getAttribute("dir")).toBe("rtl");
-    expect(screen.getByText("بوابة جودة البرنامج وسجل التحسين")).toBeTruthy();
-    expect(screen.getByText("قواعد الفحص القابلة للتفسير")).toBeTruthy();
+    expect(screen.getByText(/بوابة جودة البرنامج وسجل التحسين.*Schedule quality gate and improvement ledger/)).toBeTruthy();
+    expect(screen.getByText(/قواعد الفحص القابلة للتفسير.*Explainable review rules/)).toBeTruthy();
   });
 
   it("تعرض عناصر البوابة المشتركة بالإنجليزية واتجاه LTR", () => {

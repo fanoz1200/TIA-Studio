@@ -44,10 +44,10 @@ function renderIssue(language: "ar" | "en" = "ar", isAuthenticated = true) {
 describe("أدوات Excel في سجل القضايا", () => {
   it("يعرض القالب والتصدير والاستيراد للمستخدم المصادق مع شرح التحقق قبل الحفظ", () => {
     renderIssue();
-    expect(screen.getByText("تبادل Excel مضبوط")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "قالب Excel" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "تصدير السجل" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "استيراد Excel" })).toBeTruthy();
+    expect(screen.getByText(/تبادل Excel مضبوط.*Controlled Excel exchange/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /قالب Excel.*Excel template/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /تصدير السجل.*Export register/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /استيراد Excel.*Import Excel/ })).toBeTruthy();
     expect(screen.getByText(/معرفات الأنشطة والعلاقات قبل حفظ أي قضية/)).toBeTruthy();
   });
 
@@ -66,7 +66,7 @@ describe("أدوات Excel في سجل القضايا", () => {
     const props = { view: "issues" as const, schedule, existingEvents: [], onApplyFragnet: vi.fn() };
     window.localStorage.setItem("tia-studio-interface-language", "ar");
     const { rerender } = render(<LanguageProvider><IssueLogPanel {...props} isAuthenticated={false} /></LanguageProvider>);
-    expect(screen.getByRole("button", { name: "تسجيل الدخول" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /تسجيل الدخول.*Sign in/ })).toBeTruthy();
 
     expect(() => rerender(<LanguageProvider><IssueLogPanel {...props} isAuthenticated /></LanguageProvider>)).not.toThrow();
     expect(screen.getByText("قبل الحفظ: ما الذي ينقصني؟")).toBeTruthy();

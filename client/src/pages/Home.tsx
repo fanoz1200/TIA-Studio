@@ -57,7 +57,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useAppLanguage } from "@/contexts/LanguageContext";
-import { type AppLanguage } from "@/lib/language";
+import { bilingualUiLabel, type AppLanguage } from "@/lib/language";
 import {
   buildActivitySplitFragnet,
   buildMultiActivitySplitFragnet,
@@ -900,7 +900,7 @@ const navItems: { key: ViewKey; label: string; labelEn: string; icon: typeof Net
 ];
 
 function navigationLabel(item: (typeof navItems)[number], language: "ar" | "en") {
-  return language === "en" ? item.labelEn : item.label;
+  return bilingualUiLabel(language, item.label, item.labelEn);
 }
 
 function getInitialView(): ViewKey {
@@ -1994,7 +1994,7 @@ export default function Home() {
               onChange={event => setLanguage(event.target.value as "ar" | "en")}
               aria-label={chrome.interfaceLanguage}
             >
-              <option value="ar">العربية</option>
+              <option value="ar">العربية · Arabic</option>
               <option value="en">English</option>
             </select>
             <Button

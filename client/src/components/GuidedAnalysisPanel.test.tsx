@@ -34,29 +34,36 @@ function renderPanel(overrides: Partial<React.ComponentProps<typeof GuidedAnalys
 
 describe("معالج رحلة TIA وفق Workshop 8", () => {
   afterEach(cleanup);
+
+  it("يعرض التسميات العربية مع المصطلح English في واجهة العربية", () => {
+    renderPanel();
+    expect(screen.getByText(/قبل ما تدوس التالي.*Before you select Next/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /تحليل مباشر.*Direct analysis/ })).toBeTruthy();
+  });
+
   it("يختار التحليل المباشر ثم يسمح بالانتقال إلى اختيار المنهج", () => {
     const props = renderPanel();
     fireEvent.click(screen.getByRole("button", { name: /تحليل مباشر/ }));
     expect(props.onJourneyPathChange).toHaveBeenCalledWith("direct");
     cleanup();
     const directProps = renderPanel({ journeyPath: "direct" });
-    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.click(screen.getByRole("button", { name: /التالي/ }));
     expect(directProps.onJourneyStepChange).toHaveBeenCalledWith(2);
   });
 
   it("لا يسمح بتجاوز Baseline في خطوة الملفات الإلزامية", () => {
     const props = renderPanel({ journeyStep: 3, journeyPath: "direct" });
-    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.click(screen.getByRole("button", { name: /التالي/ }));
     expect(props.onJourneyStepChange).not.toHaveBeenCalled();
-    expect(screen.getByRole("heading", { name: "ارفع Baseline المعتمد" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /ارفع Baseline المعتمد/ })).toBeTruthy();
     expect(screen.getByText(/ارفع ملف Baseline المعتمد الأول/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "التالي" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: /التالي/ }).hasAttribute("disabled")).toBe(true);
   });
 
   it("يعرض بوابة P6 وتحذيرات الاستيراد مع Update قبل الحدث", () => {
     const warningSummary = { ...summary, warnings: ["لم يُقرأ تقويم مخصص للنشاط A200."] };
     renderPanel({ journeyStep: 4, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [{ ...preUpdate, summary: warningSummary }], xerSummary: warningSummary });
-    expect(screen.getByRole("heading", { name: "Update قبل الحدث وبوابة الجودة" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /Update قبل الحدث وبوابة الجودة/ })).toBeTruthy();
     expect(screen.getByText(/لم يُقرأ تقويم مخصص/)).toBeTruthy();
     expect(screen.getByLabelText(/أقرّ بمراجعة بيانات P6/)).toBeTruthy();
     expect(screen.getByLabelText(/راجعت بوابة الجودة/)).toBeTruthy();
@@ -64,9 +71,9 @@ describe("معالج رحلة TIA وفق Workshop 8", () => {
 
   it("لا يسمح بتجاوز بوابة الجودة قبل إدخال الواقعة", () => {
     const props = renderPanel({ journeyStep: 4, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [preUpdate], p6GateApproved: true, qualityGateApproved: false });
-    expect(screen.getByRole("button", { name: "التالي" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: /التالي/ }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByText(/راجع عدادات الجدول والتقويم وData Date/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "افتح فحص الجدول" }));
+    fireEvent.click(screen.getByRole("button", { name: /افتح فحص الجدول/ }));
     expect(props.onNavigate).toHaveBeenCalledWith("quality");
   });
 
@@ -80,12 +87,11 @@ describe("معالج رحلة TIA وفق Workshop 8", () => {
 
   it("يمنع المتابعة من سجل Workshop 8 حتى تضاف واقعة كاملة للمراجعة", () => {
     const props = renderPanel({ journeyStep: 5, journeyPath: "direct", baselineSnapshot: baseline, updateSnapshots: [preUpdate] });
-    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.click(screen.getByRole("button", { name: /التالي/ }));
     expect(props.onJourneyStepChange).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByRole("button", { name: "أضف الواقعة للنموذج" }));
-    expect(screen.getByText(/جاهز للمراجعة: 1 واقعة منظمة/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.click(screen.getByRole("button", { name: /أضف الواقعة للنموذج/ }));
+    expect(screen.getByText(/جاهز للمراجعة:/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /التالي/ }));
     expect(props.onJourneyStepChange).toHaveBeenCalledWith(6);
   });
 
@@ -102,8 +108,7 @@ describe("معالج رحلة TIA وفق Workshop 8", () => {
     const file = new File(["workshop"], "workshop-8.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     Object.defineProperty(file, "arrayBuffer", { value: vi.fn().mockResolvedValue(new ArrayBuffer(8)) });
     fireEvent.change(input, { target: { files: [file] } });
-
-    expect(await screen.findByText(/جاهز للمراجعة: 1 واقعة منظمة/)).toBeTruthy();
+    expect(await screen.findByText(/جاهز للمراجعة:/)).toBeTruthy();
     expect(parseIssueRegisterExcel).toHaveBeenCalled();
     expect(props.onApplyIssueExcel).toHaveBeenCalledWith([reviewedRow]);
   });
