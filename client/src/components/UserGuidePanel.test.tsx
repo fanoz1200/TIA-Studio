@@ -29,12 +29,13 @@ describe("مرجع الاستخدام المصوّر", () => {
   it("يعرض المسار العربي ويربط خطوة رفع P6 بالشاشة الحقيقية", () => {
     const { onNavigate } = renderGuide();
 
-    expect(screen.getByRole("heading", { name: "امشي معايا خطوة خطوة" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "أنهي مستند أعمله من جوه البرنامج؟" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "امشي معايا خطوة خطوة · Follow the route step by step" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "أنهي مستند أعمله من جوه البرنامج؟ · Which document should I prepare in the app?" })).toBeTruthy();
+    expect(screen.getByText("دي خريطة استخدام البرنامج من أول ملف P6 لحد التقرير. كل زر تحت بيفتح الشاشة الحقيقية، ومكتوب قبله إيه اللي تجهزه وبعده إيه المفروض يطلع.")).toBeTruthy();
     const realScreenshot = screen.getByRole("img", { name: /ابدأ وعرّف الحالة/ });
     expect(realScreenshot.getAttribute("src")).toContain("step-1-start_");
     fireEvent.click(screen.getByRole("button", { name: /ارفع نسخ البرنامج/ }));
-    fireEvent.click(screen.getByRole("button", { name: "افتح رفع P6" }));
+    fireEvent.click(screen.getByRole("button", { name: "افتح رفع P6 · Open P6 upload" }));
     expect(onNavigate).toHaveBeenCalledWith("schedule");
   });
 

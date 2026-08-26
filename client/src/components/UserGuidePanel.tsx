@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAppLanguage } from "@/contexts/LanguageContext";
+import { bilingualUiLabel } from "@/lib/language";
 import "./user-guide.css";
 
 type GuideView =
@@ -179,6 +180,12 @@ const englishDocumentCopy: Partial<Record<GuideView, Pick<(typeof documents)[num
   review: { title: "Full Claim", text: "A complete file bringing together notices, contract records, correspondence, evidence, the narrative, analysis results, and financial impact. The app organises parts of it, but it is not a complete legal claim without specialist and project-contract review." },
 };
 
+const arabicDocumentTitles: Partial<Record<GuideView, string>> = {
+  notices: "إشعار المطالبة",
+  report: "السرد الفني لتحليل التأخير",
+  review: "المطالبة الكاملة",
+};
+
 type GuideCopy = {
   badge: string;
   heading: string;
@@ -233,31 +240,52 @@ export function UserGuidePanel({ view, onNavigate }: Props) {
   if (view !== "guide") return null;
 
   const copy = guideCopy[language];
-  const localizedSteps = language === "en" ? steps.map(step => ({ ...step, ...englishStepCopy[step.id] })) : steps;
-  const localizedWorkspace = language === "en" ? workspaceScreens.map(screen => ({ ...screen, ...englishWorkspaceCopy[screen.view] })) : workspaceScreens;
-  const localizedDocuments = language === "en" ? documents.map(document => ({ ...document, ...englishDocumentCopy[document.view] })) : documents;
+  const english = guideCopy.en;
+  const bi = (arabic: string, englishLabel: string) => bilingualUiLabel(language, arabic, englishLabel);
+  const localizedSteps = steps.map(step => {
+    const englishStep = englishStepCopy[step.id];
+    if (language === "en") return { ...step, ...englishStep };
+    return {
+      ...step,
+      title: bi(step.title, englishStep.title),
+      action: bi(step.action, englishStep.action),
+    };
+  });
+  const localizedWorkspace = workspaceScreens.map(screen => {
+    const englishScreen = englishWorkspaceCopy[screen.view];
+    if (language === "en") return { ...screen, ...englishScreen };
+    return { ...screen, title: bi(screen.title, englishScreen?.title ?? screen.title) };
+  });
+  const localizedDocuments = documents.map(document => {
+    const englishDocument = englishDocumentCopy[document.view];
+    if (language === "en") return { ...document, ...englishDocument };
+    return {
+      ...document,
+      title: bi(arabicDocumentTitles[document.view] ?? document.title, englishDocument?.title ?? document.title),
+    };
+  });
   const current = localizedSteps[activeStep];
   const Icon = current.icon;
   const NavArrow = direction === "rtl" ? ArrowLeft : ArrowRight;
 
   return (
-    <section className="user-guide" dir={direction} aria-label={copy.heading}>
+    <section className="user-guide" dir={direction} aria-label={bi(copy.heading, english.heading)}>
       <header className="user-guide__hero">
         <div>
-          <Badge>{copy.badge}</Badge>
-          <h1>{copy.heading}</h1>
+          <Badge>{bi(copy.badge, english.badge)}</Badge>
+          <h1>{bi(copy.heading, english.heading)}</h1>
           <p>{copy.intro}</p>
         </div>
         <div className="user-guide__hero-icon"><CircleHelp size={36} /></div>
       </header>
 
       <section className="guide-start-card">
-        <div><Sparkles size={22} /><div><b>{copy.firstTime}</b><p>{copy.firstTimeHint}</p></div></div>
-        <Button onClick={() => onNavigate("guided")}><Play size={16} fill="currentColor" />{copy.startTraining}</Button>
+        <div><Sparkles size={22} /><div><b>{bi(copy.firstTime, english.firstTime)}</b><p>{copy.firstTimeHint}</p></div></div>
+        <Button onClick={() => onNavigate("guided")}><Play size={16} fill="currentColor" />{bi(copy.startTraining, english.startTraining)}</Button>
       </section>
 
-      <section className="guide-layout" aria-label={copy.routeAria}>
-        <nav className="guide-step-list" aria-label={copy.stepsAria}>
+      <section className="guide-layout" aria-label={bi(copy.routeAria, english.routeAria)}>
+        <nav className="guide-step-list" aria-label={bi(copy.stepsAria, english.stepsAria)}>
           {localizedSteps.map((step, index) => {
             const StepIcon = step.icon;
             return <button type="button" key={step.id} className={index === activeStep ? "is-active" : ""} onClick={() => setActiveStep(index)} aria-pressed={index === activeStep}>
@@ -266,24 +294,24 @@ export function UserGuidePanel({ view, onNavigate }: Props) {
           })}
         </nav>
         <article className="guide-step-detail" aria-live="polite">
-          <div className="guide-step-detail__heading"><span><Icon size={20} /></span><div><p>{copy.step} {current.id} {copy.of} {localizedSteps.length}</p><h2>{current.title}</h2></div></div>
+          <div className="guide-step-detail__heading"><span><Icon size={20} /></span><div><p>{bi(copy.step, english.step)} {current.id} {bi(copy.of, english.of)} {localizedSteps.length}</p><h2>{current.title}</h2></div></div>
           <GuideShot number={current.id} title={current.title} imageSrc={current.imageSrc} copy={copy} />
-          <div className="guide-what-grid"><section><b>{copy.prepare}</b><p>{current.before}</p></section><section><b>{copy.after}</b><p>{current.result}</p></section></div>
-          <div className="guide-step-detail__actions"><Button onClick={() => onNavigate(current.view)}>{current.action}<NavArrow size={16} /></Button><Button variant="outline" disabled={activeStep === localizedSteps.length - 1} onClick={() => setActiveStep(index => Math.min(index + 1, localizedSteps.length - 1))}>{copy.next}</Button></div>
+          <div className="guide-what-grid"><section><b>{bi(copy.prepare, english.prepare)}</b><p>{current.before}</p></section><section><b>{bi(copy.after, english.after)}</b><p>{current.result}</p></section></div>
+          <div className="guide-step-detail__actions"><Button onClick={() => onNavigate(current.view)}>{current.action}<NavArrow size={16} /></Button><Button variant="outline" disabled={activeStep === localizedSteps.length - 1} onClick={() => setActiveStep(index => Math.min(index + 1, localizedSteps.length - 1))}>{bi(copy.next, english.next)}</Button></div>
         </article>
       </section>
 
       <section className="guide-example">
-        <div><p className="eyebrow">{copy.exampleEyebrow}</p><h2>{copy.exampleTitle}</h2><p>{copy.exampleBody}</p></div>
-        <div className="guide-example__result"><CheckCircle2 size={22} /><b>{copy.target}</b><span>{copy.targetBody}</span></div>
+        <div><p className="eyebrow">{bi(copy.exampleEyebrow, english.exampleEyebrow)}</p><h2>{bi(copy.exampleTitle, english.exampleTitle)}</h2><p>{copy.exampleBody}</p></div>
+        <div className="guide-example__result"><CheckCircle2 size={22} /><b>{bi(copy.target, english.target)}</b><span>{copy.targetBody}</span></div>
       </section>
 
-      <section className="guide-workspace-map" aria-label={copy.mapTitle}>
-        <div><p className="eyebrow">{copy.mapEyebrow}</p><h2>{copy.mapTitle}</h2><p>{copy.mapBody}</p></div>
-        <div className="guide-workspace-grid">{localizedWorkspace.map(screen => <article key={screen.view}><button type="button" onClick={() => onNavigate(screen.view)} aria-label={`${copy.openScreen} ${screen.title}`}><img src={screen.imageSrc} alt={`${copy.shotCaption}: ${screen.title}`} loading="lazy" /><span>{copy.openScreen} <NavArrow size={14} /></span></button><h3>{screen.title}</h3><p>{screen.note}</p></article>)}</div>
+      <section className="guide-workspace-map" aria-label={bi(copy.mapTitle, english.mapTitle)}>
+        <div><p className="eyebrow">{bi(copy.mapEyebrow, english.mapEyebrow)}</p><h2>{bi(copy.mapTitle, english.mapTitle)}</h2><p>{copy.mapBody}</p></div>
+        <div className="guide-workspace-grid">{localizedWorkspace.map(screen => <article key={screen.view}><button type="button" onClick={() => onNavigate(screen.view)} aria-label={`${bi(copy.openScreen, english.openScreen)} ${screen.title}`}><img src={screen.imageSrc} alt={`${copy.shotCaption}: ${screen.title}`} loading="lazy" /><span>{bi(copy.openScreen, english.openScreen)} <NavArrow size={14} /></span></button><h3>{screen.title}</h3><p>{screen.note}</p></article>)}</div>
       </section>
 
-      <section className="guide-documents"><div><p className="eyebrow">{copy.documentsEyebrow}</p><h2>{copy.documentsTitle}</h2></div><div className="guide-document-grid">{localizedDocuments.map(document => <article key={document.title}><FileSpreadsheet size={19} /><h3>{document.title}</h3><p>{document.text}</p><Button variant="outline" onClick={() => onNavigate(document.view)}>{copy.openRoute} <NavArrow size={15} /></Button></article>)}</div></section>
+      <section className="guide-documents"><div><p className="eyebrow">{bi(copy.documentsEyebrow, english.documentsEyebrow)}</p><h2>{bi(copy.documentsTitle, english.documentsTitle)}</h2></div><div className="guide-document-grid">{localizedDocuments.map(document => <article key={document.title}><FileSpreadsheet size={19} /><h3>{document.title}</h3><p>{document.text}</p><Button variant="outline" onClick={() => onNavigate(document.view)}>{bi(copy.openRoute, english.openRoute)} <NavArrow size={15} /></Button></article>)}</div></section>
     </section>
   );
 }
