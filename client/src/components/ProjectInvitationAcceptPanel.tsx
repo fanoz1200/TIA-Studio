@@ -4,26 +4,20 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { startLogin } from "@/const";
 import { useAppLanguage } from "@/contexts/LanguageContext";
+import { bilingualUiLabel } from "@/lib/language";
 import { trpc } from "@/lib/trpc";
 
 export function ProjectInvitationAcceptPanel({ token, isAuthenticated, onAccepted }: { token: string | null; isAuthenticated: boolean; onAccepted: () => void }) {
   const { language, direction } = useAppLanguage();
-  const copy = language === "en" ? {
-    joined: (role: string) => `You joined the project as ${role}.`,
-    title: "You have a project invitation link",
-    authenticated: "Your session is confirmed. Accept to join with the invited role.",
-    signInFirst: "Sign in with the email address that received the invitation; opening the link alone is not enough.",
-    verifying: "Verifying…",
-    accept: "Accept invitation",
-    signIn: "Sign in",
-  } : {
-    joined: (role: string) => `تم الانضمام إلى المشروع بدور ${role}.`,
-    title: "لديك رابط دعوة للمشروع",
-    authenticated: "تحقق النظام من الجلسة. أكمل القبول لإضافة العضوية حسب الدور المدعو إليه.",
-    signInFirst: "سجّل الدخول بالبريد الذي استلم الدعوة أولاً؛ لا يكفي فتح الرابط وحده.",
-    verifying: "جارِ التحقق…",
-    accept: "قبول الدعوة",
-    signIn: "تسجيل الدخول",
+  const bi = (arabic: string, english: string) => bilingualUiLabel(language, arabic, english);
+  const copy = {
+    joined: (role: string) => language === "en" ? `You joined the project as ${role}.` : `${bi("تم الانضمام إلى المشروع بدور", "You joined the project as")} ${role}.`,
+    title: bi("رابط دعوة المشروع", "Project invitation link"),
+    authenticated: language === "en" ? "Your session is confirmed. Accept to join with the invited role." : "تحقق النظام من الجلسة. أكمل القبول لإضافة العضوية حسب الدور المدعو إليه.",
+    signInFirst: language === "en" ? "Sign in with the email address that received the invitation; opening the link alone is not enough." : "سجّل الدخول بالبريد الذي استلم الدعوة أولاً؛ لا يكفي فتح الرابط وحده.",
+    verifying: bi("جارِ التحقق", "Verifying"),
+    accept: bi("قبول الدعوة", "Accept invitation"),
+    signIn: bi("تسجيل الدخول", "Sign in"),
   };
   const [dismissed, setDismissed] = useState(false);
   const accept = trpc.projectInvitation.accept.useMutation({

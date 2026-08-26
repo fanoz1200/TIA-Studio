@@ -40,8 +40,8 @@ describe("شاشة قبول دعوة المشروع", () => {
     const { container } = render(<LanguageProvider><ProjectInvitationAcceptPanel token="invite-token" isAuthenticated={false} onAccepted={vi.fn()} /></LanguageProvider>);
 
     expect(container.querySelector("section")?.getAttribute("dir")).toBe("rtl");
-    expect(screen.getByText("لديك رابط دعوة للمشروع")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "تسجيل الدخول" }));
+    expect(screen.getByText("رابط دعوة المشروع · Project invitation link")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "تسجيل الدخول · Sign in" }));
     expect(mocks.startLogin).toHaveBeenCalledTimes(1);
   });
 
@@ -51,7 +51,7 @@ describe("شاشة قبول دعوة المشروع", () => {
     const { container } = render(<LanguageProvider><ProjectInvitationAcceptPanel token="invite-token" isAuthenticated onAccepted={onAccepted} /></LanguageProvider>);
 
     expect(container.querySelector("section")?.getAttribute("dir")).toBe("ltr");
-    expect(screen.getByText("You have a project invitation link")).toBeTruthy();
+    expect(screen.getByText("Project invitation link")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Accept invitation" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Accept invitation" }));
     expect(mocks.acceptMutate).toHaveBeenCalledWith({ token: "invite-token" });
@@ -61,4 +61,3 @@ describe("شاشة قبول دعوة المشروع", () => {
     expect(onAccepted).toHaveBeenCalledTimes(1);
   });
 });
-
