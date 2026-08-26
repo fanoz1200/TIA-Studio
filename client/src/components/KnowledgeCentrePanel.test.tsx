@@ -160,13 +160,28 @@ describe("مكتبة المنهجيات والحالات العملية", () => 
     expect(screen.getAllByText("DIS-001").length).toBeGreaterThan(0);
   });
 
-  it("يعرض أوراق الدعم الثمانية والروابط الداخلية المنسوخة من ملف Excel", () => {
-    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+  it("يحوّل أوراق الدعم إلى خطوات مراجعة ومسودة اختيارية قابلة للإضافة", () => {
+    const onAddSupportSheetDraft = vi.fn();
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated onAddSupportSheetDraft={onAddSupportSheetDraft} />);
 
     openLibrarySection(/عايز المراجع والقوالب/);
 
     expect(screen.getAllByRole("heading", { name: "إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("tab").length).toBe(11);
+    expect(screen.getAllByText("إزاي تستخدم الشيت ده؟").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getAllByRole("button", { name: /إنشاء مسودة للمراجعة/ }).at(-1)!);
+    const draft = screen.getAllByDisplayValue(/مراجعة ورقة الدعم/).at(-1) as HTMLTextAreaElement;
+    expect(draft.value).toContain("schedule-learning");
+    fireEvent.click(screen.getAllByRole("button", { name: /أضف لـ Delay Analysis Narrative/ }).at(-1)!);
+    expect(onAddSupportSheetDraft).toHaveBeenCalledWith(expect.objectContaining({ destination: "narrative", draft: expect.stringContaining("مراجعة ورقة الدعم") }));
+  });
+
+  it("يبقي الصفوف والروابط الداخلية في تبويب مصدر منفصل", () => {
+    render(<KnowledgeCentrePanel view="learning" projectKey="schedule-learning" isAuthenticated />);
+
+    openLibrarySection(/عايز المراجع والقوالب/);
+
+    fireEvent.click(screen.getAllByRole("button", { name: /مصدر الشيت/ }).at(-1)!);
     expect(screen.getAllByText("الروابط الداخلية الواردة في المصدر").length).toBeGreaterThan(0);
   });
 

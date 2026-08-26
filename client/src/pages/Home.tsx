@@ -1308,6 +1308,15 @@ export default function Home() {
     },
     []
   );
+  const addSupportSheetDraft = useCallback((payload: { draft: string; destination: "narrative" | "claim" }) => {
+    const appendDraft = (current: string) => current.includes(payload.draft)
+      ? current
+      : [current.trim(), payload.draft.trim()].filter(Boolean).join("\n\n");
+    setNarrative(current => appendDraft(current));
+    setActiveClaim(current => ({ ...current, narrative: appendDraft(current.narrative) }));
+    setView(payload.destination === "claim" ? "notices" : "report");
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  }, []);
 
   useEffect(() => {
     setNarrative(
@@ -2146,6 +2155,7 @@ export default function Home() {
           view={view}
           projectKey={schedule.id}
           isAuthenticated={isAuthenticated}
+          onAddSupportSheetDraft={addSupportSheetDraft}
           onBeginGuidedAnalysis={route => {
             const methods = {
               tia: "TIA",

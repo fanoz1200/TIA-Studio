@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import type { MasterClaimCase } from "@/lib/master-claim-cases";
 import type { DetailedMasterClaimCase } from "@/lib/master-claim-excel";
 import { masterClaimIntelligenceCases, masterClaimIntelligenceSource, masterClaimSupportSheets } from "@/lib/master-claim-intelligence-data";
@@ -27,6 +28,49 @@ export type KnowledgeRoute = {
   caseId: string;
   caseTitle: string;
 };
+type SupportSheetDestination = "narrative" | "claim";
+type SupportSheetMode = "workspace" | "source";
+
+function buildSupportSheetDraft({
+  sheet,
+  projectKey,
+  projectNote,
+  completedSteps,
+  language,
+}: {
+  sheet: (typeof masterClaimSupportSheets)[number];
+  projectKey: string;
+  projectNote: string;
+  completedSteps: string[];
+  language: "ar" | "en";
+}) {
+  const sourceHighlights = sheet.rows
+    .slice(1, 4)
+    .map(row => row.filter(Boolean).join(" | ").slice(0, 360))
+    .filter(Boolean);
+  const isEnglish = language === "en";
+  return [
+    isEnglish ? `## Support-sheet review — ${sheet.title}` : `## مراجعة ورقة الدعم — ${sheet.title}`,
+    `${isEnglish ? "Workbook sheet" : "ورقة المصدر"}: ${sheet.id}`,
+    `${isEnglish ? "Project workspace" : "مساحة المشروع"}: ${projectKey}`,
+    projectNote.trim()
+      ? `${isEnglish ? "Reviewer note" : "ملاحظة المُراجع"}: ${projectNote.trim()}`
+      : isEnglish
+        ? "Reviewer note: [Complete after reviewing project facts and contract.]"
+        : "ملاحظة المُراجع: [تُستكمل بعد مراجعة وقائع المشروع والعقد.]",
+    completedSteps.length
+      ? `${isEnglish ? "Completed review actions" : "إجراءات مراجعة مُنفذة"}:\n${completedSteps.map(step => `- ${step}`).join("\n")}`
+      : isEnglish
+        ? "Completed review actions: [Select and document the applicable checks.]"
+        : "إجراءات مراجعة مُنفذة: [اختر الفحوص المنطبقة ووثقها.]",
+    sourceHighlights.length
+      ? `${isEnglish ? "Source prompts for review" : "بنود المصدر للمراجعة"}:\n${sourceHighlights.map(item => `- ${item}`).join("\n")}`
+      : "",
+    isEnglish
+      ? "Review status: working draft only. Validate project facts, contract conditions, records, and schedule findings before use. This text does not decide EOT, liability, or entitlement."
+      : "حالة المراجعة: مسودة عمل فقط. راجع وقائع المشروع وشروط العقد والسجلات ونتائج البرنامج قبل استخدامها. لا تحسم هذه المسودة EOT أو المسؤولية أو الاستحقاق.",
+  ].filter(Boolean).join("\n\n");
+}
 
 function methodsFor(language: "ar" | "en"): { id: AnalysisMethod; label: string; detail: string }[] {
   if (language === "en") {
@@ -86,7 +130,7 @@ function sourceLabel(source: DetailedMasterClaimCase["source"], language: "ar" |
     : "مرجع من مكتبة Excel المرفوعة · Reference from the uploaded Excel library";
 }
 
-export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: string; projectKey: string; isAuthenticated: boolean; onBeginGuidedAnalysis?: (route: KnowledgeRoute) => void }) {
+export function KnowledgeCentrePanel({ view, projectKey, onBeginGuidedAnalysis, onAddSupportSheetDraft }: { view: string; projectKey: string; isAuthenticated: boolean; onBeginGuidedAnalysis?: (route: KnowledgeRoute) => void; onAddSupportSheetDraft?: (payload: { draft: string; destination: SupportSheetDestination }) => void }) {
   const { language, direction } = useAppLanguage();
   const txt = (ar: string, en: string) => language === "en" ? en : ar;
   const label = (ar: string, en: string) => bilingualUiLabel(language, ar, en);
@@ -100,6 +144,10 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
   const [isApplying, setIsApplying] = useState(false);
   const [selectedFidicClause, setSelectedFidicClause] = useState(fidicClaimReferences[0]?.clause ?? "");
   const [selectedSupportSheetId, setSelectedSupportSheetId] = useState(masterClaimSupportSheets[0]?.id ?? "");
+  const [supportSheetMode, setSupportSheetMode] = useState<SupportSheetMode>("workspace");
+  const [supportSheetProjectNote, setSupportSheetProjectNote] = useState("");
+  const [completedSupportSteps, setCompletedSupportSteps] = useState<string[]>([]);
+  const [supportSheetDraft, setSupportSheetDraft] = useState("");
   const [decisionChoice, setDecisionChoice] = useState<DecisionChoice>(null);
   const [hasPreEventUpdate, setHasPreEventUpdate] = useState<boolean | null>(null);
   const [librarySection, setLibrarySection] = useState<LibrarySection>("start");
@@ -113,10 +161,43 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
 
   const categories = useMemo(() => Array.from(new Set(libraryCases.map(item => item.category))).filter(Boolean).sort((a, b) => a.localeCompare(b, "ar")), [libraryCases]);
   const selectedCase = libraryCases.find(item => item.id === selectedId) ?? libraryCases[0];
+  const selectedSupportSheet = masterClaimSupportSheets.find(sheet => sheet.id === selectedSupportSheetId) ?? masterClaimSupportSheets[0];
+  const supportSheetSteps = useMemo(() => selectedSupportSheet?.rows.slice(1, 5)
+    .map(row => row.filter(Boolean).join(" · ").replace(/\s+/g, " ").trim().slice(0, 220))
+    .filter(Boolean) ?? [], [selectedSupportSheet]);
+  const chooseSupportSheet = (sheetId: string) => {
+    setSelectedSupportSheetId(sheetId);
+    setSupportSheetMode("workspace");
+    setSupportSheetProjectNote("");
+    setCompletedSupportSteps([]);
+    setSupportSheetDraft("");
+  };
+  const toggleSupportStep = (step: string) => {
+    setCompletedSupportSteps(current => current.includes(step)
+      ? current.filter(item => item !== step)
+      : [...current, step]);
+  };
+  const prepareSupportSheetDraft = () => {
+    if (!selectedSupportSheet) return;
+    setSupportSheetDraft(buildSupportSheetDraft({
+      sheet: selectedSupportSheet,
+      projectKey,
+      projectNote: supportSheetProjectNote,
+      completedSteps: completedSupportSteps,
+      language,
+    }));
+    toast.success(txt("تم إنشاء مسودة مراجعة. راجعها قبل إضافتها لأي مخرج.", "A review draft was created. Review it before adding it to any output."));
+  };
+  const addSupportDraftToOutput = (destination: SupportSheetDestination) => {
+    if (!supportSheetDraft.trim()) {
+      toast.error(txt("أنشئ المسودة وراجعها أولاً.", "Create and review the draft first."));
+      return;
+    }
+    onAddSupportSheetDraft?.({ draft: supportSheetDraft.trim(), destination });
+  };
   const selectedMethod = methodOverride ?? methodFromSource(selectedCase.methodology);
   const selectedMethodInfo = methods.find(item => item.id === selectedMethod) ?? methods[0];
   const selectedFidicReference = fidicClaimReferences.find(item => item.clause === selectedFidicClause) ?? fidicClaimReferences[0];
-  const selectedSupportSheet = masterClaimSupportSheets.find(sheet => sheet.id === selectedSupportSheetId) ?? masterClaimSupportSheets[0];
   const decisionResult = decisionChoice === "single"
     ? hasPreEventUpdate === null ? null : {
       method: "tia" as AnalysisMethod,
@@ -353,12 +434,25 @@ export function KnowledgeCentrePanel({ view, onBeginGuidedAnalysis }: { view: st
 
       {librarySection === "references" ? <>
       {selectedSupportSheet ? <section className="master-support-sheets" aria-label={txt("أوراق الدعم من ملف Master Claim Intelligence", "Support sheets from the Master Claim Intelligence workbook")}>
-        <div className="reference-library-heading"><FileText size={20} /><div><p className="eyebrow">MASTER CLAIM INTELLIGENCE · SUPPORT SHEETS</p><h3>{txt("إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات", "Decision procedures, checks, objections, templates and calculations")}</h3><p>{txt("هذه الأوراق الثمانية مستنسخة للقراءة من الملف المرفوع مع أسماء الروابط الداخلية كما وردت فيه. الصفوف معروضة داخل مساحة تمرير مستقلة للحفاظ على قراءة الهاتف.", "These eight sheets are copied read-only from the uploaded workbook with their internal-link labels as recorded. Rows are shown in a separate scroll area to preserve mobile readability.")}</p></div></div>
-        <div className="support-sheet-tabs" role="tablist" aria-label={txt("اختيار ورقة دعم", "Choose a support sheet")}>{masterClaimSupportSheets.map(sheet => <button key={sheet.id} type="button" role="tab" aria-selected={sheet.id === selectedSupportSheet.id} className={sheet.id === selectedSupportSheet.id ? "selected" : ""} onClick={() => setSelectedSupportSheetId(sheet.id)}>{sheet.title}</button>)}</div>
+        <div className="reference-library-heading"><FileText size={20} /><div><p className="eyebrow">MASTER CLAIM INTELLIGENCE · SUPPORT SHEETS</p><h3>{txt("إجراءات القرار، التدقيق، الاعتراضات، القوالب والحسابات", "Decision procedures, checks, objections, templates and calculations")}</h3><p>{txt("اختر الورقة، نفّذ المراجعة التي تناسب وقائع مشروعك، ثم أنشئ مسودة قابلة للتعديل قبل إضافتها للمخرج الذي تختاره. يبقى المصدر الأصلي متاحاً في تبويب مستقل.", "Choose a sheet, complete the review that fits your project facts, then create an editable draft before adding it to your chosen output. The original source remains available in a separate tab.")}</p></div></div>
+        <div className="support-sheet-tabs" role="tablist" aria-label={txt("اختيار ورقة دعم", "Choose a support sheet")}>{masterClaimSupportSheets.map(sheet => <button key={sheet.id} type="button" role="tab" aria-selected={sheet.id === selectedSupportSheet.id} className={sheet.id === selectedSupportSheet.id ? "selected" : ""} onClick={() => chooseSupportSheet(sheet.id)}>{sheet.title}</button>)}</div>
         <article className="support-sheet-reader" role="tabpanel">
-          <div className="support-sheet-reader-heading"><div><span>{selectedSupportSheet.id}</span><h4>{selectedSupportSheet.title}</h4></div><small>{selectedSupportSheet.rows.length} {txt("صفاً", "rows")} · {selectedSupportSheet.links.length} {txt("رابطاً داخلياً", "internal links")}</small></div>
-          <div className="support-sheet-table-wrap"><table><tbody>{selectedSupportSheet.rows.map((row, rowIndex) => <tr key={`${selectedSupportSheet.id}-${rowIndex}`}>{row.map((cell, cellIndex) => rowIndex === 0 ? <th key={`${rowIndex}-${cellIndex}`} scope="col">{cell || "—"}</th> : <td key={`${rowIndex}-${cellIndex}`}>{cell || "—"}</td>)}</tr>)}</tbody></table></div>
-          {selectedSupportSheet.links.length ? <div className="support-sheet-links"><b>{txt("الروابط الداخلية الواردة في المصدر", "Internal links recorded in the source")}</b><ul>{selectedSupportSheet.links.map(link => <li key={`${link.cell}-${link.target}`}><code>{link.cell}</code><span>{link.label || txt("رابط داخلي", "Internal link")}</span><small>{link.target}</small></li>)}</ul></div> : <p className="support-sheet-empty">{txt("لا توجد روابط داخلية مسجلة لهذه الورقة.", "No internal links are recorded for this sheet.")}</p>}
+          <div className="support-sheet-reader-heading"><div><span>{selectedSupportSheet.id}</span><h4>{selectedSupportSheet.title}</h4></div><small>{selectedSupportSheet.rows.length} {txt("صفاً مرجعياً", "source rows")} · {selectedSupportSheet.links.length} {txt("رابطاً داخلياً", "internal links")}</small></div>
+          <div className="support-sheet-mode-tabs" role="tablist" aria-label={txt("طريقة استخدام الشيت", "Sheet use mode")}>
+            <Button type="button" size="sm" variant={supportSheetMode === "workspace" ? "default" : "outline"} onClick={() => setSupportSheetMode("workspace")}>{txt("1. مساحة العمل", "1. Workspace")}</Button>
+            <Button type="button" size="sm" variant={supportSheetMode === "source" ? "default" : "outline"} onClick={() => setSupportSheetMode("source")}>{txt("2. مصدر الشيت", "2. Sheet source")}</Button>
+          </div>
+          {supportSheetMode === "workspace" ? <div className="support-sheet-workspace">
+            <div className="support-sheet-workspace-intro"><div><b>{txt("إزاي تستخدم الشيت ده؟", "How do you use this sheet?")}</b><p>{txt("ابدأ من البنود الظاهرة تحت، علّم فقط ما راجعته فعلاً، واكتب ملاحظة مشروعك. البرنامج لا يفترض أي واقعة أو قرار من عنده.", "Start with the prompts below, tick only actions you actually reviewed, and add your project note. The application does not assume facts or make decisions for you.")}</p></div><ShieldCheck size={22} /></div>
+            <div className="support-sheet-action-grid">{supportSheetSteps.length ? supportSheetSteps.map((step, index) => <button type="button" className={`support-sheet-action ${completedSupportSteps.includes(step) ? "done" : ""}`} onClick={() => toggleSupportStep(step)} aria-pressed={completedSupportSteps.includes(step)} key={`${selectedSupportSheet.id}-${index}`}><span>{completedSupportSteps.includes(step) ? <CheckCircle2 size={16} /> : String(index + 1).padStart(2, "0")}</span><b>{step}</b><small>{completedSupportSteps.includes(step) ? txt("تمت مراجعته", "Reviewed") : txt("اضغط لتأكيد المراجعة", "Select when reviewed")}</small></button>) : <p className="support-sheet-empty">{txt("لا توجد بنود قابلة للاستخلاص من هذه الورقة؛ راجع المصدر ثم اكتب ملاحظتك.", "No usable prompts could be extracted from this sheet; review the source and add your note.")}</p>}</div>
+            <div className="support-sheet-note"><Label htmlFor="support-sheet-note">{txt("ملاحظة المشروع أو سبب استخدام هذا الشيت", "Project note or reason for using this sheet")}</Label><Textarea id="support-sheet-note" value={supportSheetProjectNote} onChange={event => setSupportSheetProjectNote(event.target.value)} placeholder={txt("مثال: ما الذي راجعته، وأي سجل أو بند عقد أو ملاحظة برنامج يحتاج متابعة؟", "Example: What did you review, and which record, contract term, or schedule finding needs follow-up?")} /></div>
+            <div className="support-sheet-draft-actions"><Button type="button" onClick={prepareSupportSheetDraft}><FileText size={16} />{txt("إنشاء مسودة للمراجعة", "Create review draft")}</Button><span>{txt("المسودة لا تُضاف تلقائياً لأي تقرير أو مطالبة.", "The draft is not added automatically to any report or claim.")}</span></div>
+            {supportSheetDraft ? <div className="support-sheet-draft"><div><b>{txt("مسودة قابلة للتعديل", "Editable working draft")}</b><small>{txt("راجع النص وعدله قبل الإضافة.", "Review and edit the text before adding it.")}</small></div><Textarea value={supportSheetDraft} onChange={event => setSupportSheetDraft(event.target.value)} rows={12} /><div className="support-sheet-output-actions"><Button type="button" variant="outline" onClick={() => addSupportDraftToOutput("narrative")}>{txt("أضف لـ Delay Analysis Narrative", "Add to Delay Analysis Narrative")}</Button><Button type="button" onClick={() => addSupportDraftToOutput("claim")}>{txt("أضف كدعم لمراجعة الـ Claim", "Add as Claim review support")}</Button></div></div> : null}
+          </div> : <>
+            <div className="support-sheet-source-note"><ShieldCheck size={16} /><span>{txt("هذا عرض المصدر كما وصل من الشيت؛ للخطوات والمخرجات استخدم تبويب مساحة العمل.", "This displays the sheet source as received; use the Workspace tab for actions and outputs.")}</span></div>
+            <div className="support-sheet-table-wrap"><table><tbody>{selectedSupportSheet.rows.map((row, rowIndex) => <tr key={`${selectedSupportSheet.id}-${rowIndex}`}>{row.map((cell, cellIndex) => rowIndex === 0 ? <th key={`${rowIndex}-${cellIndex}`} scope="col">{cell || "—"}</th> : <td key={`${rowIndex}-${cellIndex}`}>{cell || "—"}</td>)}</tr>)}</tbody></table></div>
+            {selectedSupportSheet.links.length ? <div className="support-sheet-links"><b>{txt("الروابط الداخلية الواردة في المصدر", "Internal links recorded in the source")}</b><ul>{selectedSupportSheet.links.map(link => <li key={`${link.cell}-${link.target}`}><code>{link.cell}</code><span>{link.label || txt("رابط داخلي", "Internal link")}</span><small>{link.target}</small></li>)}</ul></div> : <p className="support-sheet-empty">{txt("لا توجد روابط داخلية مسجلة لهذه الورقة.", "No internal links are recorded for this sheet.")}</p>}
+          </>}
         </article>
       </section> : null}
 
