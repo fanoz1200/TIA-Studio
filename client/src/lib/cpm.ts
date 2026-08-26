@@ -264,6 +264,50 @@ export type WindowTiaResult = {
   notes: string[];
 };
 
+/** لقطة برنامج مقروءة محلياً لمراجعة Time Slice؛ لا تعدّل ملف المصدر. */
+export type TimeSliceSnapshot = {
+  id: string;
+  label: string;
+  fileName: string;
+  schedule: Schedule;
+};
+
+/** نافذة رصد بين نسختين متتاليتين، وليست نافذة إدراج Fragnet. */
+export type TimeSliceWindow = {
+  id: string;
+  name: string;
+  fromSnapshot: TimeSliceSnapshot;
+  toSnapshot: TimeSliceSnapshot;
+  status: "draft" | "review" | "final";
+  notes?: string;
+};
+
+export type TimeSliceActivityChange = {
+  activityId: string;
+  change: "added" | "removed" | "duration-changed" | "logic-changed" | "criticality-changed";
+  fromDuration?: number;
+  toDuration?: number;
+};
+
+/**
+ * نتيجة رصدية لنسختين متتاليتين من البرنامج.
+ * لا تفصل المسؤولية ولا تثبت السببية أو الاستحقاق؛ تلك خطوة مراجعة خبير لاحقة.
+ */
+export type TimeSliceWindowResult = {
+  method: "time-slice-observational";
+  window: TimeSliceWindow;
+  from: CpmResult;
+  to: CpmResult;
+  fromDataDate: string;
+  toDataDate: string;
+  completionShiftCalendarDays: number;
+  completionShiftWorkingDays?: number;
+  calendarsComparable: boolean;
+  activityChanges: TimeSliceActivityChange[];
+  warnings: string[];
+  notes: string[];
+};
+
 export type NarrativeContext = {
   analyst?: string;
   contractReference?: string;
@@ -729,6 +773,104 @@ export function runWindowTIA(schedule: Schedule, window: AnalysisWindow, allEven
   if (concurrentFindings.length) notes.push(`تم رصد ${concurrentFindings.length} حالة تداخل تحتاج فحص السببية والمسار الحرج.`);
   if (!events.length) notes.push("لا توجد أحداث داخل النافذة المختارة؛ لم يتغير البرنامج.");
   return { window, events, baseline, impacted, totalImpactDays: impacted.projectDuration - baseline.projectDuration, eventResults, concurrentFindings, notes };
+}
+
+function calendarSignature(calendar: WorkingCalendar) {
+  return JSON.stringify({
+    workingWeekdays: [...calendar.workingWeekdays].sort((a, b) => a - b),
+    holidays: [...calendar.holidays].sort(),
+    hoursPerDay: calendar.hoursPerDay ?? 8,
+  });
+}
+
+function calendarDaysBetween(from: string, to: string) {
+  return Math.round((parseIsoDate(to).getTime() - parseIsoDate(from).getTime()) / 86_400_000);
+}
+
+function relationshipSignature(schedule: Schedule, activityId: string) {
+  return schedule.relationships
+    .filter((relationship) => relationship.predecessorId === activityId || relationship.successorId === activityId)
+    .map((relationship) => `${relationship.predecessorId}>${relationship.successorId}:${relationship.type}:${relationship.lag ?? 0}`)
+    .sort()
+    .join("|");
+}
+
+function compareTimeSliceActivities(fromSchedule: Schedule, toSchedule: Schedule, fromCpm: CpmResult, toCpm: CpmResult) {
+  const changes: TimeSliceActivityChange[] = [];
+  const fromActivities = new Map(fromSchedule.activities.map((activity) => [activity.id, activity]));
+  const toActivities = new Map(toSchedule.activities.map((activity) => [activity.id, activity]));
+  const fromCritical = new Set(fromCpm.criticalActivityIds);
+  const toCritical = new Set(toCpm.criticalActivityIds);
+  const ids = Array.from(new Set([...Array.from(fromActivities.keys()), ...Array.from(toActivities.keys())])).sort();
+
+  for (const activityId of ids) {
+    const fromActivity = fromActivities.get(activityId);
+    const toActivity = toActivities.get(activityId);
+    if (!fromActivity && toActivity) {
+      changes.push({ activityId, change: "added", toDuration: toActivity.duration });
+      continue;
+    }
+    if (fromActivity && !toActivity) {
+      changes.push({ activityId, change: "removed", fromDuration: fromActivity.duration });
+      continue;
+    }
+    if (!fromActivity || !toActivity) continue;
+    if (fromActivity.duration !== toActivity.duration) {
+      changes.push({ activityId, change: "duration-changed", fromDuration: fromActivity.duration, toDuration: toActivity.duration });
+    }
+    if (relationshipSignature(fromSchedule, activityId) !== relationshipSignature(toSchedule, activityId)) {
+      changes.push({ activityId, change: "logic-changed" });
+    }
+    if (fromCritical.has(activityId) !== toCritical.has(activityId)) {
+      changes.push({ activityId, change: "criticality-changed" });
+    }
+  }
+  return changes;
+}
+
+/**
+ * يحلل الحركة بين نسختين متتاليتين كما وردتا من المستخدم. لا يضيف Fragnet ولا
+ * يعدل الشبكة: هو Time Slice/Windows رصدي لتحديد ما تغير داخل النافذة فقط.
+ */
+export function runTimeSliceWindowAnalysis(window: TimeSliceWindow): TimeSliceWindowResult {
+  const fromDataDate = window.fromSnapshot.schedule.dataDate ?? window.fromSnapshot.schedule.startDate;
+  const toDataDate = window.toSnapshot.schedule.dataDate ?? window.toSnapshot.schedule.startDate;
+  parseIsoDate(fromDataDate);
+  parseIsoDate(toDataDate);
+  if (fromDataDate > toDataDate) {
+    throw new Error("تاريخ Data Date للنسخة الأولى يجب أن يسبق أو يساوي النسخة التالية في Time Slice Window.");
+  }
+
+  const from = runCPM(window.fromSnapshot.schedule);
+  const to = runCPM(window.toSnapshot.schedule);
+  const calendarsComparable = calendarSignature(from.calendar) === calendarSignature(to.calendar);
+  const completionShiftCalendarDays = calendarDaysBetween(from.completionDate, to.completionDate);
+  const activityChanges = compareTimeSliceActivities(window.fromSnapshot.schedule, window.toSnapshot.schedule, from, to);
+  const warnings = [
+    "هذه نتيجة رصدية بين نسختين من البرنامج، وليست قياس TIA بإدراج Fragnet.",
+    "تغير تاريخ الإكمال أو المسار الحرج لا يثبت بمفرده السبب أو المسؤولية أو الاستحقاق التعاقدي.",
+  ];
+  if (!calendarsComparable) {
+    warnings.push("التقويمان أو الإجازات أو ساعات اليوم مختلفة بين النسختين؛ يعرض الفرق بأيام تقويمية فقط حتى يراجع المحلل مواءمة التقويم.");
+  }
+  if (!activityChanges.length) {
+    warnings.push("لم يرصد المقارن تغيراً في المدة أو العلاقات أو الحالة الحرجة حسب معرّفات الأنشطة؛ راجع نطاق الاستيراد وData Date ومحتوى النسختين.");
+  }
+  if (window.fromSnapshot.schedule.id !== window.toSnapshot.schedule.id) {
+    warnings.push("معرّف البرنامج مختلف بين النسختين؛ تأكد أن النسختين تخصان المشروع والنطاق نفسيهما قبل اعتماد القراءة.");
+  }
+  const notes = [
+    `نافذة الرصد: ${window.fromSnapshot.label} (${fromDataDate}) إلى ${window.toSnapshot.label} (${toDataDate}).`,
+    `الإكمال في النسخة الأولى: ${from.completionDate}; والإكمال في النسخة التالية: ${to.completionDate}.`,
+    `فرق الإكمال المرصود: ${completionShiftCalendarDays >= 0 ? "+" : ""}${completionShiftCalendarDays} يوم تقويمي.`,
+    `تغيرات الأنشطة/العلاقات المرصودة: ${activityChanges.length}.`,
+  ];
+  if (calendarsComparable) {
+    const completionShiftWorkingDays = dateToRelativeDay(from.completionDate, to.completionDate, from.calendar);
+    notes.push(`فرق الإكمال حسب التقويم المشترك: ${completionShiftWorkingDays >= 0 ? "+" : ""}${completionShiftWorkingDays} يوم عمل.`);
+    return { method: "time-slice-observational", window, from, to, fromDataDate, toDataDate, completionShiftCalendarDays, completionShiftWorkingDays, calendarsComparable, activityChanges, warnings, notes };
+  }
+  return { method: "time-slice-observational", window, from, to, fromDataDate, toDataDate, completionShiftCalendarDays, calendarsComparable, activityChanges, warnings, notes };
 }
 
 export function generateDelayAnalysisNarrative(args: { schedule: Schedule; result?: TiaResult | WindowTiaResult | null; event?: Fragnet | null; context?: NarrativeContext }) {

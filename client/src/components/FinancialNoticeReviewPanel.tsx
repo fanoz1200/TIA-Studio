@@ -32,6 +32,7 @@ import {
   type Schedule,
 } from "@/lib/cpm";
 import { bilingualUiLabel, type AppLanguage } from "@/lib/language";
+import { buildEditableClaimEotDraft } from "@/lib/claim-template";
 import { trpc } from "@/lib/trpc";
 import { ProjectMembersPanel } from "@/components/ProjectMembersPanel";
 
@@ -452,6 +453,57 @@ export function FinancialNoticeReviewPanel({
         : "تم تنزيل مسودة Notice محلية. راجعها وعدّلها قبل أي إرسال."
     );
   };
+  const downloadLocalClaimEotDraft = () => {
+    if (!selectedNoticeEvent) {
+      toast.error(getNoticeValidationText(interfaceLanguage, "selectEvent"));
+      return;
+    }
+    const selectedEvidence = (eventEvidence.data ?? [])
+      .filter(evidence => selectedEvidenceIds.includes(String(evidence.id)))
+      .map(evidence => `${evidence.title} (${evidence.evidenceType})`);
+    const formattedFinancialExposure = `${new Intl.NumberFormat(
+      noticeDraftLanguage === "en" ? "en-GB" : "ar-EG",
+      { maximumFractionDigits: 2 }
+    ).format(financial.extensionCost)} ${
+      noticeDraftLanguage === "en" ? "currency units" : "وحدة نقدية"
+    }`;
+    const text = buildEditableClaimEotDraft({
+      language: noticeDraftLanguage,
+      projectName: schedule.name,
+      referenceNo: noticeNo,
+      sender,
+      recipient,
+      contractClause,
+      eventId: selectedNoticeEvent.id,
+      eventTitle: selectedNoticeEvent.title,
+      occurrenceDate: selectedNoticeEvent.occurrenceDate,
+      awarenessDate,
+      noticeDueDate,
+      timeImpactDays: Math.max(0, activeImpactDays),
+      financialExposure: formattedFinancialExposure,
+      narrative: noticeNarrative,
+      technicalNarrative: unifiedNarrative,
+      evidenceReferences: selectedEvidence,
+      windowAnalysisNote:
+        noticeDraftLanguage === "en"
+          ? "Review the locally loaded schedule snapshots and the selected analysis method before relying on this working draft."
+          : "راجع نسخ البرنامج المحمّلة محلياً ومنهج التحليل المختار قبل الاعتماد على هذه المسودة.",
+    });
+    const file = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `TIA-Claim-EOT-${(noticeNo.trim() || selectedNoticeEvent.id).replace(/[^a-zA-Z0-9_-]/g, "-")}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast.success(
+      noticeDraftLanguage === "en"
+        ? "The local editable Claim / EOT working draft was downloaded. Review it before issue."
+        : "تم تنزيل مسودة Claim / EOT محلية قابلة للتعديل. راجعها قبل الإصدار."
+    );
+  };
   const toggleEvidence = (id: string) =>
     setSelectedEvidenceIds(current =>
       current.includes(id)
@@ -833,6 +885,14 @@ export function FinancialNoticeReviewPanel({
                 >
                   <Download size={16} />
                   {bi("تنزيل مسودة Notice محلية", "Download local Notice draft")}
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={!selectedNoticeEvent}
+                  onClick={downloadLocalClaimEotDraft}
+                >
+                  <Download size={16} />
+                  {bi("تنزيل قالب Claim / EOT محلي", "Download local Claim / EOT template")}
                 </Button>
                 {isAuthenticated ? (
                   <>

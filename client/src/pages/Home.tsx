@@ -112,6 +112,7 @@ import {
 } from "@/components/FirstRunGuide";
 import { UserGuidePanel } from "@/components/UserGuidePanel";
 import { XerViewerPanel } from "@/components/XerViewerPanel";
+import { TimeSliceWindowAnalysisPanel } from "@/components/TimeSliceWindowAnalysisPanel";
 import "./home-mobile-nav.css";
 import "../components/regional-calendar.css";
 
@@ -3034,12 +3035,10 @@ export default function Home() {
           <div className="view-stack windows-view">
             <section className="page-heading">
               <div>
-                <p className="eyebrow">WINDOW + CONCURRENCY REVIEW</p>
-                <h1>نوافذ التحليل وفحص التزامن</h1>
+                <p className="eyebrow">{bilingualUiLabel(language, "مراجعة النافذة والتزامن", "WINDOW + CONCURRENCY REVIEW")}</p>
+                <h1>{bilingualUiLabel(language, "نوافذ التحليل وفحص التزامن", "Analysis windows & concurrency review")}</h1>
                 <p>
-                  تجمع النافذة الأحداث التي تقع داخل فترة محددة، وتعيد حساب
-                  الشبكة بالتتابع. علامة التزامن هنا فحص فني أولي وليست تخصيصاً
-                  تعاقدياً للزمن.
+                  {bilingualUiLabel(language, "تجمع نافذة TIA الأحداث داخل فترة محددة وتعيد حساب الشبكة بالتتابع. علامة التزامن فحص فني أولي وليست تخصيصاً تعاقدياً للزمن.", "A Windowed TIA groups events in a defined period and recalculates the network sequentially. A concurrency flag is an initial technical check, not contractual time allocation.")}
                 </p>
               </div>
             </section>
@@ -3195,6 +3194,10 @@ export default function Home() {
                 )}
               </div>
             </section>
+            <TimeSliceWindowAnalysisPanel
+              baselineSnapshot={baselineSnapshot}
+              updateSnapshots={updateSnapshots}
+            />
           </div>
         )}
 
