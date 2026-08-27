@@ -398,6 +398,19 @@ function duplicateIds(activities: Activity[]) {
   return Array.from(duplicates).sort();
 }
 
+/**
+ * معرّف PROJECT القادم من XER أقوى من `Schedule.id` المحلي، لأن الأخير قد يعتمد
+ * على اسم الملف أو اسم اللقطة. لا نستخدمه إلا عندما يكون متاحاً في المصدرين.
+ */
+function importedP6ProjectId(schedule: Schedule) {
+  const projectId = schedule.xerSource?.projectId?.trim();
+  return projectId || undefined;
+}
+
+function distinctImportedTaskCalendarIds(schedule: Schedule) {
+  return new Set((schedule.xerSource?.taskCalendarIds ?? []).map((id) => id.trim()).filter(Boolean));
+}
+
 function check(code: ReadinessCheckCode, status: ReadinessCheckStatus, ar: string, en: string, details?: LocalizedText[]): UpdateToUpdateReadinessCheck {
   return { code, status, message: text(ar, en), details };
 }
@@ -411,13 +424,25 @@ export function assessUpdateToUpdateReadiness(pair: UpdateToUpdatePair, changeRe
   const previousDuplicates = duplicateIds(pair.previous.schedule.activities);
   const currentDuplicates = duplicateIds(pair.current.schedule.activities);
   const scheduleIdsMatch = pair.previous.schedule.id === pair.current.schedule.id;
+  const previousP6ProjectId = importedP6ProjectId(pair.previous.schedule);
+  const currentP6ProjectId = importedP6ProjectId(pair.current.schedule);
+  const p6ProjectIdsKnown = Boolean(previousP6ProjectId && currentP6ProjectId);
+  const p6ProjectIdsMatch = p6ProjectIdsKnown && previousP6ProjectId === currentP6ProjectId;
+  const p6ProjectIdsDiffer = p6ProjectIdsKnown && !p6ProjectIdsMatch;
+  const hasConsistentScheduleIdentity = scheduleIdsMatch || p6ProjectIdsMatch;
   const hasDeclaredMapping = Boolean(pair.activityIdentityMapping && Object.keys(pair.activityIdentityMapping).length);
   checks.push(
     previousDuplicates.length || currentDuplicates.length
       ? check("schedule-identity", "blocked", "توجد Activity IDs مكررة؛ لا يمكن بناء مطابقة موثوقة.", "Duplicate Activity IDs prevent a reliable identity match.", [text(`سابق: ${previousDuplicates.join(", ") || "—"}; حالي: ${currentDuplicates.join(", ") || "—"}.`, `Previous: ${previousDuplicates.join(", ") || "—"}; current: ${currentDuplicates.join(", ") || "—"}.`)])
-      : !scheduleIdsMatch && !hasDeclaredMapping
+      : p6ProjectIdsDiffer && !hasDeclaredMapping
+        ? check("schedule-identity", "blocked", "معرّف مشروع P6 مختلف بين التحديثين ولا توجد خريطة هوية معلنة.", "P6 project IDs differ between updates and no declared identity mapping is available.", [text(`سابق: ${previousP6ProjectId}; حالي: ${currentP6ProjectId}.`, `Previous: ${previousP6ProjectId}; current: ${currentP6ProjectId}.`)])
+        : p6ProjectIdsDiffer
+          ? check("schedule-identity", "review", "معرّف مشروع P6 مختلف؛ راجع خريطة الهوية المعلنة قبل الاعتماد.", "P6 project IDs differ; review the declared identity mapping before relying on the analysis.")
+      : !hasConsistentScheduleIdentity && !hasDeclaredMapping
         ? check("schedule-identity", "blocked", "معرّف البرنامج مختلف ولا توجد خريطة هوية معلنة.", "Schedule IDs differ and no declared identity mapping is available.")
-        : !scheduleIdsMatch
+        : p6ProjectIdsMatch && !scheduleIdsMatch
+          ? check("schedule-identity", "pass", "معرّف مشروع P6 متطابق رغم اختلاف معرّف اللقطة المحلي؛ Activity IDs صالحة للمطابقة الأولية.", "P6 project ID matches despite differing local snapshot IDs; Activity IDs support an initial match.", [text(`PROJECT.proj_id: ${previousP6ProjectId}.`, `PROJECT.proj_id: ${previousP6ProjectId}.`)])
+        : !hasConsistentScheduleIdentity
           ? check("schedule-identity", "review", "معرّف البرنامج مختلف؛ راجع خريطة الهوية المعلنة قبل الاعتماد.", "Schedule IDs differ; review the declared identity mapping before relying on the analysis.")
           : check("schedule-identity", "pass", "معرّف البرنامج وActivity IDs صالحان للمطابقة الأولية.", "Schedule ID and Activity IDs support an initial match."),
   );
@@ -466,9 +491,14 @@ export function assessUpdateToUpdateReadiness(pair: UpdateToUpdatePair, changeRe
 
   const calendarMissing = !pair.previous.schedule.calendar || !pair.current.schedule.calendar;
   const calendarChangeCount = changeRegister.changes.filter((change) => change.category === "calendar").length;
+  const previousTaskCalendarIds = distinctImportedTaskCalendarIds(pair.previous.schedule);
+  const currentTaskCalendarIds = distinctImportedTaskCalendarIds(pair.current.schedule);
+  const multipleImportedActivityCalendars = previousTaskCalendarIds.size > 1 || currentTaskCalendarIds.size > 1;
   checks.push(
     calendarMissing
       ? check("calendar-and-holidays", "review", "تعريف تقويم أحد التحديثين غير متاح محلياً؛ تعرض أي نتيجة بتحفظ واضح.", "A programme calendar is unavailable locally; any result requires an explicit limitation.")
+      : multipleImportedActivityCalendars
+        ? check("calendar-and-holidays", "review", "يوجد أكثر من تقويم نشاط في أحد XER؛ التقويم المحلي المفرد لا يثبت توافق Primavera أو أثر العطل والاستثناءات.", "One XER uses multiple activity calendars; the single local calendar does not establish Primavera parity or holiday/exception impact.", [text(`سابق: ${previousTaskCalendarIds.size}؛ حالي: ${currentTaskCalendarIds.size}.`, `Previous: ${previousTaskCalendarIds.size}; current: ${currentTaskCalendarIds.size}.`)])
       : calendarChangeCount
         ? check("calendar-and-holidays", "review", "تغيّر التقويم أو العطلات ظاهر ويعامل كتعديل برنامج قابل للمراجعة.", "Calendar or holiday changes are visible and treated as a reviewable programme revision.")
         : check("calendar-and-holidays", "pass", "التقويمان متاحان ولا يظهر فرق في أيام العمل أو العطلات.", "Both calendars are available with no working-week or holiday variance."),

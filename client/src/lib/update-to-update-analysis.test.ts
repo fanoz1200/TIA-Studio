@@ -100,6 +100,48 @@ describe("بوابة جاهزية وسجل تغييرات Update-to-Update", () 
     expect(inspection.changeRegister.counts).toMatchObject({ progress: 1, blocker: 0 });
   });
 
+  it("يعتمد PROJECT.proj_id المتطابق من XER لهوية زوج أولية رغم اختلاف أسماء الملفات والمعرّفات المحلية", () => {
+    const xerSource = { projectId: "6698" };
+    const pair = createUpdateToUpdatePair({
+      previous: {
+        ...reviewablePrevious,
+        fileName: "011-B46-UP-20-08-2026.xer",
+        schedule: { ...reviewablePrevious.schedule, id: "xer-011", xerSource },
+      },
+      current: {
+        ...reviewableCurrent,
+        fileName: "012-B46-UP-27-08-2026.xer",
+        schedule: { ...reviewableCurrent.schedule, id: "xer-012", xerSource: { projectId: "6698" } },
+      },
+    });
+
+    const identity = assessUpdateToUpdateReadiness(pair).checks.find((check) => check.code === "schedule-identity");
+    expect(identity?.status).toBe("pass");
+    expect(identity?.message.en).toContain("P6 project ID matches");
+  });
+
+  it("يحجب اختلاف PROJECT.proj_id من XER حتى لو تساوى معرّف الجدول المحلي", () => {
+    const pair = createUpdateToUpdatePair({
+      previous: { ...reviewablePrevious, schedule: { ...reviewablePrevious.schedule, xerSource: { projectId: "6698" } } },
+      current: { ...reviewableCurrent, schedule: { ...reviewableCurrent.schedule, xerSource: { projectId: "6699" } } },
+    });
+
+    const identity = assessUpdateToUpdateReadiness(pair).checks.find((check) => check.code === "schedule-identity");
+    expect(identity?.status).toBe("blocked");
+    expect(identity?.message.en).toContain("P6 project IDs differ");
+  });
+
+  it("لا يدعي تطابق تقويم Primavera عندما يكشف XER عن أكثر من تقويم نشاط", () => {
+    const pair = createUpdateToUpdatePair({
+      previous: { ...reviewablePrevious, schedule: { ...reviewablePrevious.schedule, xerSource: { projectId: "6698", taskCalendarIds: ["CAL-01", "CAL-02"] } } },
+      current: { ...reviewableCurrent, schedule: { ...reviewableCurrent.schedule, xerSource: { projectId: "6698", taskCalendarIds: ["CAL-01", "CAL-02"] } } },
+    });
+
+    const calendar = assessUpdateToUpdateReadiness(pair).checks.find((check) => check.code === "calendar-and-holidays");
+    expect(calendar?.status).toBe("review");
+    expect(calendar?.message.en).toContain("multiple activity calendars");
+  });
+
   it("يحجب Half–Zero عند Data Date مقلوب بدلاً من استخدام ترتيب واجهة مضلل", () => {
     const pair = createUpdateToUpdatePair({
       previous: reviewablePrevious,
