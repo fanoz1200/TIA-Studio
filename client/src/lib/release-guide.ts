@@ -19,6 +19,14 @@ export const GITHUB_SOURCE_REFERENCE = {
   englishDescription: "The public repository and main branch are the reviewed source reference. The delivery record verifies the sync SHA before the source is described as current; this card does not indicate a new Windows build or GitHub Release.",
 } as const;
 
+/** Stable Windows release links. Keep these separate from the GitHub source branch. */
+export const WINDOWS_SETUP_DOWNLOAD_URL =
+  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe";
+export const WINDOWS_PORTABLE_DOWNLOAD_URL =
+  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe";
+export const WINDOWS_SHA256_DOWNLOAD_URL =
+  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt";
+
 export const methodologyGuide = [
   {
     title: "Time Impact Analysis — TIA",

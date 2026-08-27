@@ -32,7 +32,7 @@ describe("شاشة بداية TIA Studio", () => {
     expect(screen.getByText("Prepared & Executed by Eng. Ahmed Mohamed Omar")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Email eng.Ahmadomr@gmail.com" }).getAttribute("href")).toBe("mailto:eng.Ahmadomr@gmail.com");
     expect(screen.getByRole("link", { name: "WhatsApp 01116770951" }).getAttribute("href")).toBe("https://wa.me/201116770951");
-    expect(screen.getByRole("button", { name: "تشغيل نغمة البداية" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "شغّل المقدمة الصوتية" })).toBeTruthy();
     expect(audioContext).not.toHaveBeenCalled();
   });
 

@@ -4,7 +4,7 @@ import { BookOpenCheck, Boxes, Download, FileArchive, FileCode2, FileText, GitBr
 import { Button } from "@/components/ui/button";
 import { resolveResourceDownloadHref } from "@/lib/download-links";
 import { bilingualUiLabel } from "@/lib/language";
-import { ENGLISH_LOCAL_RELEASE, englishEngineGuide, englishMethodologyGuide, englishReleaseChanges, englishSystemLinks, englishWorkflowGuide, engineGuide, GITHUB_SOURCE_REFERENCE, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
+import { ENGLISH_LOCAL_RELEASE, englishEngineGuide, englishMethodologyGuide, englishReleaseChanges, englishSystemLinks, englishWorkflowGuide, engineGuide, GITHUB_SOURCE_REFERENCE, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, WINDOWS_PORTABLE_DOWNLOAD_URL, WINDOWS_SETUP_DOWNLOAD_URL, WINDOWS_SHA256_DOWNLOAD_URL, workflowGuide } from "@/lib/release-guide";
 import { WORKSHOP_NO8_TRAINING_REFERENCE } from "@/lib/workshop-training-reference";
 import { useAppLanguage } from "@/contexts/LanguageContext";
 import "./project-resources.css";
@@ -22,9 +22,9 @@ const resources = [
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
   { title: "حزمة المصدر والاستمرارية — 1.0.7", description: "أرشيف TAR.GZ نظيف من المصدر والأدلة والأمثلة. يشمل تقويم مصر الافتراضي بستة أيام، بوابة الجودة المبكرة، عارض XER وقالب الأحداث المهني. لا يضم ملفات P6 أو Excel الأصلية للمستخدم.", href: "/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz", icon: HardDriveDownload, kind: "TAR.GZ · Source + Handoff" },
   { title: "دليل استمرارية المشروع وتسليمه", description: "خطوات حفظ المصدر، استعادة العمل، متابعة التطوير عبر GitHub أو من حزمة المصدر، وحدود ما يلزم اختباره قبل أي إصدار جديد.", href: "/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md", icon: GitBranch, kind: "Markdown · Continuity" },
-  { title: "نسخة سطح المكتب — Windows 1.0.12 Setup (الموصى بها)", description: "مثبّت Windows x64 يتضمن اختيار لغة الواجهة ولغة التقرير، وClaim Console وتدقيق تقاويم/قيود وحالة Update في XER: اضغط Download ثم شغّل ملف Setup مرة واحدة. يضيف اختصاراً في Start ويثبت التطبيق في مكانه الطبيعي؛ لا تحتاج Node.js أو فك ضغط. الحزمة غير موقّعة رقمياً: افحصها قبل التشغيل من هذا الرابط الرسمي فقط.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe", icon: HardDriveDownload, kind: "Windows x64 · Setup" },
-  { title: "نسخة سطح المكتب — Windows 1.0.12 المحمولة", description: "ملف EXE مباشر يتضمن اختيار لغة الواجهة ولغة التقرير، وClaim Console وتدقيق تقاويم/قيود وحالة Update في XER ولا يثبت شيئاً ولا يضيف أيقونة Start؛ شغّله من مجلد تختاره أنت. مناسب للتجربة أو عند منع التثبيت في جهاز العمل، لكنه لا يوفر تثبيتاً مركزياً أو تحديثاً تلقائياً.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe", icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
-  { title: "بصمات Windows 1.0.12 — SHA-256", description: "ملف بصمات Setup وPortable. نزّله ثم طابق البصمة قبل التشغيل، ولا تخلط ملفاً من إصدار أو مصدر تنزيل مختلف.", href: "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt", icon: ShieldCheck, kind: "SHA-256" },
+  { title: "نسخة سطح المكتب — Windows 1.0.12 Setup (الموصى بها)", description: "مثبّت Windows x64 يتضمن اختيار لغة الواجهة ولغة التقرير، وClaim Console وتدقيق تقاويم/قيود وحالة Update في XER: اضغط Download ثم شغّل ملف Setup مرة واحدة. يضيف اختصاراً في Start ويثبت التطبيق في مكانه الطبيعي؛ لا تحتاج Node.js أو فك ضغط. الحزمة غير موقّعة رقمياً: افحصها قبل التشغيل من هذا الرابط الرسمي فقط.", href: WINDOWS_SETUP_DOWNLOAD_URL, icon: HardDriveDownload, kind: "Windows x64 · Setup" },
+  { title: "نسخة سطح المكتب — Windows 1.0.12 المحمولة", description: "ملف EXE مباشر يتضمن اختيار لغة الواجهة ولغة التقرير، وClaim Console وتدقيق تقاويم/قيود وحالة Update في XER ولا يثبت شيئاً ولا يضيف أيقونة Start؛ شغّله من مجلد تختاره أنت. مناسب للتجربة أو عند منع التثبيت في جهاز العمل، لكنه لا يوفر تثبيتاً مركزياً أو تحديثاً تلقائياً.", href: WINDOWS_PORTABLE_DOWNLOAD_URL, icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
+  { title: "بصمات Windows 1.0.12 — SHA-256", description: "ملف بصمات Setup وPortable. نزّله ثم طابق البصمة قبل التشغيل، ولا تخلط ملفاً من إصدار أو مصدر تنزيل مختلف.", href: WINDOWS_SHA256_DOWNLOAD_URL, icon: ShieldCheck, kind: "SHA-256" },
   { title: "نسخة سطح المكتب — Linux 1.0.7", description: "ملف AppImage واحد لـ Linux x64، ويشمل الحساب المحلي وفحوص الاستيراد وميزات 1.0.7 من دون ملفات P6 أو Excel الأصلية. امنحه صلاحية التنفيذ مرة واحدة، ثم جرّبه على مشروع تدريبي قبل الاستخدام المهني.", href: "/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage", icon: HardDriveDownload, kind: "Linux x64 · AppImage" },
 ];
 
@@ -201,11 +201,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
         <p>{copy.heroDescription}</p>
       </div>
       <div className="heading-actions">
-        {installEvent || installed ? (
-          <Button className="run-button" disabled={!installEvent || installed} onClick={requestInstall} title={bi(copy.installTitle, resourceCopy.en.installTitle)}><HardDriveDownload size={16} />{installed ? bi(copy.installed, resourceCopy.en.installed) : bi(copy.installFromBrowser, resourceCopy.en.installFromBrowser)}</Button>
-        ) : (
-          <Button className="run-button" asChild title={bi(copy.fallbackInstallTitle, resourceCopy.en.fallbackInstallTitle)}><a href={windowsSetupHref} target="_blank" rel="noreferrer"><HardDriveDownload size={16} />{bi(copy.fallbackInstall, resourceCopy.en.fallbackInstall)}</a></Button>
-        )}
+        <Button className="run-button" asChild title={bi(copy.fallbackInstallTitle, resourceCopy.en.fallbackInstallTitle)}><a href={windowsSetupHref}><HardDriveDownload size={16} />{bi(copy.fallbackInstall, resourceCopy.en.fallbackInstall)}</a></Button>
       </div>
     </section>
 
@@ -217,8 +213,8 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     <section className="desktop-download-quick" aria-label={bi(copy.desktopAria, resourceCopy.en.desktopAria)}>
       <div><HardDriveDownload size={24} /><div><b>{bi(copy.desktopTitle, resourceCopy.en.desktopTitle)}</b><p>{copy.desktopDescription}</p></div></div>
       <div className="desktop-download-quick__actions">
-        <a className="desktop-download-quick__primary" href={windowsSetupHref} target="_blank" rel="noreferrer"><Download size={17} />{bi(copy.setup, resourceCopy.en.setup)}</a>
-        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} target="_blank" rel="noreferrer"><Download size={17} />{bi(copy.portable, resourceCopy.en.portable)}</a>
+        <a className="desktop-download-quick__primary" href={windowsSetupHref}><Download size={17} />{bi(copy.setup, resourceCopy.en.setup)}</a>
+        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)}><Download size={17} />{bi(copy.portable, resourceCopy.en.portable)}</a>
       </div>
     </section>
 
@@ -250,7 +246,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     </section>
 
     <section className="resources-grid" aria-label={bi(copy.resourcesAria, resourceCopy.en.resourcesAria)}>
-      {visibleResources.map((resource, index) => { const Icon = resource.icon; const href = resolveResourceDownloadHref(resource.href); const isExternal = /^https?:\/\//i.test(href); return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{bi(resource.title, englishResources[index].title)}</h2><p>{resource.description}</p></div><a className="resource-download" href={href} download={isExternal ? undefined : true} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noreferrer" : undefined}><Download size={16} />{bi(copy.download, resourceCopy.en.download)}</a></article>; })}
+      {visibleResources.map((resource, index) => { const Icon = resource.icon; const href = resolveResourceDownloadHref(resource.href); const isExternal = /^https?:\/\//i.test(href); return <article className="resource-card" key={resource.href}><div className="resource-card__icon"><Icon size={21} /></div><div><span>{resource.kind}</span><h2>{bi(resource.title, englishResources[index].title)}</h2><p>{resource.description}</p></div><a className="resource-download" href={href} download={isExternal ? undefined : true}><Download size={16} />{bi(copy.download, resourceCopy.en.download)}</a></article>; })}
     </section>
 
     <section className="panel examples-panel">

@@ -113,6 +113,7 @@ import {
 } from "@/components/FirstRunGuide";
 import { AppLaunchSplash } from "@/components/AppLaunchSplash";
 import { ProductIdentity } from "@/components/ProductIdentity";
+import { WINDOWS_SETUP_DOWNLOAD_URL } from "@/lib/release-guide";
 import { UserGuidePanel } from "@/components/UserGuidePanel";
 import { XerViewerPanel } from "@/components/XerViewerPanel";
 import { TimeSliceWindowAnalysisPanel } from "@/components/TimeSliceWindowAnalysisPanel";
@@ -1953,6 +1954,11 @@ export default function Home() {
           setShowLaunchSplash(false);
           setShowFirstRunGuide(true);
         }}
+        onOpenKnowledge={() => {
+          setShowLaunchSplash(false);
+          setView("learning");
+          window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+        }}
       />
       <FirstRunGuide
         open={showFirstRunGuide}
@@ -2037,6 +2043,14 @@ export default function Home() {
             <Button
               variant="outline"
               className="outline-action"
+              onClick={() => setShowLaunchSplash(true)}
+            >
+              <Sparkles size={16} />
+              {language === "en" ? "Replay intro" : "إعادة المقدمة"}
+            </Button>
+            <Button
+              variant="outline"
+              className="outline-action"
               onClick={() => {
                 setView("guide");
                 window.requestAnimationFrame(() =>
@@ -2047,18 +2061,11 @@ export default function Home() {
               <CircleHelp size={16} />
               {chrome.howToUse}
             </Button>
-            <Button
-              variant="outline"
-              className="outline-action"
-              onClick={() => {
-                setView("resources");
-                window.requestAnimationFrame(() =>
-                  window.scrollTo({ top: 0, behavior: "smooth" })
-                );
-              }}
-            >
-              <HardDriveDownload size={16} />
-              {chrome.downloadWindows}
+            <Button variant="outline" className="outline-action" asChild>
+              <a href={WINDOWS_SETUP_DOWNLOAD_URL} aria-label={`${chrome.downloadWindows} — Windows Setup 1.0.12`}>
+                <HardDriveDownload size={16} />
+                {chrome.downloadWindows}
+              </a>
             </Button>
             <Button
               variant="outline"
