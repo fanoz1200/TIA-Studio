@@ -1,0 +1,18 @@
+.product-identity { font-family: "IBM Plex Sans Arabic", sans-serif; }
+.product-identity p { margin: 0; font-weight: 700; letter-spacing: .01em; }
+.product-identity__contacts { display: flex; flex-wrap: wrap; gap: .34rem .72rem; margin-top: .28rem; }
+.product-identity__contacts a { display: inline-flex; align-items: center; gap: .28rem; color: inherit; text-decoration: none; }
+.product-identity__contacts a:hover { text-decoration: underline; }
+.product-identity__contacts a:focus-visible { border-radius: .24rem; outline: 2px solid currentColor; outline-offset: 3px; }
+.product-identity--shell { direction: ltr; padding: .45rem 2.5rem .55rem; color: #4c6674; background: rgba(233, 240, 240, .78); border-bottom: 1px solid #d8e2e2; font-size: .68rem; line-height: 1.35; }
+.product-identity--shell p { color: #174d68; }
+.product-identity--sidebar { position: relative; z-index: 1; direction: ltr; margin: 13px 7px 0; padding-top: 12px; color: #a9c4cf; border-top: 1px solid rgba(217, 234, 239, .16); font-size: 9px; line-height: 1.45; }
+.product-identity--sidebar p { color: #e8f3f5; font-size: 9px; }
+.product-identity--sidebar .product-identity__contacts { display: grid; gap: 3px; margin-top: 5px; }
+.product-identity--splash { max-width: 38rem; color: #b8d6df; font-size: .76rem; line-height: 1.5; }
+.product-identity--splash p { color: #f3fbfc; font-size: .8rem; }
+.product-identity--splash .product-identity__contacts a { color: #a8d8e7; }
+.product-identity--report { margin-top: .5rem; color: #4d6270; font-size: .64rem; line-height: 1.4; }
+.product-identity--report p { color: #173e63; }
+@media (max-width: 820px) { .product-identity--shell { padding: .45rem 1rem; font-size: .62rem; } .product-identity--sidebar { display: none; } }
+@media print { .product-identity--shell, .product-identity--sidebar { display: none !important; } .product-identity--report { display: block; } }

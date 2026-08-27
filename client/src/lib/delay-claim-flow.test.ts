@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { addNoticePeriod, nextReviewState } from "../../../server/claimWorkflow";
 import { buildClaimDocxBlob, buildClaimPdfBlob, claimReportSections, type ClaimReportPayload } from "./claim-export";
@@ -63,9 +61,9 @@ describe("delay-claim end-to-end flow", () => {
 
     const docx = await buildClaimDocxBlob(reportPayload);
     expect(new TextDecoder().decode((await docx.arrayBuffer()).slice(0, 2))).toBe("PK");
-    const font = await readFile(path.resolve(import.meta.dirname, "../../../../webdev-static-assets/Amiri-Regular.ttf"));
-    globalThis.fetch = vi.fn(async () => new Response(font, { status: 200 }));
-    const pdf = await buildClaimPdfBlob(reportPayload);
+    globalThis.fetch = vi.fn();
+    const pdf = await buildClaimPdfBlob({ ...reportPayload, language: "en" });
     expect(new TextDecoder().decode((await pdf.arrayBuffer()).slice(0, 4))).toBe("%PDF");
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 });

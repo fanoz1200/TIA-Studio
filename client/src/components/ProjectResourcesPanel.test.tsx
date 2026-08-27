@@ -39,6 +39,11 @@ describe("ProjectResourcesPanel", () => {
     expect(screen.getByRole("link", { name: /Windows 1.0.12 — Setup/ }).getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe");
     expect(screen.getByRole("link", { name: /Windows 1.0.12 — محمول/ }).getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe");
     expect(screen.getByRole("heading", { name: "الدليل الحيّ: كيف يعمل البرنامج من البداية للنهاية؟ · Live guide: how does the app work end-to-end?" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "المصدر الحالي على GitHub" })).toBeTruthy();
+    const sourceLink = screen.getByRole("link", { name: "GitHub · main" });
+    expect(sourceLink.getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio");
+    expect(sourceLink.getAttribute("target")).toBe("_blank");
+    expect(screen.getByText(/لا تعني هذه البطاقة إصدار Windows أو GitHub Release جديداً/)).toBeTruthy();
     expect(screen.getByText("الإصدار · Release 1.0.12")).toBeTruthy();
     expect(screen.getByText("تشغيل محلي بنقرة واحدة · One-click local launch")).toBeTruthy();
     expect(screen.getByText("محرك CPM الحتمي والتقويم الإقليمي")).toBeTruthy();
@@ -63,6 +68,9 @@ describe("ProjectResourcesPanel", () => {
     expect(screen.queryByText("مركز المعرفة والتنزيل · Knowledge and download center")).toBeNull();
     expect(document.querySelector('[aria-label="Project resources and downloads"]')?.getAttribute("dir")).toBe("ltr");
     expect(screen.getByRole("heading", { name: "Live guide: how does the app work end-to-end?" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Current source on GitHub" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "GitHub · main" }).getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio");
+    expect(screen.getByText(/this card does not indicate a new Windows build or GitHub Release/)).toBeTruthy();
     expect(screen.getByText("One-click local launch")).toBeTruthy();
     expect(screen.getByText("Deterministic CPM engine and regional calendar")).toBeTruthy();
     expect(screen.getByText(/Start in the knowledge centre to identify the event type/)).toBeTruthy();

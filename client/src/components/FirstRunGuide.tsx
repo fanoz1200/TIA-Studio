@@ -29,7 +29,7 @@ export function shouldShowFirstRunGuide() {
   }
 }
 
-function markFirstRunGuideSeen() {
+export function markFirstRunGuideSeen() {
   try {
     window.localStorage.setItem(FIRST_RUN_GUIDE_STORAGE_KEY, "1");
   } catch {

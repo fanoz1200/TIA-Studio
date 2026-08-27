@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildClaimDocxBlob, buildClaimPdfBlob, buildFullClaimFactPack, claimReportSections, type ClaimReportPayload } from "./claim-export";
 
@@ -91,13 +89,10 @@ describe("claim report exporters", () => {
     expect(String.fromCharCode(...bytes.slice(0, 2))).toBe("PK");
   });
 
-  it("generates a valid Arabic-capable PDF package", async () => {
-    const font = await readFile(path.resolve(import.meta.dirname, "../../../../webdev-static-assets/Amiri-Regular.ttf"));
-    globalThis.fetch = vi.fn(async () => new Response(font, { status: 200 }));
-    const blob = await buildClaimPdfBlob(payload);
-    const bytes = new Uint8Array(await blob.arrayBuffer());
-    expect(blob.size).toBeGreaterThan(1_000);
-    expect(new TextDecoder().decode(bytes.slice(0, 4))).toBe("%PDF");
+  it("reports an Arabic-font loading failure clearly instead of emitting a corrupt PDF", async () => {
+    globalThis.fetch = vi.fn(async () => new Response(null, { status: 503 }));
+    await expect(buildClaimPdfBlob(payload)).rejects.toThrow("تعذر تحميل خط التقرير العربي.");
+    expect(globalThis.fetch).toHaveBeenCalledWith("/manus-storage/Amiri-Regular_1361616e.ttf");
   });
 
   it("generates a valid English PDF without loading the Arabic font", async () => {

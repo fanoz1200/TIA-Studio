@@ -4,7 +4,7 @@ import { BookOpenCheck, Boxes, Download, FileArchive, FileCode2, FileText, GitBr
 import { Button } from "@/components/ui/button";
 import { resolveResourceDownloadHref } from "@/lib/download-links";
 import { bilingualUiLabel } from "@/lib/language";
-import { ENGLISH_LOCAL_RELEASE, englishEngineGuide, englishMethodologyGuide, englishReleaseChanges, englishSystemLinks, englishWorkflowGuide, engineGuide, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
+import { ENGLISH_LOCAL_RELEASE, englishEngineGuide, englishMethodologyGuide, englishReleaseChanges, englishSystemLinks, englishWorkflowGuide, engineGuide, GITHUB_SOURCE_REFERENCE, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, workflowGuide } from "@/lib/release-guide";
 import { WORKSHOP_NO8_TRAINING_REFERENCE } from "@/lib/workshop-training-reference";
 import { useAppLanguage } from "@/contexts/LanguageContext";
 import "./project-resources.css";
@@ -220,6 +220,16 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
         <a className="desktop-download-quick__primary" href={windowsSetupHref} target="_blank" rel="noreferrer"><Download size={17} />{bi(copy.setup, resourceCopy.en.setup)}</a>
         <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)} target="_blank" rel="noreferrer"><Download size={17} />{bi(copy.portable, resourceCopy.en.portable)}</a>
       </div>
+    </section>
+
+    <section className="github-source-card" aria-label={language === "en" ? GITHUB_SOURCE_REFERENCE.englishTitle : GITHUB_SOURCE_REFERENCE.arabicTitle}>
+      <GitBranch size={23} aria-hidden="true" />
+      <div>
+        <span>{language === "en" ? "SOURCE REFERENCE · PUBLIC REPOSITORY" : "مرجع المصدر · مستودع عام"}</span>
+        <h2>{language === "en" ? GITHUB_SOURCE_REFERENCE.englishTitle : GITHUB_SOURCE_REFERENCE.arabicTitle}</h2>
+        <p>{language === "en" ? GITHUB_SOURCE_REFERENCE.englishDescription : GITHUB_SOURCE_REFERENCE.arabicDescription}</p>
+      </div>
+      <a href={GITHUB_SOURCE_REFERENCE.repositoryUrl} target="_blank" rel="noreferrer" dir="ltr">GitHub · {GITHUB_SOURCE_REFERENCE.branch} <Download size={15} aria-hidden="true" /></a>
     </section>
 
     <section id="release-guide" className="panel release-guide" aria-labelledby="release-guide-title">

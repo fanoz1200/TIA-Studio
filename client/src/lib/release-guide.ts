@@ -9,6 +9,16 @@ export const releaseInfo = {
 // الدليل الحيّ عن بطاقة الإصدار عند تغيير بيانات الحزمة لاحقاً.
 export const LOCAL_RELEASE = releaseInfo;
 
+/** Public source reference only; the release version remains separate from the source branch. */
+export const GITHUB_SOURCE_REFERENCE = {
+  repositoryUrl: "https://github.com/fanoz1200/TIA-Studio",
+  branch: "main",
+  arabicTitle: "المصدر الحالي على GitHub",
+  englishTitle: "Current source on GitHub",
+  arabicDescription: "المستودع العام وفرع main هما مرجع المصدر المراجع. يثبت تقرير التسليم بصمة المزامنة قبل وصف المصدر بأنه الأحدث؛ لا تعني هذه البطاقة إصدار Windows أو GitHub Release جديداً.",
+  englishDescription: "The public repository and main branch are the reviewed source reference. The delivery record verifies the sync SHA before the source is described as current; this card does not indicate a new Windows build or GitHub Release.",
+} as const;
+
 export const methodologyGuide = [
   {
     title: "Time Impact Analysis — TIA",

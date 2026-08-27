@@ -108,8 +108,11 @@ import {
 } from "@/components/GuidedAnalysisPanel";
 import {
   FirstRunGuide,
+  markFirstRunGuideSeen,
   shouldShowFirstRunGuide,
 } from "@/components/FirstRunGuide";
+import { AppLaunchSplash } from "@/components/AppLaunchSplash";
+import { ProductIdentity } from "@/components/ProductIdentity";
 import { UserGuidePanel } from "@/components/UserGuidePanel";
 import { XerViewerPanel } from "@/components/XerViewerPanel";
 import { TimeSliceWindowAnalysisPanel } from "@/components/TimeSliceWindowAnalysisPanel";
@@ -1125,10 +1128,12 @@ export default function Home() {
   const { language, setLanguage, direction } = useAppLanguage();
 
   const [view, setView] = useState<ViewKey>(getInitialView);
-  const [showFirstRunGuide, setShowFirstRunGuide] = useState(() =>
-    new URLSearchParams(window.location.search).get("skipIntro") !== "1" &&
-    shouldShowFirstRunGuide()
-  );
+  const [showLaunchSplash, setShowLaunchSplash] = useState(() => {
+    const launchParams = new URLSearchParams(window.location.search);
+    return launchParams.get("showSplash") === "1" ||
+      (launchParams.get("skipIntro") !== "1" && shouldShowFirstRunGuide());
+  });
+  const [showFirstRunGuide, setShowFirstRunGuide] = useState(false);
   const [invitationToken] = useState(() =>
     new URLSearchParams(window.location.search).get("invite")
   );
@@ -1937,6 +1942,18 @@ export default function Home() {
 
   return (
     <div className="app-shell" dir={direction}>
+      <AppLaunchSplash
+        open={showLaunchSplash}
+        onOpenChange={setShowLaunchSplash}
+        onEnterWorkspace={() => {
+          markFirstRunGuideSeen();
+          setShowLaunchSplash(false);
+        }}
+        onOpenGuide={() => {
+          setShowLaunchSplash(false);
+          setShowFirstRunGuide(true);
+        }}
+      />
       <FirstRunGuide
         open={showFirstRunGuide}
         onOpenChange={setShowFirstRunGuide}
@@ -1990,6 +2007,7 @@ export default function Home() {
             {chrome.openSclGuide} <ChevronLeft size={15} />
           </button>
         </div>
+        <ProductIdentity variant="sidebar" />
         <div className="local-note">
           <ShieldCheck size={16} />
           <span>{chrome.accountEvidence}</span>
@@ -2072,6 +2090,7 @@ export default function Home() {
             </Button>
           </div>
         </header>
+        <ProductIdentity variant="shell" />
         <ProjectInvitationAcceptPanel
           token={invitationToken}
           isAuthenticated={isAuthenticated}
@@ -3489,6 +3508,7 @@ export default function Home() {
                     <span>{analysisReport.technicalRecord}</span>
                   </div>
                 </div>
+                <ProductIdentity variant="report" />
                 <div>
                   <small>{analysisReport.issueDate}</small>
                   <b dir="ltr">{new Date().toISOString().slice(0, 10)}</b>
