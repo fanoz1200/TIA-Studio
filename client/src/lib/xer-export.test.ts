@@ -173,8 +173,16 @@ describe("preserved XER event export", () => {
 
   it("reports a calendar reference review rather than claiming P6 parity", () => {
     const assessment = assessPrimaveraCalendarMatch(preservedSchedule);
-    expect(assessment).toMatchObject({ state: "review", sourceCalendarCount: 1, projectCalendarId: "10", taskCalendarIds: ["10"], hoursPerDay: { state: "match", source: 8, local: 8 }, dataDate: { state: "match", source: "2026-04-02", local: "2026-04-02" }, inheritance: { state: "not-referenced" } });
+    expect(assessment).toMatchObject({ state: "review", sourceCalendarCount: 1, projectCalendarId: "10", taskCalendarIds: ["10"], encodedCalendarData: { state: "present", calendarsWithEncodedData: 1, projectCalendarHasEncodedData: true, calendarRowsWithPlainDateMarkers: 0, plainDateMarkerCount: 0 }, hoursPerDay: { state: "match", source: 8, local: 8 }, dataDate: { state: "match", source: "2026-04-02", local: "2026-04-02" }, inheritance: { state: "not-referenced" } });
     expect(assessment.messages.join(" ")).toContain("Schedule/F9");
+  });
+
+  it("reports plain date markers in encoded calendar data as review evidence only", () => {
+    const sourceWithDateMarker = importXerBytes(new TextEncoder().encode(preservedRawXer.replace("(0||0()())", "(0||EXCEPTION-2026-05-01||0()())")), "calendar-marker.xer").schedule;
+    const assessment = assessPrimaveraCalendarMatch(sourceWithDateMarker);
+    expect(assessment.encodedCalendarData).toMatchObject({ state: "present", calendarsWithEncodedData: 1, projectCalendarHasEncodedData: true, calendarRowsWithPlainDateMarkers: 1, plainDateMarkerCount: 1 });
+    expect(assessment.messages.join(" ")).toContain("قد ترتبط باستثناءات");
+    expect(assessment.messages.join(" ")).toContain("لا يفسرها");
   });
 
   it("blocks local calendar reliance when the source day hours or Data Date diverge", () => {
@@ -204,6 +212,7 @@ describe("preserved XER event export", () => {
     expect(manifest).toContain(expectedHash);
     expect(manifest).toContain("FN-001");
     expect(checklist).toContain("Schedule/F9");
+    expect(checklist).toContain("قرار فني فقط");
     expect(reconciliation).toContain("local-cpm-reconciliation");
   });
 });

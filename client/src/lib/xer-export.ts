@@ -169,6 +169,14 @@ export type PrimaveraCalendarMatchAssessment = {
   taskCalendarIds: string[];
   localCalendar: { id?: string; name?: string; hoursPerDay?: number };
   projectCalendar?: PrimaveraCalendarReference;
+  /** مؤشرات نصية في clndr_data فقط؛ لا تفك ترميز P6 ولا تعيّن ساعات أو استثناءات. */
+  encodedCalendarData: {
+    state: "present" | "not-found";
+    calendarsWithEncodedData: number;
+    projectCalendarHasEncodedData: boolean;
+    calendarRowsWithPlainDateMarkers: number;
+    plainDateMarkerCount: number;
+  };
   hoursPerDay: { state: PrimaveraReferenceCheck; source?: number; local?: number };
   dataDate: { state: PrimaveraReferenceCheck; source?: string; local?: string };
   inheritance: { state: "not-referenced" | "review" | "unresolved"; baseCalendarId?: string };
@@ -275,6 +283,19 @@ function comparableDate(value: string | undefined) {
   return match?.[0];
 }
 
+function inspectEncodedCalendarData(rows: XerDocumentRow[], projectCalendarId?: string) {
+  const rowsWithData = rows.filter((row) => Boolean(row.values.clndr_data));
+  const dateMarker = /\b(?:19|20)\d{2}[-/]\d{2}[-/]\d{2}\b/g;
+  const dateMarkersByRow = rowsWithData.map((row) => row.values.clndr_data.match(dateMarker)?.length ?? 0);
+  return {
+    state: rowsWithData.length ? "present" as const : "not-found" as const,
+    calendarsWithEncodedData: rowsWithData.length,
+    projectCalendarHasEncodedData: rowsWithData.some((row) => row.values.clndr_id === projectCalendarId),
+    calendarRowsWithPlainDateMarkers: dateMarkersByRow.filter(Boolean).length,
+    plainDateMarkerCount: dateMarkersByRow.reduce((total, count) => total + count, 0),
+  };
+}
+
 /**
  * قراءة تحفظية فقط لتقويم Primavera: تثبت وجود المصدر وتطابق المعرفات وساعات اليوم وData Date
  * عند قابلية القراءة، لكنها لا تفك clndr_data أو inheritance؛ لذلك لا يجوز اعتبارها شهادة تطابق
@@ -285,13 +306,14 @@ export function assessPrimaveraCalendarMatch(schedule: Schedule): PrimaveraCalen
   const localCalendar = { id: schedule.calendar?.id, name: schedule.calendar?.name, hoursPerDay: schedule.calendar?.hoursPerDay };
   const unknownHours = { state: "unknown" as const, local: localCalendar.hoursPerDay };
   const unknownDataDate = { state: "unknown" as const, local: schedule.dataDate };
-  if (!source) return { state: "blocked", sourceCalendarCount: 0, taskCalendarIds: [], localCalendar, hoursPerDay: unknownHours, dataDate: unknownDataDate, inheritance: { state: "not-referenced" }, messages: ["لا توجد نسخة XER أصلية محفوظة في هذه الجلسة؛ لا يمكن فحص مرجع Primavera أو تنزيل Pre مطابق."] };
+  if (!source) return { state: "blocked", sourceCalendarCount: 0, taskCalendarIds: [], localCalendar, encodedCalendarData: { state: "not-found", calendarsWithEncodedData: 0, projectCalendarHasEncodedData: false, calendarRowsWithPlainDateMarkers: 0, plainDateMarkerCount: 0 }, hoursPerDay: unknownHours, dataDate: unknownDataDate, inheritance: { state: "not-referenced" }, messages: ["لا توجد نسخة XER أصلية محفوظة في هذه الجلسة؛ لا يمكن فحص مرجع Primavera أو تنزيل Pre مطابق."] };
 
   const document = parseXerDocument(source.rawText);
   const projects = xerTableBlocks(document, "PROJECT").flatMap((table) => table.rows);
   const calendars = xerTableBlocks(document, "CALENDAR").flatMap((table) => table.rows);
   const calendarIds = new Set(calendars.map((row) => row.values.clndr_id).filter(Boolean));
-  const hasEncodedData = calendars.some((row) => Boolean(row.values.clndr_data));
+  const encodedCalendarData = inspectEncodedCalendarData(calendars, source.projectCalendarId);
+  const hasEncodedData = encodedCalendarData.state === "present";
   const projectCalendarRow = calendars.find((row) => row.values.clndr_id === source.projectCalendarId);
   const projectCalendar = projectCalendarRow ? {
     id: projectCalendarRow.values.clndr_id,
@@ -326,6 +348,10 @@ export function assessPrimaveraCalendarMatch(schedule: Schedule): PrimaveraCalen
   if (source.taskCalendarIds.some((id) => !calendarIds.has(id))) messages.push("يوجد TASK.clndr_id لا يشير إلى CALENDAR مقروء؛ لا تعتمد الحساب المحلي.");
   if (source.taskCalendarIds.length > 1) messages.push("المصدر يعيّن أكثر من تقويم نشاط؛ محرك TIA Studio المحلي لا يفك التقويم لكل نشاط.");
   if (!hasEncodedData) messages.push("لم يظهر clndr_data مشفر في CALENDAR؛ راجع اكتمال تصدير P6 قبل أي مطابقة.");
+  else {
+    messages.push(`توجد clndr_data مشفرة في ${encodedCalendarData.calendarsWithEncodedData} من ${calendars.length} تقاويم${encodedCalendarData.projectCalendarHasEncodedData ? "، ومنها تقويم المشروع" : ""}. وجودها لا يعني أنها فُكت أو طابقت P6.`);
+    if (encodedCalendarData.plainDateMarkerCount) messages.push(`ظهرت ${encodedCalendarData.plainDateMarkerCount} علامة تاريخ نصية داخل clndr_data عبر ${encodedCalendarData.calendarRowsWithPlainDateMarkers} تقاويم. قد ترتبط باستثناءات، لكن التطبيق لا يفسرها ولا يبني منها أيام عمل.`);
+  }
   if (hoursPerDay.state === "mismatch") messages.push(`فرق ساعات اليوم: CALENDAR.day_hr_cnt=${hoursPerDay.source} بينما تقويم TIA Studio المحلي=${hoursPerDay.local}. لا تعتمد حسابات الأيام أو Float المحلية لهذا الملف.`);
   else if (hoursPerDay.state === "unknown") messages.push("تعذرت مقارنة ساعات اليوم لأن CALENDAR.day_hr_cnt أو تقويم TIA Studio المحلي غير مكتمل.");
   if (dataDate.state === "mismatch") messages.push(`فرق Data Date: المصدر=${dataDate.source} والجدول المحلي=${dataDate.local}. راجع النسخة الصحيحة قبل التحليل.`);
@@ -341,6 +367,7 @@ export function assessPrimaveraCalendarMatch(schedule: Schedule): PrimaveraCalen
     taskCalendarIds: source.taskCalendarIds,
     localCalendar,
     projectCalendar,
+    encodedCalendarData,
     hoursPerDay,
     dataDate,
     inheritance,
@@ -491,24 +518,30 @@ function p6ReimportChecklist(
   const safe = (value: string | number | undefined) => value === undefined || value === "" ? "غير متاح / Not available" : String(value);
   const postAvailability = post.state === "ready" ? "متاح للمراجعة / Available for review" : "محجوب — راجع manifest.json / Blocked — see manifest.json";
   return [
-    "# دليل إعادة الاستيراد والتحقق في Primavera P6",
+    "# ورقة تحقق Primavera P6: إعادة الاستيراد ثم Schedule/F9",
     "",
-    "> هذا الدليل سجل عمل للمراجع. لا يثبت وحده صحة Post ولا يعيد حساب P6 داخل TIA Studio.",
+    "> هذه ورقة تسجيل فنية قصيرة. لا تثبت وحدها صحة Post، ولا تنسب مسؤولية أو EOT أو entitlement، ولا تعيد حساب Primavera داخل TIA Studio.",
     "",
     `- **الحدث / Event:** ${event.id} — ${event.title}`,
     `- **ملف المصدر / Source:** ${safe(schedule.xerSource?.originalFileName)}`,
     `- **Pre:** ${pre.fileName}`,
     `- **Post:** ${post.fileName} (${postAvailability})`,
     "",
-    "## خطوات المراجع / Reviewer steps",
+    "## قبل فتح Primavera / Before P6",
     "",
-    "1. اعمل نسخة غير إنتاجية من مشروع P6 أو قاعدة اختبار؛ لا تستورد في البرنامج المعتمد مباشرة.",
-    "2. استورد ملف Pre وتحقق من اسم المشروع، WBS، عدد الأنشطة، وعدد العلاقات مقابل الملف الأصلي.",
-    "3. إذا كان Post متاحاً، استورده في نسخة اختبار منفصلة. راجع Import Log، ثم نفّذ Schedule/F9 باستخدام تقاويم P6 الموجودة في الملف.",
-    "4. سجّل أدناه تاريخ الإكمال، المسار الحرج، والـTotal Float بعد F9. لا تنقل الحكم على المسؤولية أو EOT من هذا الفحص وحده.",
-    "5. قارِن قيم P6 بنتائج TIA Studio، وأرفق تقرير Schedule/F9 أو لقطاته مع ملف القضية خارج هذه الحزمة عند الاقتضاء.",
+    "1. أنشئ نسخة غير إنتاجية من مشروع P6 أو قاعدة اختبار. لا تستورد في برنامج المشروع المعتمد مباشرة.",
+    "2. سجّل نسخة Primavera وإعدادات Schedule، وخذ لقطة قبل الاستيراد. احتفظ بـPre وPost داخل هذه الحزمة كما هما.",
+    "3. لا تبدأ الاختبار إذا كانت حالة Post محجوبة. راجع manifest.json، وصحح سبب الحجب في المصدر الأصلي ثم أعد تصدير الحزمة.",
     "",
-    "## سجل مقارنة بعد Schedule/F9",
+    "## خطوات التحقق / Reviewer steps",
+    "",
+    "1. استورد ملف Pre في نسخة الاختبار. راجع Import Log، اسم المشروع، WBS، عدد الأنشطة، وعدد العلاقات مقابل المصدر.",
+    "2. افتح Calendar Details في P6. راجع تقويم النشاط وتقويم المشروع ونمط الأسبوع والاستثناءات/الشفتات. لا تستنتج شيئاً من مؤشرات TIA Studio وحدها.",
+    "3. إذا كان Post متاحاً، استورده في نسخة اختبار منفصلة. راجع Import Log ثم ابحث عن نشاط/علاقات الـFragment فقط.",
+    "4. نفّذ Schedule/F9 بإعدادات P6 نفسها. سجّل Data Date وتاريخ الإكمال والمسار الحرج وTotal Float بعد F9.",
+    "5. أرفق Import Log وSchedule/F9 report أو لقطاته مع ملف القضية خارج هذه الحزمة عند الاقتضاء. لا تدخل ملفات المشروع في TIA Studio لمجرد التوثيق.",
+    "",
+    "## سجل تحقق بعد Schedule/F9",
     "",
     "| بند المراجعة | مرجع الحزمة المحلي | قيمة P6 بعد الاستيراد وSchedule/F9 | نتيجة المراجع |",
     "|---|---|---|---|",
@@ -516,15 +549,24 @@ function p6ReimportChecklist(
     `| تقويم النشاط الجديد | ${safe(post.calendarAssignmentId)} | اكتب CALENDAR المستخدم | Pass / Review / Block |`,
     `| ساعات اليوم / day_hr_cnt | ${safe(calendarMatch.hoursPerDay.source)} | اكتب القيمة في P6 | Pass / Review / Block |`,
     `| Data Date | ${safe(calendarMatch.dataDate.source)} | اكتب القيمة بعد F9 | Pass / Review / Block |`,
+    `| clndr_data / نمط الأسبوع والاستثناءات | ${calendarMatch.encodedCalendarData.state === "present" ? `${calendarMatch.encodedCalendarData.calendarsWithEncodedData} تقويم مشفر؛ ${calendarMatch.encodedCalendarData.plainDateMarkerCount} علامة تاريخ غير مفسرة` : "غير ظاهر"} | راجع Calendar Details في P6 | Pass / Review / Block |`,
     `| عدد الأنشطة | ${safe(post.localRoundTrip?.activityCount)} | اكتب العدد بعد الاستيراد | Pass / Review / Block |`,
     `| عدد العلاقات | ${safe(post.localRoundTrip?.relationshipCount)} | اكتب العدد بعد الاستيراد | Pass / Review / Block |`,
     "| تاريخ إكمال المشروع | غير محسوب من ملف XER المحافظ | اكتب التاريخ بعد F9 | Pass / Review / Block |",
     "| المسار الحرج وTotal Float | يتطلب مقارنة مستقلة | اكتب النتيجة أو مرجع التقرير | Pass / Review / Block |",
     "",
+    "## قرار فني فقط / Technical outcome only",
+    "",
+    "| النتيجة | متى تستخدمها | الإجراء التالي |",
+    "|---|---|---|",
+    "| Pass فني | Pre/Post يستوردان، وF9 مكتمل، والأعداد وإعدادات التقويم موثقة | احفظ الإثباتات وانتقل للمراجعة المهنية؛ لا يعني ذلك حكم EOT أو مسؤولية |",
+    "| Review | الاستيراد تم لكن يوجد فرق تقويم/تاريخ/Float أو اختيار Schedule غير موثق | توقف عن الاعتماد، وثّق الفرق، وراجعه داخل P6 |",
+    "| Block | Post محجوب أو Import Log يظهر خطأ أو لم يُنفذ F9 | لا تستخدم النتائج؛ صحح المصدر أو منطق الحدث ثم أعد تصدير الحزمة |",
+    "",
     "## حدود لازمة",
     "",
     "- احتفظت الحزمة بجداول المصدر كما هي، مع حذف TASKPRED المعلن وإضافة TASK/TASKPRED للـFragment فقط عند جاهزية Post.",
-    "- لا يفك TIA Studio `clndr_data` أو وراثة التقويم أو الاستثناءات والشفتات؛ فرق التقويم أو Data Date يستلزم مراجعة P6.",
+    "- لا يفك TIA Studio `clndr_data` أو وراثة التقويم أو نمط الأسبوع أو الاستثناءات والشفتات؛ علامات التاريخ الظاهرة مؤشرات فقط. فرق التقويم أو Data Date يستلزم مراجعة P6.",
     "- إذا كان Post محجوباً، لا تحاول إنشاء ملف بديل من هذه الحزمة؛ صحح سبب الحجب أولاً ثم أعد التصدير من المصدر الأصلي.",
     "",
   ].join("\n");
