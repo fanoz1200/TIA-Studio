@@ -32,10 +32,10 @@ export const WINDOWS_SHA256_DOWNLOAD_URL =
  * release: it contains source and docs only, never user schedules or evidence.
  */
 export const FINAL_SOURCE_PACKAGE = {
-  downloadUrl: "/manus-storage/TIA-Studio-source-20260827_10c5190d.zip",
-  checksumUrl: "/manus-storage/TIA-Studio-source-20260827_b6cf03a9.sha256",
-  commit: "6d4f5a345cf2db946cbc6d4d612da4a132aa9b24",
-  sha256: "297976f4d330bdd289b186c13f599e0fe9193fededab8536811d30fac6e0e473",
+  downloadUrl: "/manus-storage/TIA-Studio-source-20260827_2edd7a7b.zip",
+  checksumUrl: "/manus-storage/TIA-Studio-source-20260827_58664bde.sha256",
+  commit: "6766922dd05e63cf748488e30ff6ccd8573c9418",
+  sha256: "3033435f21f6bc0b8f9c32b3a9db15d2d39ebb7c9b54740a8c73886a458b3131",
   fileCount: 444,
 } as const;
 

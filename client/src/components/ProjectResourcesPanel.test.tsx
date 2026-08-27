@@ -22,9 +22,9 @@ describe("ProjectResourcesPanel", () => {
     expect(screen.getByText("لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل.")).toBeTruthy();
     expect(screen.getByText("01 — برنامج الأساس").closest("a")?.getAttribute("href")).toBe("/manus-storage/01-baseline-schedule_1dcca83b.json");
     expect(screen.getAllByText("تنزيل · Download")).toHaveLength(12);
-    expect(screen.getByText("حزمة المصدر النهائية — GitHub main · Final source package — GitHub main").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-source-20260827_10c5190d.zip");
-    expect(screen.getByText("تحقق حزمة المصدر النهائية — SHA-256 · Final source package verification — SHA-256").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-source-20260827_b6cf03a9.sha256");
-    expect(screen.getByText(/297976f4d330bdd289b186c13f599e0fe9193fededab8536811d30fac6e0e473/)).toBeTruthy();
+    expect(screen.getByText("حزمة المصدر النهائية — GitHub main · Final source package — GitHub main").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-source-20260827_2edd7a7b.zip");
+    expect(screen.getByText("تحقق حزمة المصدر النهائية — SHA-256 · Final source package verification — SHA-256").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-source-20260827_58664bde.sha256");
+    expect(screen.getByText(/3033435f21f6bc0b8f9c32b3a9db15d2d39ebb7c9b54740a8c73886a458b3131/)).toBeTruthy();
     expect(screen.getByText(/دليل استمرارية المشروع وتسليمه/).closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md");
     const setupResourceLink = screen.getByText("نسخة سطح المكتب — Windows 1.0.12 Setup (الموصى بها) · Desktop app — Windows 1.0.12 Setup (recommended)").closest("article")?.querySelector("a");
     expect(setupResourceLink?.getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe");

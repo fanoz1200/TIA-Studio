@@ -16,7 +16,7 @@
 | Windows x64 — **Portable 1.0.12** | [`TIA-Studio-1.0.12-Windows-x64-Portable.exe`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe) | للتجربة أو التشغيل المباشر بلا تثبيت. افتحه بالنقر المزدوج ولا يتوقع منه إنشاء أيقونة Start. |
 | بصمات Windows 1.0.12 | [`TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt) | ملف البصمات للحزمتين؛ نزّله من مصدر الملف نفسه وطابقه قبل التشغيل. |
 | Linux x64 | [`TIA-Studio-1.0.7-Linux-x64.AppImage`](/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage) | تشغيل محلي بعد جعله قابلاً للتنفيذ. |
-| المصدر والتسليم | [`TIA-Studio-source-20260827.zip`](/manus-storage/TIA-Studio-source-20260827_10c5190d.zip) و[ملف SHA-256](/manus-storage/TIA-Studio-source-20260827_b6cf03a9.sha256) | حزمة مصدر نظيفة من 444 ملفاً (كود واختبارات ووثائق) مبنية من commit `6d4f5a34…`، من دون XER/XML/XLS/XLSX خام أو أدلة/مطالبات أو أسرار أو media أو `node_modules`. |
+| المصدر والتسليم | [`TIA-Studio-source-20260827.zip`](/manus-storage/TIA-Studio-source-20260827_2edd7a7b.zip) و[ملف SHA-256](/manus-storage/TIA-Studio-source-20260827_58664bde.sha256) | حزمة مصدر نظيفة من 444 ملفاً (كود واختبارات ووثائق) مبنية من commit `6766922d…`، من دون XER/XML/XLS/XLSX خام أو أدلة/مطالبات أو أسرار أو media أو `node_modules`. |
 
 > الحزم غير موقعة رقمياً. لا تعطل الحماية بشكل عام ولا تستخدم رابطاً مجهولاً. افحص الملف ببرنامج الحماية ثم افتحه. لو ظهر SmartScreen على Windows، تحقق من اسم الملف والبصمة أدناه ومن مصدر التنزيل قبل اتخاذ أي قرار.
 
@@ -27,7 +27,7 @@
 | Windows Setup 1.0.12 | `ff374711b4432b8bc734a9bd53250ad73def9c359d983c0b24ab49424d9431c7` |
 | Windows Portable 1.0.12 | `35688d806b242c377c8289d5480a1deb6c0b745553936a8ac90d47e138e31f98` |
 | Linux AppImage | `3668d4ef09e192ec4e2ba9f7b50bf89aab999bdc6ce8e72f0284dbab480249b6` |
-| Final Source ZIP (commit `6d4f5a34…`) | `297976f4d330bdd289b186c13f599e0fe9193fededab8536811d30fac6e0e473` |
+| Final Source ZIP (commit `6766922d…`) | `3033435f21f6bc0b8f9c32b3a9db15d2d39ebb7c9b54740a8c73886a458b3131` |
 
 > **فهم النسخة الظاهرة في Start:** وجود أيقونة في Start ونافذة مستقلة يرجّح أن النسخة المثبتة تطبيق سطح مكتب أو تطبيق ويب مثبّت، لكنه لا يثبت نوعها بدقة من الصورة وحدها. لو النسخة الحالية تعمل عندك، فهي مسار تشغيل قائم، لكن لا تحذفها قبل تجربة Setup الجديد أو تأكيد عمل النسخة المحمولة الجديدة.
 
