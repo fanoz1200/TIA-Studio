@@ -6,7 +6,7 @@ import JSZip from "jszip";
 import { addWorkingDays, runCPM, type Fragnet, type Schedule } from "./cpm";
 import { buildP6ReconciliationManifest, serializeP6ReconciliationManifest } from "./p6-reconciliation-manifest";
 import { importXerBytes, importXerSchedule } from "./xer";
-import { applyConservativeXerBytePatch, applyConservativeXerPatch, parseXerDocument, xerTableBlocks, type XerDocumentRow, type XerTableBlock } from "./xer-format";
+import { applyConservativeXerBytePatch, applyConservativeXerPatch, parseXerDocument, reviewP6CalendarData, xerTableBlocks, type P6CalendarDataReview, type XerDocumentRow, type XerTableBlock } from "./xer-format";
 
 export type XerExportResult = {
   content: string;
@@ -169,13 +169,14 @@ export type PrimaveraCalendarMatchAssessment = {
   taskCalendarIds: string[];
   localCalendar: { id?: string; name?: string; hoursPerDay?: number };
   projectCalendar?: PrimaveraCalendarReference;
-  /** مؤشرات نصية في clndr_data فقط؛ لا تفك ترميز P6 ولا تعيّن ساعات أو استثناءات. */
+  /** مؤشرات بنيوية في clndr_data للمراجعة فقط؛ لا تعيّن ساعات أو استثناءات أو تقويماً تنفيذياً. */
   encodedCalendarData: {
     state: "present" | "not-found";
     calendarsWithEncodedData: number;
     projectCalendarHasEncodedData: boolean;
     calendarRowsWithPlainDateMarkers: number;
     plainDateMarkerCount: number;
+    structuralReviews: P6CalendarDataReview[];
   };
   hoursPerDay: { state: PrimaveraReferenceCheck; source?: number; local?: number };
   dataDate: { state: PrimaveraReferenceCheck; source?: string; local?: string };
@@ -287,12 +288,14 @@ function inspectEncodedCalendarData(rows: XerDocumentRow[], projectCalendarId?: 
   const rowsWithData = rows.filter((row) => Boolean(row.values.clndr_data));
   const dateMarker = /\b(?:19|20)\d{2}[-/]\d{2}[-/]\d{2}\b/g;
   const dateMarkersByRow = rowsWithData.map((row) => row.values.clndr_data.match(dateMarker)?.length ?? 0);
+  const structuralReviews = rowsWithData.map((row) => reviewP6CalendarData(row.values.clndr_data));
   return {
     state: rowsWithData.length ? "present" as const : "not-found" as const,
     calendarsWithEncodedData: rowsWithData.length,
     projectCalendarHasEncodedData: rowsWithData.some((row) => row.values.clndr_id === projectCalendarId),
     calendarRowsWithPlainDateMarkers: dateMarkersByRow.filter(Boolean).length,
     plainDateMarkerCount: dateMarkersByRow.reduce((total, count) => total + count, 0),
+    structuralReviews,
   };
 }
 
@@ -306,7 +309,7 @@ export function assessPrimaveraCalendarMatch(schedule: Schedule): PrimaveraCalen
   const localCalendar = { id: schedule.calendar?.id, name: schedule.calendar?.name, hoursPerDay: schedule.calendar?.hoursPerDay };
   const unknownHours = { state: "unknown" as const, local: localCalendar.hoursPerDay };
   const unknownDataDate = { state: "unknown" as const, local: schedule.dataDate };
-  if (!source) return { state: "blocked", sourceCalendarCount: 0, taskCalendarIds: [], localCalendar, encodedCalendarData: { state: "not-found", calendarsWithEncodedData: 0, projectCalendarHasEncodedData: false, calendarRowsWithPlainDateMarkers: 0, plainDateMarkerCount: 0 }, hoursPerDay: unknownHours, dataDate: unknownDataDate, inheritance: { state: "not-referenced" }, messages: ["لا توجد نسخة XER أصلية محفوظة في هذه الجلسة؛ لا يمكن فحص مرجع Primavera أو تنزيل Pre مطابق."] };
+  if (!source) return { state: "blocked", sourceCalendarCount: 0, taskCalendarIds: [], localCalendar, encodedCalendarData: { state: "not-found", calendarsWithEncodedData: 0, projectCalendarHasEncodedData: false, calendarRowsWithPlainDateMarkers: 0, plainDateMarkerCount: 0, structuralReviews: [] }, hoursPerDay: unknownHours, dataDate: unknownDataDate, inheritance: { state: "not-referenced" }, messages: ["لا توجد نسخة XER أصلية محفوظة في هذه الجلسة؛ لا يمكن فحص مرجع Primavera أو تنزيل Pre مطابق."] };
 
   const document = parseXerDocument(source.rawText);
   const projects = xerTableBlocks(document, "PROJECT").flatMap((table) => table.rows);
@@ -350,6 +353,12 @@ export function assessPrimaveraCalendarMatch(schedule: Schedule): PrimaveraCalen
   if (!hasEncodedData) messages.push("لم يظهر clndr_data مشفر في CALENDAR؛ راجع اكتمال تصدير P6 قبل أي مطابقة.");
   else {
     messages.push(`توجد clndr_data مشفرة في ${encodedCalendarData.calendarsWithEncodedData} من ${calendars.length} تقاويم${encodedCalendarData.projectCalendarHasEncodedData ? "، ومنها تقويم المشروع" : ""}. وجودها لا يعني أنها فُكت أو طابقت P6.`);
+    const malformedCount = encodedCalendarData.structuralReviews.filter((review) => review.state === "malformed").length;
+    const readableReviews = encodedCalendarData.structuralReviews.filter((review) => review.state === "readable");
+    const weekdaySections = readableReviews.filter((review) => review.hasDaysOfWeek).length;
+    const exceptionSections = readableReviews.filter((review) => review.hasExceptions).length;
+    if (malformedCount) messages.push(`تعذر اكتمال بنية clndr_data في ${malformedCount} تقاويم؛ لم يفسر التطبيق أي أيام أو استثناءات فيها.`);
+    else messages.push(`تظهر بنية DaysOfWeek في ${weekdaySections} تقاويم وبنية Exceptions في ${exceptionSections} تقاويم. هذه دلائل مراجعة فقط وليست تقويماً منفذاً أو تحققاً من F9.`);
     if (encodedCalendarData.plainDateMarkerCount) messages.push(`ظهرت ${encodedCalendarData.plainDateMarkerCount} علامة تاريخ نصية داخل clndr_data عبر ${encodedCalendarData.calendarRowsWithPlainDateMarkers} تقاويم. قد ترتبط باستثناءات، لكن التطبيق لا يفسرها ولا يبني منها أيام عمل.`);
   }
   if (hoursPerDay.state === "mismatch") messages.push(`فرق ساعات اليوم: CALENDAR.day_hr_cnt=${hoursPerDay.source} بينما تقويم TIA Studio المحلي=${hoursPerDay.local}. لا تعتمد حسابات الأيام أو Float المحلية لهذا الملف.`);

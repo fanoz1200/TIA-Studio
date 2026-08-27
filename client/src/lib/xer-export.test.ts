@@ -3,6 +3,7 @@ import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 import { runCPM, type Fragnet, type Schedule } from "./cpm";
 import { assessPrimaveraCalendarMatch, buildPreservedEventPackageZip, exportExperimentalXer, exportPreservedPostXer, exportPreservedPreXer, validateExperimentalXerRoundTrip } from "./xer-export";
+import { reviewP6CalendarData } from "./xer-format";
 import { importXerBytes, importXerSchedule } from "./xer";
 
 const schedule: Schedule = {
@@ -108,6 +109,46 @@ const nonUtf8SourceBytes = (() => {
   );
 })();
 const nonUtf8Schedule = importXerBytes(nonUtf8SourceBytes, "legacy-8bit-program.xer").schedule;
+
+describe("P6 CalendarData structural review", () => {
+  it("recognizes common P6 layer prefixes without interpreting a working calendar", () => {
+    const review = reviewP6CalendarData("(0||CalendarData(0||DaysOfWeek(0||1(0||s 08:00 0||f 16:00))(0||7(0||s 09:00 0||f 13:00)))(0||Exceptions(0||d 46000)))");
+    expect(review).toEqual({
+      state: "readable",
+      hasDaysOfWeek: true,
+      weekdayEntries: 2,
+      weekdayPeriodStartMarkers: 2,
+      weekdayPeriodFinishMarkers: 2,
+      hasExceptions: true,
+      exceptionDateMarkers: 1,
+    });
+  });
+
+  it("recognizes P6 pipe-delimited calendar atoms while retaining the double-pipe prefix", () => {
+    const review = reviewP6CalendarData("(0||CalendarData(0||DaysOfWeek(0||1(0||s|08:00|0||f|16:00)))(0||Exceptions(0||d|46000)))");
+    expect(review).toEqual({
+      state: "readable",
+      hasDaysOfWeek: true,
+      weekdayEntries: 1,
+      weekdayPeriodStartMarkers: 1,
+      weekdayPeriodFinishMarkers: 1,
+      hasExceptions: true,
+      exceptionDateMarkers: 1,
+    });
+  });
+
+  it("counts a named weekday section when its only safe evidence is a period pair", () => {
+    const review = reviewP6CalendarData("(CalendarData(DaysOfWeek(Monday(s|08:00|f|16:00)))(Exceptions()))");
+    expect(review.weekdayEntries).toBe(1);
+    expect(review.weekdayPeriodStartMarkers).toBe(1);
+    expect(review.weekdayPeriodFinishMarkers).toBe(1);
+  });
+
+  it("keeps malformed and absent CalendarData separate from a readable structural review", () => {
+    expect(reviewP6CalendarData("(0||CalendarData(0||DaysOfWeek").state).toBe("malformed");
+    expect(reviewP6CalendarData("(0||NotCalendarData())").state).toBe("not-found");
+  });
+});
 
 const relationshipFragnet: Fragnet = {
   id: "EV-001",

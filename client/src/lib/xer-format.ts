@@ -74,6 +74,98 @@ export function encodeUtf8XerText(rawText: string): DecodedXerBytes {
   return { rawBytes: new TextEncoder().encode(rawText), rawText, sourceEncoding: "utf-8", sourceByteOffset: 0, preByteExact: false };
 }
 
+export type P6CalendarDataReview = {
+  state: "not-found" | "readable" | "malformed";
+  hasDaysOfWeek: boolean;
+  weekdayEntries: number;
+  weekdayPeriodStartMarkers: number;
+  weekdayPeriodFinishMarkers: number;
+  hasExceptions: boolean;
+  exceptionDateMarkers: number;
+};
+
+type CalendarDataNode = { name?: string; values: string[]; children: CalendarDataNode[] };
+
+/** P6 يسبق الذرات أحياناً بمعرّف طبقة مثل `0||DaysOfWeek` أو `0||s`. */
+function normalizeCalendarDataAtom(value: string) {
+  return value.trim().replace(/^(?:\d+\|\|)+/, "");
+}
+
+/**
+ * يفك أقواس بيانات التقويم لأغراض المراجعة البنيوية فقط. لا يفسر ساعات اليوم أو
+ * الوراثة أو الاستثناءات إلى أيام عمل، ولا يجوز استخدامه لحساب CPM أو Float.
+ */
+export function reviewP6CalendarData(raw: string | undefined): P6CalendarDataReview {
+  const empty: P6CalendarDataReview = { state: "not-found", hasDaysOfWeek: false, weekdayEntries: 0, weekdayPeriodStartMarkers: 0, weekdayPeriodFinishMarkers: 0, hasExceptions: false, exceptionDateMarkers: 0 };
+  if (!raw?.trim()) return empty;
+  // يستعمل P6 غالباً `|` كفاصل حقول، بينما تبقى `||` جزءاً من بادئة الطبقة.
+  // لا نحول النص إلى قيم ساعات/تواريخ؛ هذه مجرد ذرات لمراجعة البنية.
+  const tokens = raw.match(/[()]|[^()\s|]+(?:\|\|[^()\s|]+)*|\|/g)?.filter((token) => token !== "|") ?? [];
+  const root: CalendarDataNode = { children: [], values: [] };
+  const stack = [root];
+  let malformed = false;
+  for (const token of tokens) {
+    if (token === "(") {
+      const node: CalendarDataNode = { children: [], values: [] };
+      stack[stack.length - 1].children.push(node);
+      stack.push(node);
+    } else if (token === ")") {
+      if (stack.length === 1) malformed = true;
+      else stack.pop();
+    } else {
+      const current = stack[stack.length - 1];
+      if (!current.name) current.name = token;
+      else current.values.push(token);
+    }
+  }
+  if (stack.length !== 1) malformed = true;
+  const hasCalendarData = tokens.some((token) => normalizeCalendarDataAtom(token).toLowerCase() === "calendardata");
+  if (!hasCalendarData) return empty;
+  if (malformed) return { ...empty, state: "malformed" };
+
+  const findAll = (node: CalendarDataNode, name: string) => {
+    const matches: CalendarDataNode[] = [];
+    const nodes = [node];
+    while (nodes.length) {
+      const current = nodes.pop()!;
+      if (normalizeCalendarDataAtom(current.name ?? "").toLowerCase() === name.toLowerCase()) matches.push(current);
+      for (const child of current.children) nodes.push(child);
+    }
+    return matches;
+  };
+  const atoms = (node: CalendarDataNode) => {
+    const result: string[] = [];
+    const nodes = [node];
+    while (nodes.length) {
+      const current = nodes.pop()!;
+      if (current.name) result.push(normalizeCalendarDataAtom(current.name));
+      for (const value of current.values) result.push(normalizeCalendarDataAtom(value));
+      for (const child of current.children) nodes.push(child);
+    }
+    return result;
+  };
+  const daysOfWeek = findAll(root, "DaysOfWeek");
+  const exceptions = findAll(root, "Exceptions");
+  const weekdayEntries = daysOfWeek.flatMap((section) => section.children).filter((node) => {
+    const normalizedName = normalizeCalendarDataAtom(node.name ?? "");
+    const hasWeekdayValue = node.values.some((value) => /^[1-7]$/.test(normalizeCalendarDataAtom(value)));
+    const childAtoms = atoms(node);
+    const hasPeriodMarker = childAtoms.some((value) => value.toLowerCase() === "s" || value.toLowerCase() === "f");
+    return /^[1-7]$/.test(normalizedName) || Boolean(hasWeekdayValue && /day/i.test(normalizedName)) || hasPeriodMarker;
+  });
+  const weekdayAtoms = weekdayEntries.flatMap(atoms);
+  const exceptionAtoms = exceptions.flatMap(atoms);
+  return {
+    state: "readable",
+    hasDaysOfWeek: daysOfWeek.length > 0,
+    weekdayEntries: weekdayEntries.length,
+    weekdayPeriodStartMarkers: weekdayAtoms.filter((token) => token.toLowerCase() === "s").length,
+    weekdayPeriodFinishMarkers: weekdayAtoms.filter((token) => token.toLowerCase() === "f").length,
+    hasExceptions: exceptions.length > 0,
+    exceptionDateMarkers: exceptionAtoms.filter((token) => token.toLowerCase() === "d").length,
+  };
+}
+
 function normalizeKey(value: string) {
   return value.trim().toLowerCase();
 }
