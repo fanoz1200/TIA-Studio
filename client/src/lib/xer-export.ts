@@ -147,12 +147,30 @@ export function validateExperimentalXerRoundTrip(output: XerExportResult): XerRo
   }
 }
 
+export type PrimaveraReferenceCheck = "match" | "mismatch" | "unknown";
+
+export type PrimaveraCalendarReference = {
+  id: string;
+  name?: string;
+  type?: string;
+  baseCalendarId?: string;
+  sourceHoursPerDay?: number;
+  sourceHoursPerWeek?: number;
+  sourceHoursPerMonth?: number;
+  sourceHoursPerYear?: number;
+  hasEncodedData: boolean;
+};
+
 export type PrimaveraCalendarMatchAssessment = {
   state: "review" | "blocked";
   sourceCalendarCount: number;
   projectCalendarId?: string;
   taskCalendarIds: string[];
   localCalendar: { id?: string; name?: string; hoursPerDay?: number };
+  projectCalendar?: PrimaveraCalendarReference;
+  hoursPerDay: { state: PrimaveraReferenceCheck; source?: number; local?: number };
+  dataDate: { state: PrimaveraReferenceCheck; source?: string; local?: string };
+  inheritance: { state: "not-referenced" | "review" | "unresolved"; baseCalendarId?: string };
   messages: string[];
 };
 
@@ -244,19 +262,61 @@ function predecessorCells(table: XerTableBlock, relationship: Fragnet["relations
   return table.headerFields.map((field) => values[field] ?? "");
 }
 
+function sourceNumber(value: string | undefined) {
+  if (!value?.trim()) return undefined;
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : undefined;
+}
+
+function comparableDate(value: string | undefined) {
+  const match = value?.trim().match(/^\d{4}-\d{2}-\d{2}/);
+  return match?.[0];
+}
+
 /**
- * قراءة تحفظية فقط لتقويم Primavera: تثبت وجود المصدر وتطابق المعرفات، لكنها لا تفك
- * clndr_data أو inheritance؛ لذلك لا يجوز اعتبارها شهادة تطابق تواريخ أو Float مع P6.
+ * قراءة تحفظية فقط لتقويم Primavera: تثبت وجود المصدر وتطابق المعرفات وساعات اليوم وData Date
+ * عند قابلية القراءة، لكنها لا تفك clndr_data أو inheritance؛ لذلك لا يجوز اعتبارها شهادة تطابق
+ * تواريخ أو Float مع P6.
  */
 export function assessPrimaveraCalendarMatch(schedule: Schedule): PrimaveraCalendarMatchAssessment {
   const source = schedule.xerSource;
   const localCalendar = { id: schedule.calendar?.id, name: schedule.calendar?.name, hoursPerDay: schedule.calendar?.hoursPerDay };
-  if (!source) return { state: "blocked", sourceCalendarCount: 0, taskCalendarIds: [], localCalendar, messages: ["لا توجد نسخة XER أصلية محفوظة في هذه الجلسة؛ لا يمكن فحص مرجع Primavera أو تنزيل Pre مطابق."] };
+  const unknownHours = { state: "unknown" as const, local: localCalendar.hoursPerDay };
+  const unknownDataDate = { state: "unknown" as const, local: schedule.dataDate };
+  if (!source) return { state: "blocked", sourceCalendarCount: 0, taskCalendarIds: [], localCalendar, hoursPerDay: unknownHours, dataDate: unknownDataDate, inheritance: { state: "not-referenced" }, messages: ["لا توجد نسخة XER أصلية محفوظة في هذه الجلسة؛ لا يمكن فحص مرجع Primavera أو تنزيل Pre مطابق."] };
 
   const document = parseXerDocument(source.rawText);
+  const projects = xerTableBlocks(document, "PROJECT").flatMap((table) => table.rows);
   const calendars = xerTableBlocks(document, "CALENDAR").flatMap((table) => table.rows);
   const calendarIds = new Set(calendars.map((row) => row.values.clndr_id).filter(Boolean));
   const hasEncodedData = calendars.some((row) => Boolean(row.values.clndr_data));
+  const projectCalendarRow = calendars.find((row) => row.values.clndr_id === source.projectCalendarId);
+  const projectCalendar = projectCalendarRow ? {
+    id: projectCalendarRow.values.clndr_id,
+    name: projectCalendarRow.values.clndr_name || projectCalendarRow.values.calendar_name || undefined,
+    type: projectCalendarRow.values.clndr_type || undefined,
+    baseCalendarId: projectCalendarRow.values.base_clndr_id || undefined,
+    sourceHoursPerDay: sourceNumber(projectCalendarRow.values.day_hr_cnt),
+    sourceHoursPerWeek: sourceNumber(projectCalendarRow.values.week_hr_cnt),
+    sourceHoursPerMonth: sourceNumber(projectCalendarRow.values.month_hr_cnt),
+    sourceHoursPerYear: sourceNumber(projectCalendarRow.values.year_hr_cnt),
+    hasEncodedData: Boolean(projectCalendarRow.values.clndr_data),
+  } satisfies PrimaveraCalendarReference : undefined;
+  const hoursPerDay = projectCalendar?.sourceHoursPerDay === undefined || localCalendar.hoursPerDay === undefined
+    ? { state: "unknown" as const, source: projectCalendar?.sourceHoursPerDay, local: localCalendar.hoursPerDay }
+    : { state: projectCalendar.sourceHoursPerDay === localCalendar.hoursPerDay ? "match" as const : "mismatch" as const, source: projectCalendar.sourceHoursPerDay, local: localCalendar.hoursPerDay };
+  const sourceDataDate = projects[0]?.values.last_recalc_date || projects[0]?.values.data_date || undefined;
+  const comparableSourceDataDate = comparableDate(sourceDataDate);
+  const comparableLocalDataDate = comparableDate(schedule.dataDate);
+  const dataDate = comparableSourceDataDate && comparableLocalDataDate
+    ? { state: comparableSourceDataDate === comparableLocalDataDate ? "match" as const : "mismatch" as const, source: sourceDataDate, local: schedule.dataDate }
+    : { state: "unknown" as const, source: sourceDataDate, local: schedule.dataDate };
+  const baseCalendarId = projectCalendar?.baseCalendarId;
+  const inheritance = !baseCalendarId
+    ? { state: "not-referenced" as const }
+    : calendarIds.has(baseCalendarId)
+      ? { state: "review" as const, baseCalendarId }
+      : { state: "unresolved" as const, baseCalendarId };
   const messages: string[] = [];
   if (!calendars.length) messages.push("ملف المصدر لا يحتوي جدول CALENDAR صالحاً؛ يجب إيقاف اعتماد مطابقة التقويم.");
   if (!source.projectCalendarId) messages.push("لم يظهر PROJECT.clndr_id في المصدر؛ تعيين تقويم المشروع يحتاج مراجعة داخل P6.");
@@ -264,13 +324,24 @@ export function assessPrimaveraCalendarMatch(schedule: Schedule): PrimaveraCalen
   if (source.taskCalendarIds.some((id) => !calendarIds.has(id))) messages.push("يوجد TASK.clndr_id لا يشير إلى CALENDAR مقروء؛ لا تعتمد الحساب المحلي.");
   if (source.taskCalendarIds.length > 1) messages.push("المصدر يعيّن أكثر من تقويم نشاط؛ محرك TIA Studio المحلي لا يفك التقويم لكل نشاط.");
   if (!hasEncodedData) messages.push("لم يظهر clndr_data مشفر في CALENDAR؛ راجع اكتمال تصدير P6 قبل أي مطابقة.");
+  if (hoursPerDay.state === "mismatch") messages.push(`فرق ساعات اليوم: CALENDAR.day_hr_cnt=${hoursPerDay.source} بينما تقويم TIA Studio المحلي=${hoursPerDay.local}. لا تعتمد حسابات الأيام أو Float المحلية لهذا الملف.`);
+  else if (hoursPerDay.state === "unknown") messages.push("تعذرت مقارنة ساعات اليوم لأن CALENDAR.day_hr_cnt أو تقويم TIA Studio المحلي غير مكتمل.");
+  if (dataDate.state === "mismatch") messages.push(`فرق Data Date: المصدر=${dataDate.source} والجدول المحلي=${dataDate.local}. راجع النسخة الصحيحة قبل التحليل.`);
+  else if (dataDate.state === "unknown") messages.push("لم يمكن إثبات تطابق Data Date بصيغة تاريخ قابلة للمقارنة؛ راجعه داخل P6.");
+  if (inheritance.state === "unresolved") messages.push(`يشير base_clndr_id=${inheritance.baseCalendarId} إلى تقويم أساس غير مقروء؛ لا تعتمد التقويم المحلي.`);
+  else if (inheritance.state === "review") messages.push(`يوجد تقويم أساس base_clndr_id=${inheritance.baseCalendarId} محفوظ في المصدر، لكن وراثة P6 لا تُفك محلياً.`);
   messages.push("تم الاحتفاظ بـ CALENDAR حرفياً في Pre/Post، لكن لا تزال مطابقة التواريخ والـ Float مع Primavera P6 مشروطة بفتح Post وإجراء Schedule/F9 ومقارنة النتائج.");
+  const sourceStructureReady = Boolean(calendars.length && source.projectCalendarId && calendarIds.has(source.projectCalendarId) && source.taskCalendarIds.every((id) => calendarIds.has(id)));
   return {
-    state: calendars.length && source.projectCalendarId && calendarIds.has(source.projectCalendarId) && source.taskCalendarIds.every((id) => calendarIds.has(id)) ? "review" : "blocked",
+    state: sourceStructureReady && hoursPerDay.state !== "mismatch" && dataDate.state !== "mismatch" && inheritance.state !== "unresolved" ? "review" : "blocked",
     sourceCalendarCount: calendars.length,
     projectCalendarId: source.projectCalendarId,
     taskCalendarIds: source.taskCalendarIds,
     localCalendar,
+    projectCalendar,
+    hoursPerDay,
+    dataDate,
+    inheritance,
     messages,
   };
 }

@@ -6,6 +6,7 @@ import { useAppLanguage } from "@/contexts/LanguageContext";
 import type { Schedule } from "@/lib/cpm";
 import { bilingualUiLabel } from "@/lib/language";
 import type { XerImportSummary } from "@/lib/xer";
+import { assessPrimaveraCalendarMatch } from "@/lib/xer-export";
 import type { ScheduleSnapshot } from "@/components/GuidedAnalysisPanel";
 import "./xer-viewer.css";
 
@@ -40,6 +41,8 @@ function ScheduleFacts({ schedule, summary, language }: { schedule: Schedule; su
   const calendar = schedule.calendar;
   const txt = (ar: string, en: string) => language === "en" ? en : ar;
   const ui = (ar: string, en: string) => bilingualUiLabel(language, ar, en);
+  const calendarMatch = schedule.xerSource ? assessPrimaveraCalendarMatch(schedule) : undefined;
+  const checkText = (state: "match" | "mismatch" | "unknown") => state === "match" ? txt("متطابق نصياً", "Textually matched") : state === "mismatch" ? txt("فرق مانع", "Blocking difference") : txt("يحتاج مراجعة", "Review required");
   return (
     <dl className="xer-viewer__facts">
       <div><dt>{ui("تاريخ البيانات", "Data Date")}</dt><dd>{schedule.dataDate ?? txt("غير مسجل", "Not recorded")}</dd></div>
@@ -51,6 +54,9 @@ function ScheduleFacts({ schedule, summary, language }: { schedule: Schedule; su
       <div><dt>{ui("تقويمات الأنشطة", "Activity calendars")}</dt><dd>{summary ? `${summary.taskCalendarCount ?? summary.taskCalendarIds?.length ?? 0} ${txt("معرّف", "ID(s)")}` : txt("غير مقروء", "Not read")}</dd></div>
       <div><dt>{ui("مصدر XER الخام", "Raw XER source")}</dt><dd>{schedule.xerSource?.rawText ? txt("محفوظ في الجلسة", "Held for this session") : txt("غير متاح", "Not available")}</dd></div>
       <div><dt>{ui("تقويم Primavera", "Primavera calendar")}</dt><dd>{schedule.xerSource?.projectCalendarId ? `${txt("مرجع", "Reference")}: ${schedule.xerSource.projectCalendarId} · ${txt("غير مفكوك", "not decoded")}` : txt("غير متاح", "Not available")}</dd></div>
+      <div><dt>{ui("ساعات اليوم في P6", "P6 day hours")}</dt><dd>{calendarMatch ? `${calendarMatch.hoursPerDay.source ?? "—"} P6 / ${calendarMatch.hoursPerDay.local ?? "—"} ${txt("محلي", "local")} · ${checkText(calendarMatch.hoursPerDay.state)}` : txt("غير متاح", "Not available")}</dd></div>
+      <div><dt>{ui("مطابقة Data Date", "Data Date check")}</dt><dd>{calendarMatch ? checkText(calendarMatch.dataDate.state) : txt("غير متاح", "Not available")}</dd></div>
+      <div><dt>{ui("تقويم أساس P6", "P6 base calendar")}</dt><dd>{calendarMatch?.inheritance.state === "not-referenced" ? txt("غير ظاهر", "Not referenced") : calendarMatch?.inheritance.baseCalendarId ? `${calendarMatch.inheritance.baseCalendarId} · ${txt("غير مفكوك محلياً", "not decoded locally")}` : txt("غير متاح", "Not available")}</dd></div>
       <div><dt>{ui("قيود XER", "XER constraints")}</dt><dd>{summary ? `${summary.supportedConstraintsRead ?? 0} ${txt("محسوب", "supported")} · ${summary.unsupportedConstraintsRead ?? 0} ${txt("مراجعة", "review")}` : txt("غير مقروء", "Not read")}</dd></div>
       <div><dt>{ui("حالة التحديث", "Update state")}</dt><dd>{summary ? `${summary.activitiesWithProgress ?? 0} ${txt("نشاط — محفوظة للمراجعة، لا F9 محلي", "activity(ies) — retained for review; no local F9")}` : txt("غير مقروء", "Not read")}</dd></div>
     </dl>

@@ -38,6 +38,8 @@ describe("عارض XER المحلي", () => {
     expect(screen.getByRole("region", { name: "عارض XER والنسخ · XER and snapshot viewer" }).getAttribute("dir")).toBe("rtl");
     expect(screen.getByText(/الملف الأصلي محفوظ محلياً داخل الجلسة/)).toBeTruthy();
     expect(screen.getByText(/مرجع P6/)).toBeTruthy();
+    expect(screen.getAllByText("ساعات اليوم في P6 · P6 day hours").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("مطابقة Data Date · Data Date check").length).toBeGreaterThan(0);
     expect(screen.getByText("baseline.xer")).toBeTruthy();
     expect(screen.getByText("update.xer")).toBeTruthy();
     expect(screen.getByText("أنشطة أُضيفت · Activities added")).toBeTruthy();
@@ -57,6 +59,8 @@ describe("عارض XER المحلي", () => {
     expect(screen.getByText("Viewer limits:")).toBeTruthy();
     expect(screen.getByText(/original file is held locally for this session/)).toBeTruthy();
     expect(screen.getByText(/P6 verification required/)).toBeTruthy();
+    expect(screen.getAllByText("P6 day hours").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Data Date check").length).toBeGreaterThan(0);
     expect(screen.getByText("Activities added")).toBeTruthy();
     expect(screen.getAllByText("A200").length).toBeGreaterThan(0);
     expect(screen.getByText("صب خرسانة")).toBeTruthy();

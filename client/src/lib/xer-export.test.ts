@@ -48,8 +48,8 @@ describe("experimental XER export", () => {
 
 const preservedRawXer = [
   "%T\tPROJECT",
-  "%F\tproj_id\tproj_short_name\tclndr_id\tplan_start_date",
-  "%R\t100\tPRESERVE-DEMO\t10\t2026-04-01",
+  "%F\tproj_id\tproj_short_name\tclndr_id\tplan_start_date\tlast_recalc_date",
+  "%R\t100\tPRESERVE-DEMO\t10\t2026-04-01\t2026-04-02",
   "%E",
   "%T\tCALENDAR",
   "%F\tclndr_id\tclndr_name\tclndr_data\tday_hr_cnt",
@@ -127,8 +127,13 @@ describe("preserved XER event export", () => {
 
   it("reports a calendar reference review rather than claiming P6 parity", () => {
     const assessment = assessPrimaveraCalendarMatch(preservedSchedule);
-    expect(assessment).toMatchObject({ state: "review", sourceCalendarCount: 1, projectCalendarId: "10", taskCalendarIds: ["10"] });
+    expect(assessment).toMatchObject({ state: "review", sourceCalendarCount: 1, projectCalendarId: "10", taskCalendarIds: ["10"], hoursPerDay: { state: "match", source: 8, local: 8 }, dataDate: { state: "match", source: "2026-04-02", local: "2026-04-02" }, inheritance: { state: "not-referenced" } });
     expect(assessment.messages.join(" ")).toContain("Schedule/F9");
+  });
+
+  it("blocks local calendar reliance when the source day hours or Data Date diverge", () => {
+    expect(assessPrimaveraCalendarMatch({ ...preservedSchedule, calendar: { ...preservedSchedule.calendar!, hoursPerDay: 10 } })).toMatchObject({ state: "blocked", hoursPerDay: { state: "mismatch", source: 8, local: 10 } });
+    expect(assessPrimaveraCalendarMatch({ ...preservedSchedule, dataDate: "2026-04-03" })).toMatchObject({ state: "blocked", dataDate: { state: "mismatch", source: "2026-04-02", local: "2026-04-03" } });
   });
 
   it("creates a local ZIP with Pre, Post, and a manifest for every selected event", async () => {
