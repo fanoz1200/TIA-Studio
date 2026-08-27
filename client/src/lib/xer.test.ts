@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { importXerSchedule } from "./xer";
+import { parseXerTableRows } from "./xer-format";
+import { importXerBytes, importXerSchedule } from "./xer";
 
 const xerWithResourceAssignment = `%T\tPROJECT
 %F\tproj_short_name\tplan_start_date
@@ -44,6 +45,16 @@ describe("XER resource and cost import", () => {
   });
 });
 
+describe("XER large-table safety", () => {
+  it("collects a Primavera-sized repeated table without spreading all rows into the call stack", () => {
+    const rows = Array.from({ length: 140_000 }, (_, index) => `%R\t${index}\tA${index}`).join("\r\n");
+    const tables = parseXerTableRows(`%T\tTASK\r\n%F\ttask_id\ttask_code\r\n${rows}\r\n%E`);
+
+    expect(tables.get("TASK")).toHaveLength(140_000);
+    expect(tables.get("TASK")?.[139_999]).toMatchObject({ task_id: "139999", task_code: "A139999" });
+  });
+});
+
 const xerWithTaskCalendarsAndConstraints = `%T\tPROJECT
 %F\tproj_short_name\tplan_start_date
 %R\tقيود وتجارب\t2026-03-01
@@ -69,5 +80,28 @@ describe("XER task calendars and constraints", () => {
     expect(schedule.activities.find((activity) => activity.id === "T-300")?.constraintAudit).toEqual([expect.objectContaining({ code: "CS_MFO", status: "review-required" })]);
     expect(summary.warnings.join(" ")).toContain("معرفات تقويم مختلفة");
     expect(summary.warnings.join(" ")).toContain("لا يحسبها المحرك المحلي");
+  });
+});
+
+describe("XER byte-preserving import", () => {
+  it("keeps a non-UTF-8 original byte sequence in session while using a one-byte parser view", () => {
+    const encoder = new TextEncoder();
+    const prefix = encoder.encode("%T\tPROJECT\r\n%F\tproj_id\tproj_short_name\tplan_start_date\r\n%R\t100\t");
+    const suffix = encoder.encode("\t2026-03-01\r\n%E\r\n%T\tTASK\r\n%F\ttask_id\ttask_code\ttask_name\ttarget_drtn_hr_cnt\r\n%R\t1\tA100\tTask\t8\r\n%E");
+    const rawBytes = new Uint8Array(prefix.length + 1 + suffix.length);
+    rawBytes.set(prefix);
+    rawBytes[prefix.length] = 0xA3;
+    rawBytes.set(suffix, prefix.length + 1);
+
+    const result = importXerBytes(rawBytes.buffer, "legacy-8bit.xer");
+
+    expect(result.schedule.xerSource).toMatchObject({ originalFileName: "legacy-8bit.xer", sourceEncoding: "single-byte-8bit", preByteExact: true, sourceByteLength: rawBytes.length });
+    expect(result.schedule.xerSource?.rawBytes).toEqual(rawBytes);
+    expect(result.schedule.xerSource?.rawText.charCodeAt(prefix.length)).toBe(0xA3);
+  });
+
+  it("marks the legacy text-only importer as a derived UTF-8 source rather than an original-byte proof", () => {
+    const result = importXerSchedule(xerWithResourceAssignment, "legacy-text-api.xer");
+    expect(result.schedule.xerSource).toMatchObject({ sourceEncoding: "utf-8", preByteExact: false });
   });
 });

@@ -5,8 +5,8 @@
 import JSZip from "jszip";
 import { addWorkingDays, runCPM, type Fragnet, type Schedule } from "./cpm";
 import { buildP6ReconciliationManifest, serializeP6ReconciliationManifest } from "./p6-reconciliation-manifest";
-import { importXerSchedule } from "./xer";
-import { applyConservativeXerPatch, parseXerDocument, xerTableBlocks, type XerDocumentRow, type XerTableBlock } from "./xer-format";
+import { importXerBytes, importXerSchedule } from "./xer";
+import { applyConservativeXerBytePatch, applyConservativeXerPatch, parseXerDocument, xerTableBlocks, type XerDocumentRow, type XerTableBlock } from "./xer-format";
 
 export type XerExportResult = {
   content: string;
@@ -178,7 +178,8 @@ export type PrimaveraCalendarMatchAssessment = {
 export type PreservedXerExportResult = {
   state: "ready" | "blocked";
   fileName: string;
-  content?: string;
+  /** بايتات التنزيل؛ هي المرجع الوحيد للنسخ المحافظة، لا rawText الخاص بالـparser. */
+  bytes?: Uint8Array;
   messages: string[];
   addedTaskIds: string[];
   addedRelationshipIds: string[];
@@ -350,12 +351,12 @@ export function assessPrimaveraCalendarMatch(schedule: Schedule): PrimaveraCalen
 /** يعيد الأصل حرفياً، مع اسم حدث واضح. لا يعيد تشغيل أو إعادة تسلسل أي جدول XER. */
 export function exportPreservedPreXer(schedule: Schedule, event: Fragnet): PreservedXerExportResult {
   const source = schedule.xerSource;
-  if (!source?.rawText) return blockedPreservedResult(schedule, event, "PRE-TIA", ["ملف XER الأصلي غير متاح في ذاكرة هذه الجلسة. أعد استيراد ملف XER نفسه قبل التنزيل المحافظ."]);
+  if (!source?.rawBytes?.length) return blockedPreservedResult(schedule, event, "PRE-TIA", ["بايتات ملف XER الأصلي غير متاحة في ذاكرة هذه الجلسة. أعد استيراد ملف XER نفسه قبل التنزيل المحافظ."]);
   return {
     state: "ready",
     fileName: preservedFileName(schedule, event, "PRE-TIA"),
-    content: source.rawText,
-    messages: ["Pre-TIA هو النص الأصلي كما اختاره المستخدم، بلا إعادة كتابة أو تعديل."],
+    bytes: new Uint8Array(source.rawBytes),
+    messages: [source.preByteExact ? "Pre-TIA يعيد بايتات الملف التي اختارها المستخدم كما هي، بلا إعادة كتابة أو تعديل." : "Pre-TIA مبني من نص مستورد بالواجهة القديمة؛ أعد استيراد ملف XER من القرص لتأكيد التطابق البايتي."],
     addedTaskIds: [],
     addedRelationshipIds: [],
   };
@@ -367,7 +368,7 @@ export function exportPreservedPreXer(schedule: Schedule, event: Fragnet): Prese
  */
 export function exportPreservedPostXer(schedule: Schedule, event: Fragnet): PreservedXerExportResult {
   const source = schedule.xerSource;
-  if (!source?.rawText) return blockedPreservedResult(schedule, event, "POST-TIA", ["ملف XER الأصلي غير متاح في ذاكرة هذه الجلسة. أعد استيراده قبل حقن Post-TIA."]);
+  if (!source?.rawText || !source.rawBytes?.length || !source.sourceEncoding) return blockedPreservedResult(schedule, event, "POST-TIA", ["بايتات ملف XER الأصلي أو بيانات ترميزه غير متاحة في ذاكرة هذه الجلسة. أعد استيراد ملف XER نفسه قبل حقن Post-TIA."]);
   if (event.replacedActivityIds?.length || event.model === "activity-split") {
     return blockedPreservedResult(schedule, event, "POST-TIA", ["تم حجب Post-TIA المحافظ: نموذج Activity Split يبدل أنشطة أو علاقات أصلية، بينما هذه النسخة لا تعيد كتابة صفوف XER الموجودة. استخدم Fragnet علاقات فقط أو راجع الملف يدوياً في P6."]);
   }
@@ -437,18 +438,28 @@ export function exportPreservedPostXer(schedule: Schedule, event: Fragnet): Pres
   const missingReplacements = replacements.filter((id) => !predecessorRowsById.has(id));
   if (missingReplacements.length) return blockedPreservedResult(schedule, event, "POST-TIA", [`العلاقات المطلوب استبدالها غير موجودة في TASKPRED المصدر: ${missingReplacements.join(", ")}.`]);
 
-  const content = applyConservativeXerPatch(document, {
+  const patch = {
     removeRows: replacements.map((id) => predecessorRowsById.get(id) as XerDocumentRow),
     appendRows: [
       { table: taskTable, rows: event.activities.map((activity, index) => dateFreeTaskCells(taskTable, activity, generatedTaskIds.values![index], projectId, calendarId, wbsId, hoursPerDay)) },
       { table: predecessorTable, rows: event.relationships.map((relationship, index) => predecessorCells(predecessorTable, relationship, generatedRelationshipIds.values![index], taskIdByLogicalId, projectId, hoursPerDay)) },
     ],
-  });
+  };
+  let bytes: Uint8Array;
+  try {
+    bytes = applyConservativeXerBytePatch(document, {
+      rawBytes: source.rawBytes,
+      sourceEncoding: source.sourceEncoding,
+      sourceByteOffset: source.sourceByteOffset ?? 0,
+    }, patch);
+  } catch (error) {
+    return blockedPreservedResult(schedule, event, "POST-TIA", [error instanceof Error ? error.message : "تعذر تطبيق حقن بايت آمن على ملف XER المصدر."]);
+  }
   const expectedActivityCount = sourceTaskIds.length + event.activities.length;
   const expectedRelationshipCount = sourcePredecessorIds.length - replacements.length + event.relationships.length;
   let localRoundTrip: XerRoundTripCheck | undefined;
   try {
-    const reimported = importXerSchedule(content, preservedFileName(schedule, event, "POST-TIA"));
+    const reimported = importXerBytes(bytes, preservedFileName(schedule, event, "POST-TIA"));
     const roundTripMessages: string[] = [];
     if (reimported.summary.activitiesRead !== expectedActivityCount) roundTripMessages.push(`تطابق الأنشطة المحلي فشل: المتوقع ${expectedActivityCount} والمقروء ${reimported.summary.activitiesRead}.`);
     if (reimported.summary.relationshipsRead !== expectedRelationshipCount) roundTripMessages.push(`تطابق العلاقات المحلي فشل: المتوقع ${expectedRelationshipCount} والمقروء ${reimported.summary.relationshipsRead}.`);
@@ -457,14 +468,16 @@ export function exportPreservedPostXer(schedule: Schedule, event: Fragnet): Pres
     localRoundTrip = { state: "blocked", activityCount: 0, relationshipCount: 0, messages: [error instanceof Error ? `فشل الاستيراد المحلي لنسخة Post: ${error.message}` : "فشل الاستيراد المحلي لنسخة Post."] };
   }
   if (localRoundTrip.state === "blocked") return blockedPreservedResult(schedule, event, "POST-TIA", localRoundTrip.messages);
-  messages.push("تم تغيير TASKPRED المحددة للإزالة وإضافة صفوف TASK/TASKPRED فقط؛ CALENDAR وRSRC وTASKRSRC والقيود وUDF والخطوط الأساسية وباقي الجداول ظلت نصاً أصلياً.");
+  messages.push("تم تغيير TASKPRED المحددة للإزالة وإضافة صفوف TASK/TASKPRED فقط؛ جميع البايتات الأصلية خارج هذه المواضع، بما فيها CALENDAR وRSRC وTASKRSRC والقيود وUDF والخطوط الأساسية، نُسخت مباشرةً بلا إعادة ترميز.");
   messages.push("حقول التاريخ والـ Float للنشاط الجديد تُركت فارغة عمداً كي يحسبها Primavera من تقويمه الأصلي؛ لا يمثل الملف شهادة تطابق قبل F9 ومقارنة النتائج.");
-  return { state: "ready", fileName: preservedFileName(schedule, event, "POST-TIA"), content, messages, addedTaskIds: generatedTaskIds.values, addedRelationshipIds: generatedRelationshipIds.values, calendarAssignmentId: calendarId, localRoundTrip };
+  return { state: "ready", fileName: preservedFileName(schedule, event, "POST-TIA"), bytes, messages, addedTaskIds: generatedTaskIds.values, addedRelationshipIds: generatedRelationshipIds.values, calendarAssignmentId: calendarId, localRoundTrip };
 }
 
-async function sha256(text: string) {
+async function sha256(bytes: Uint8Array) {
   if (!globalThis.crypto?.subtle) return undefined;
-  const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", buffer);
   return Array.from(new Uint8Array(digest)).map((value) => value.toString(16).padStart(2, "0")).join("");
 }
 
@@ -518,7 +531,7 @@ function p6ReimportChecklist(
 }
 
 function p6ReconciliationArtifact(schedule: Schedule, event: Fragnet, post: PreservedXerExportResult) {
-  if (post.state !== "ready" || !post.content) {
+  if (post.state !== "ready" || !post.bytes) {
     return {
       fileName: "P6-RECONCILIATION-STATUS.json",
       content: `${JSON.stringify({
@@ -531,7 +544,7 @@ function p6ReconciliationArtifact(schedule: Schedule, event: Fragnet, post: Pres
     };
   }
   try {
-    const reimported = importXerSchedule(post.content, post.fileName);
+    const reimported = importXerBytes(post.bytes, post.fileName);
     const manifest = buildP6ReconciliationManifest({
       schedule: reimported.schedule,
       cpm: runCPM(reimported.schedule),
@@ -558,15 +571,15 @@ export async function buildPreservedEventPackageZip(schedule: Schedule, events: 
   const zip = new JSZip();
   const root = `${safeFilePart(schedule.name, "TIA-Schedule")}--EVENT-PACKAGE`;
   const calendarMatch = assessPrimaveraCalendarMatch(schedule);
-  const sourceHash = schedule.xerSource?.rawText ? await sha256(schedule.xerSource.rawText) : undefined;
+  const sourceHash = schedule.xerSource?.rawBytes ? await sha256(schedule.xerSource.rawBytes) : undefined;
   const statuses: PreservedEventPackageResult["events"] = [];
 
   for (const event of events) {
     const pre = exportPreservedPreXer(schedule, event);
     const post = exportPreservedPostXer(schedule, event);
     const eventFolder = `${root}/events/${safeFilePart(event.id, "EVENT")}`;
-    if (pre.state === "ready" && pre.content) zip.file(`${eventFolder}/${pre.fileName}`, pre.content);
-    if (post.state === "ready" && post.content) zip.file(`${eventFolder}/${post.fileName}`, post.content);
+    if (pre.state === "ready" && pre.bytes) zip.file(`${eventFolder}/${pre.fileName}`, pre.bytes);
+    if (post.state === "ready" && post.bytes) zip.file(`${eventFolder}/${post.fileName}`, post.bytes);
     zip.file(`${eventFolder}/P6-REIMPORT-SCHEDULE-F9-CHECKLIST.md`, p6ReimportChecklist(schedule, event, pre, post, calendarMatch));
     const reconciliationArtifact = p6ReconciliationArtifact(schedule, event, post);
     zip.file(`${eventFolder}/${reconciliationArtifact.fileName}`, reconciliationArtifact.content);
@@ -575,7 +588,7 @@ export async function buildPreservedEventPackageZip(schedule: Schedule, events: 
       sourceFileName: schedule.xerSource?.originalFileName,
       sourceSha256: sourceHash,
       event: { id: event.id, title: event.title, model: event.model ?? "relationship-fragnet" },
-      preservation: { tablesDeclaredInSource: schedule.xerSource?.tableNames ?? [], unchangedTables: "All source text remains unchanged except listed TASKPRED removals and added TASK/TASKPRED rows." },
+      preservation: { sourceEncoding: schedule.xerSource?.sourceEncoding, preByteExact: schedule.xerSource?.preByteExact ?? false, sourceByteLength: schedule.xerSource?.sourceByteLength, tablesDeclaredInSource: schedule.xerSource?.tableNames ?? [], unchangedBytes: "All original source bytes remain unchanged except listed TASKPRED removals and ASCII-only added TASK/TASKPRED rows." },
       calendar: { assignmentForNewActivities: post.calendarAssignmentId, assessment: calendarMatch },
       pre: { state: pre.state, fileName: pre.fileName, messages: pre.messages },
       post: { state: post.state, fileName: post.fileName, addedActivityCodes: event.activities.map((activity) => activity.id), addedRelationshipLogicalIds: event.relationships.map((relationship) => relationship.id), addedTaskIds: post.addedTaskIds, addedRelationshipIds: post.addedRelationshipIds, localRoundTrip: post.localRoundTrip, messages: post.messages },

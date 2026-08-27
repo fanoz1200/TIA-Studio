@@ -78,7 +78,7 @@ import {
   type TiaResult,
   type WindowTiaResult,
 } from "@/lib/cpm";
-import { importXerSchedule, type XerImportSummary } from "@/lib/xer";
+import { importXerBytes, type XerImportSummary } from "@/lib/xer";
 import { importP6XmlSchedule } from "@/lib/p6-xml";
 import {
   findRegionalCalendarCountry,
@@ -1395,7 +1395,7 @@ export default function Home() {
       await new Promise<void>(resolve =>
         requestAnimationFrame(() => resolve())
       );
-      const result = importXerSchedule(await file.text(), file.name);
+      const result = importXerBytes(await file.arrayBuffer(), file.name);
       runCPM(result.schedule);
       resetForImported(result.schedule);
       setXerSummary(result.summary);
@@ -1421,15 +1421,16 @@ export default function Home() {
       await new Promise<void>(resolve =>
         requestAnimationFrame(() => resolve())
       );
-      const raw = await file.text();
       const lower = file.name.toLowerCase();
       let imported: Schedule;
       let summary: XerImportSummary | undefined;
       if (lower.endsWith(".xer")) {
-        const result = importXerSchedule(raw, file.name);
+        const result = importXerBytes(await file.arrayBuffer(), file.name);
         imported = result.schedule;
         summary = result.summary;
-      } else if (lower.endsWith(".xml")) {
+      } else {
+        const raw = await file.text();
+        if (lower.endsWith(".xml")) {
         const result = importP6XmlSchedule(raw, file.name);
         imported = result.schedule;
         summary = {
@@ -1437,7 +1438,7 @@ export default function Home() {
           calendarName: undefined,
           tablesFound: [],
         };
-      } else {
+        } else {
         imported = JSON.parse(raw) as Schedule;
         if (
           !imported.id ||
@@ -1446,6 +1447,7 @@ export default function Home() {
           !Array.isArray(imported.relationships)
         )
           throw new Error(formatHomeStatus(language, "invalidJsonShape"));
+        }
       }
       runCPM(imported);
       const snapshot: ScheduleSnapshot = {

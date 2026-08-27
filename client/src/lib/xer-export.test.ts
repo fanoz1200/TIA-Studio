@@ -1,8 +1,9 @@
+import { createHash } from "node:crypto";
 import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 import { runCPM, type Fragnet, type Schedule } from "./cpm";
 import { assessPrimaveraCalendarMatch, buildPreservedEventPackageZip, exportExperimentalXer, exportPreservedPostXer, exportPreservedPreXer, validateExperimentalXerRoundTrip } from "./xer-export";
-import { importXerSchedule } from "./xer";
+import { importXerBytes, importXerSchedule } from "./xer";
 
 const schedule: Schedule = {
   id: "xer-export-test",
@@ -82,7 +83,32 @@ const preservedRawXer = [
   "%E",
 ].join("\r\n");
 
-const preservedSchedule = importXerSchedule(preservedRawXer, "original-program.xer").schedule;
+const preservedRawBytes = new TextEncoder().encode(preservedRawXer);
+const preservedSchedule = importXerBytes(preservedRawBytes, "original-program.xer").schedule;
+const textFromBytes = (bytes: Uint8Array) => new TextDecoder("iso-8859-1").decode(bytes);
+
+function concatBytes(...parts: Uint8Array[]) {
+  const result = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
+  let offset = 0;
+  for (const part of parts) { result.set(part, offset); offset += part.length; }
+  return result;
+}
+
+function hasByteSequence(bytes: Uint8Array, expected: Uint8Array) {
+  return Array.from({ length: Math.max(0, bytes.length - expected.length + 1) }, (_, start) => expected.every((value, index) => bytes[start + index] === value)).some(Boolean);
+}
+
+const nonUtf8Marker = "Leave-me-exactly-as-is";
+const nonUtf8SourceBytes = (() => {
+  const markerStart = preservedRawXer.indexOf(nonUtf8Marker);
+  return concatBytes(
+    new TextEncoder().encode(preservedRawXer.slice(0, markerStart)),
+    new Uint8Array([0xA3]),
+    new TextEncoder().encode(preservedRawXer.slice(markerStart + nonUtf8Marker.length)),
+  );
+})();
+const nonUtf8Schedule = importXerBytes(nonUtf8SourceBytes, "legacy-8bit-program.xer").schedule;
+
 const relationshipFragnet: Fragnet = {
   id: "EV-001",
   title: "Late instruction",
@@ -99,23 +125,24 @@ const relationshipFragnet: Fragnet = {
 };
 
 describe("preserved XER event export", () => {
-  it("returns Pre as the exact user-selected original source", () => {
+  it("returns Pre as the exact user-selected original source bytes", () => {
     const pre = exportPreservedPreXer(preservedSchedule, relationshipFragnet);
-    expect(pre).toMatchObject({ state: "ready", fileName: "PRESERVE-DEMO--EV-001--PRE-TIA.xer", content: preservedRawXer });
-    expect(pre.content).toBe(preservedRawXer);
+    expect(pre).toMatchObject({ state: "ready", fileName: "PRESERVE-DEMO--EV-001--PRE-TIA.xer" });
+    expect(pre.bytes).toEqual(preservedRawBytes);
   });
 
   it("keeps raw calendar, resource, and custom blocks while only replacing declared TASKPRED rows and adding new rows", () => {
     const post = exportPreservedPostXer(preservedSchedule, relationshipFragnet);
     expect(post.state).toBe("ready");
-    expect(post.content).toContain("%R\t10\tP6 Calendar\t(0||0()())\t8");
-    expect(post.content).toContain("%R\t500\tCrew A");
-    expect(post.content).toContain("%R\t700\t1\t500\t123.45");
-    expect(post.content).toContain("%R\t900\t1\tLeave-me-exactly-as-is");
-    expect(post.content).not.toContain("%R\t50\t2\t1\t100\t100\tPR_FS\t0");
-    expect(post.content).toContain("%R\t3\t100\t1000\t10\tFN-001\tInstruction delay\t16\t16\tTT_Task\tDT_FixedDUR2\tTK_NotStart");
-    expect(post.content).toContain("%R\t51\t3\t1\t100\t100\tPR_FS\t0");
-    expect(post.content).toContain("%R\t52\t2\t3\t100\t100\tPR_FS\t0");
+    const content = textFromBytes(post.bytes!);
+    expect(content).toContain("%R\t10\tP6 Calendar\t(0||0()())\t8");
+    expect(content).toContain("%R\t500\tCrew A");
+    expect(content).toContain("%R\t700\t1\t500\t123.45");
+    expect(content).toContain("%R\t900\t1\tLeave-me-exactly-as-is");
+    expect(content).not.toContain("%R\t50\t2\t1\t100\t100\tPR_FS\t0");
+    expect(content).toContain("%R\t3\t100\t1000\t10\tFN-001\tInstruction delay\t16\t16\tTT_Task\tDT_FixedDUR2\tTK_NotStart");
+    expect(content).toContain("%R\t51\t3\t1\t100\t100\tPR_FS\t0");
+    expect(content).toContain("%R\t52\t2\t3\t100\t100\tPR_FS\t0");
     expect(post).toMatchObject({ addedTaskIds: ["3"], addedRelationshipIds: ["51", "52"], calendarAssignmentId: "10", localRoundTrip: { state: "review", activityCount: 3, relationshipCount: 2 } });
   });
 
@@ -123,6 +150,25 @@ describe("preserved XER event export", () => {
     const split = exportPreservedPostXer(preservedSchedule, { ...relationshipFragnet, id: "EV-SPLIT", model: "activity-split", replacedActivityIds: ["A100"] });
     expect(split.state).toBe("blocked");
     expect(split.messages.join(" ")).toContain("Activity Split");
+  });
+
+  it("returns a non-UTF-8 Pre byte-for-byte and leaves its untouched source bytes unchanged in ASCII-only Post", () => {
+    const pre = exportPreservedPreXer(nonUtf8Schedule, relationshipFragnet);
+    const post = exportPreservedPostXer(nonUtf8Schedule, relationshipFragnet);
+    const rawUdfBlock = concatBytes(new TextEncoder().encode("%T\tUDFVALUE\r\n%F\tudf_type_id\tfk_id\tudf_value\r\n%R\t900\t1\t"), new Uint8Array([0xA3]), new TextEncoder().encode("\r\n%E"));
+    expect(nonUtf8Schedule.xerSource).toMatchObject({ sourceEncoding: "single-byte-8bit", preByteExact: true });
+    expect(pre.bytes).toEqual(nonUtf8SourceBytes);
+    expect(post.state).toBe("ready");
+    expect(hasByteSequence(post.bytes!, rawUdfBlock)).toBe(true);
+  });
+
+  it("blocks a non-UTF-8 Post when an injected XER cell is not ASCII instead of silently changing its encoding", () => {
+    const post = exportPreservedPostXer(nonUtf8Schedule, {
+      ...relationshipFragnet,
+      activities: [{ ...relationshipFragnet.activities[0], name: "تعطيل" }],
+    });
+    expect(post.state).toBe("blocked");
+    expect(post.messages.join(" ")).toContain("ASCII");
   });
 
   it("reports a calendar reference review rather than claiming P6 parity", () => {
@@ -136,7 +182,7 @@ describe("preserved XER event export", () => {
     expect(assessPrimaveraCalendarMatch({ ...preservedSchedule, dataDate: "2026-04-03" })).toMatchObject({ state: "blocked", dataDate: { state: "mismatch", source: "2026-04-02", local: "2026-04-03" } });
   });
 
-  it("creates a local ZIP with Pre, Post, and a manifest for every selected event", async () => {
+  it("creates a local ZIP with an exact Pre entry, its byte hash, Post, and a manifest for every selected event", async () => {
     const output = await buildPreservedEventPackageZip(preservedSchedule, [relationshipFragnet]);
     const zip = await JSZip.loadAsync(await output.blob.arrayBuffer());
     const root = "PRESERVE-DEMO--EVENT-PACKAGE/events/EV-001";
@@ -151,7 +197,11 @@ describe("preserved XER event export", () => {
     const manifest = await zip.file(`${root}/manifest.json`)?.async("string");
     const checklist = await zip.file(`${root}/P6-REIMPORT-SCHEDULE-F9-CHECKLIST.md`)?.async("string");
     const reconciliation = await zip.file(`${root}/P6-LOCAL-RECONCILIATION.json`)?.async("string");
+    const preBytes = new Uint8Array(await zip.file(`${root}/PRESERVE-DEMO--EV-001--PRE-TIA.xer`)!.async("arraybuffer"));
+    const expectedHash = createHash("sha256").update(preservedRawBytes).digest("hex");
+    expect(preBytes).toEqual(preservedRawBytes);
     expect(manifest).toContain("sourceSha256");
+    expect(manifest).toContain(expectedHash);
     expect(manifest).toContain("FN-001");
     expect(checklist).toContain("Schedule/F9");
     expect(reconciliation).toContain("local-cpm-reconciliation");

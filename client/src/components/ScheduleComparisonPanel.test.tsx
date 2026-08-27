@@ -11,6 +11,11 @@ import { APP_LANGUAGE_STORAGE_KEY, LanguageProvider } from "@/contexts/LanguageC
 import { ScheduleComparisonPanel } from "./ScheduleComparisonPanel";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
+const eventPackageSpy = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/xer-export", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/xer-export")>();
+  return { ...actual, buildPreservedEventPackageZip: eventPackageSpy };
+});
 
 const readExample = (name: string) => JSON.parse(readFileSync(resolve(process.cwd(), "examples", name), "utf8")) as Schedule;
 let clickSpy: ReturnType<typeof vi.spyOn>;
@@ -19,6 +24,13 @@ let downloadedNames: string[];
 
 beforeEach(() => {
   downloadedNames = [];
+  eventPackageSpy.mockReset();
+  eventPackageSpy.mockResolvedValue({
+    blob: new Blob(["test-only zip payload"], { type: "application/zip" }),
+    fileName: "UI-PRESERVE--EVENT-PACKAGE.zip",
+    events: [],
+    messages: [],
+  });
   vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { callback(0); return 1; });
   clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) { downloadedNames.push(this.download); });
   createObjectUrlSpy = vi.fn(() => "blob:comparison-result");
@@ -44,6 +56,7 @@ const preservedRawXer = [
   "%T\tTASK", "%F\ttask_id\tproj_id\twbs_id\tclndr_id\ttask_code\ttask_name\ttarget_drtn_hr_cnt\tremain_drtn_hr_cnt\ttask_type\tduration_type\tstatus_code", "%R\t1\t100\t1000\t10\tA100\tStart\t16\t16\tTT_Task\tDT_FixedDUR2\tTK_NotStart", "%R\t2\t100\t1000\t10\tA200\tFinish\t16\t16\tTT_Task\tDT_FixedDUR2\tTK_NotStart", "%E",
   "%T\tTASKPRED", "%F\ttask_pred_id\ttask_id\tpred_task_id\tproj_id\tpred_proj_id\tpred_type\tlag_hr_cnt", "%R\t50\t2\t1\t100\t100\tPR_FS\t0", "%E",
 ].join("\r\n");
+const preservedRawBytes = new TextEncoder().encode(preservedRawXer);
 
 const preservedEvent: Fragnet = {
   id: "UI-EVENT", title: "UI preserved export", description: "Test-only relationship fragnet.", cause: "employer", occurrenceDate: "2026-04-02", model: "relationship-fragnet", replacedRelationshipIds: ["50"],
@@ -55,7 +68,7 @@ const preservedSchedule: Schedule = {
   id: "ui-preserved", name: "UI-PRESERVE", startDate: "2026-04-01", calendar: { id: "xer-review-calendar", name: "P6 Calendar — review", workingWeekdays: [0, 1, 2, 3, 4, 5, 6], holidays: [], hoursPerDay: 8 },
   activities: [{ id: "1", name: "A100 — Start", duration: 2, wbsId: "1000", calendarId: "10" }, { id: "2", name: "A200 — Finish", duration: 2, wbsId: "1000", calendarId: "10" }],
   relationships: [{ id: "50", predecessorId: "1", successorId: "2", type: "FS" }], source: "xer", wbsNodes: [{ id: "1000", code: "1.0", name: "Main WBS", path: "Main WBS" }],
-  xerSource: { rawText: preservedRawXer, originalFileName: "ui-original.xer", tableNames: ["PROJECT", "CALENDAR", "PROJWBS", "TASK", "TASKPRED"], projectId: "100", projectCalendarId: "10", calendarIds: ["10"], taskCalendarIds: ["10"], importedAt: "2026-04-01T00:00:00.000Z" },
+  xerSource: { rawText: preservedRawXer, rawBytes: preservedRawBytes, sourceEncoding: "utf-8", preByteExact: true, sourceByteLength: preservedRawBytes.byteLength, originalFileName: "ui-original.xer", tableNames: ["PROJECT", "CALENDAR", "PROJWBS", "TASK", "TASKPRED"], projectId: "100", projectCalendarId: "10", calendarIds: ["10"], taskCalendarIds: ["10"], importedAt: "2026-04-01T00:00:00.000Z" },
 };
 
 describe("واجهة مقارنة التحديثات", () => {
@@ -136,6 +149,7 @@ describe("واجهة مقارنة التحديثات", () => {
       "UI-PRESERVE--UI-EVENT--POST-TIA.xer",
       "UI-PRESERVE--EVENT-PACKAGE.zip",
     ])));
+    expect(eventPackageSpy).toHaveBeenCalledWith(preservedSchedule, [preservedEvent]);
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith(expect.stringContaining("original local XER"));
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Local event package created.");
     expect(vi.mocked(toast.info)).toHaveBeenCalledWith(expect.stringContaining("Schedule/F9"));

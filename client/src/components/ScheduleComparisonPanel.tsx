@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { GanttComparisonChart } from "@/components/GanttComparisonChart";
 import { importP6XmlSchedule } from "@/lib/p6-xml";
 import { comparisonToCsv, compareScheduleUpdates } from "@/lib/schedule-comparison";
-import { importXerSchedule } from "@/lib/xer";
+import { importXerBytes } from "@/lib/xer";
 import { assessPrimaveraCalendarMatch, buildPreservedEventPackageZip, exportExperimentalXer, exportPreservedPostXer, exportPreservedPreXer, validateExperimentalXerRoundTrip } from "@/lib/xer-export";
 import { insertFragnet, type Fragnet, type Schedule } from "@/lib/cpm";
 import { assessScheduleQuality } from "@/lib/schedule-quality";
@@ -25,9 +25,14 @@ function downloadBlob(name: string, blob: Blob) {
   const anchor = document.createElement("a"); anchor.href = url; anchor.download = name; anchor.click(); URL.revokeObjectURL(url);
 }
 
-function parseSchedule(raw: string, name: string): Schedule {
+function downloadBytes(name: string, bytes: Uint8Array, type = "application/octet-stream") {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  downloadBlob(name, new Blob([buffer], { type }));
+}
+
+function parseTextSchedule(raw: string, name: string): Schedule {
   const lower = name.toLowerCase();
-  if (lower.endsWith(".xer")) return importXerSchedule(raw, name).schedule;
   if (lower.endsWith(".xml")) return importP6XmlSchedule(raw, name).schedule;
   const parsed = JSON.parse(raw) as Schedule;
   if (!parsed.id || !parsed.name || !Array.isArray(parsed.activities) || !Array.isArray(parsed.relationships)) throw new Error("ملف JSON لا يطابق نموذج البرنامج.");
@@ -39,14 +44,14 @@ export function ScheduleComparisonPanel({ currentSchedule, selectedEvent, events
   const bi = (arabic: string, english: string) => bilingualUiLabel(language, arabic, english);
   const tx = language === "en" ? {
     eyebrow: "UPDATE VARIANCE WORKSPACE", title: "Schedule update comparison", description: "Compare two defined schedules from your files, then review activity, duration, and completion-date variances. The comparison is technical and does not determine contractual entitlement by itself.",
-    context: "Preserved XER uses the original source held locally for this browser session. Pre is the exact original; Post is a conservative TASK/TASKPRED injection and still requires an independent P6 Schedule/F9 review.", useOpen: "Use the open schedule as baseline", preXer: "Download original Pre — Event", postXer: "Download injected Post — Event", eventPackage: "Export Event Package ZIP", experimentalXer: "Experimental XER fallback",
+    context: "Preserved XER uses original file bytes held only for this browser session. Pre returns those bytes unchanged; Post only applies a conservative TASK/TASKPRED byte patch and still requires an independent P6 Schedule/F9 review.", useOpen: "Use the open schedule as baseline", preXer: "Download original Pre — Event", postXer: "Download injected Post — Event", eventPackage: "Export Event Package ZIP", experimentalXer: "Experimental XER fallback",
     baseline: "Baseline / previous schedule", update: "Update / later schedule", notLoaded: "Not loaded yet", activities: "activities", starts: "starts", support: "Supports XER, P6 XML, and JSON. Files do not leave the browser during comparison.",
     loading: "Reading…", upload: "Upload file", remove: "Remove", transfer: "Compare the same project scope where possible", durationVariance: "Project duration variance", changedActivities: "Changed activities", scopeChanges: "Scope changes", from: "out of", inUpdate: "activities in the update", added: "added", removed: "removed", days: "days", selectEvent: "Select an event first.", preservedBlocked: "Preserved XER export stopped:", preservedDownloaded: "Downloaded from the original local XER.", packageReady: "Local event package created.", packageBlocked: "Event package could not be created.", p6Review: "Do not treat this as a P6 parity result: import Post to a separate P6 copy, Schedule/F9, then compare dates, float, and counts.", sourceMissing: "No original XER is held in this browser session. Re-import the original XER to use preserved Pre/Post.", calendarReview: "Calendar reference review",
     emptyTitle: "Load two schedules to start comparing", emptyDescription: "Choose a baseline version and then an update for the same project. You can use the open schedule as a baseline or load XER/XML/JSON.",
     loadSuccess: "Loaded", openSuccess: "The open schedule was loaded as the baseline.", genericReadError: "Could not read the schedule file.", xerQualityBlocked: "XER download stopped: correct schedule-quality blockers first", xerRoundTripBlocked: "XER download stopped:", xerRoundTripFallback: "Round-trip import validation failed.", xerDownloadSuccess: "Experimental", preTiaSnapshot: "Pre-TIA", postTiaSnapshot: "Post-TIA", xerDownloaded: "XER was downloaded after round-trip import validation:", relationships: "relationships", conjunction: "and", xerCreateError: "Could not create the experimental XER file.", xerReview: "Review calendar constraints and unsupported P6 fields in the download message before using the file externally.",
   } : {
     eyebrow: bi("مساحة عمل فروق التحديثات", "UPDATE VARIANCE WORKSPACE"), title: bi("مقارنة تحديثات البرنامج", "Schedule update comparison"), description: "قارن برنامجين محددين من ملفاتك، ثم راجع فروق الأنشطة والمدة وتاريخ الإكمال. المقارنة فنية ولا تُقرر الاستحقاق التعاقدي بذاتها.",
-    context: "مسار XER المحافظ يستخدم الأصل المحفوظ محلياً داخل جلسة المتصفح. ملف Pre هو الأصل حرفياً، وPost حقن محافظ في TASK/TASKPRED فقط ويحتاج مراجعة منفصلة داخل P6 بعد Schedule/F9.", useOpen: bi("استخدم البرنامج المفتوح كأساس", "Use the open schedule as baseline"), preXer: bi("تنزيل Pre الأصلي — للحدث", "Download original Pre — Event"), postXer: bi("تنزيل Post المحقون — للحدث", "Download injected Post — Event"), eventPackage: bi("تصدير حزمة الأحداث ZIP", "Export Event Package ZIP"), experimentalXer: bi("تصدير XER تجريبي احتياطي", "Experimental XER fallback"),
+    context: "مسار XER المحافظ يحتفظ ببايتات الملف الأصلية داخل جلسة المتصفح فقط. ملف Pre يعيد هذه البايتات بلا تغيير؛ وPost يعمل patch محافظاً في TASK/TASKPRED فقط ويحتاج مراجعة منفصلة داخل P6 بعد Schedule/F9.", useOpen: bi("استخدم البرنامج المفتوح كأساس", "Use the open schedule as baseline"), preXer: bi("تنزيل Pre الأصلي — للحدث", "Download original Pre — Event"), postXer: bi("تنزيل Post المحقون — للحدث", "Download injected Post — Event"), eventPackage: bi("تصدير حزمة الأحداث ZIP", "Export Event Package ZIP"), experimentalXer: bi("تصدير XER تجريبي احتياطي", "Experimental XER fallback"),
     baseline: bi("البرنامج المرجعي / السابق", "Baseline / previous schedule"), update: bi("تحديث البرنامج / اللاحق", "Update / later schedule"), notLoaded: bi("لم يُحمّل بعد", "Not loaded yet"), activities: bi("نشاط", "activities"), starts: bi("يبدأ", "starts"), support: "يدعم XER وP6 XML وJSON. لا تغادر الملفات المتصفح أثناء المقارنة.",
     loading: bi("جارِ القراءة…", "Reading…"), upload: bi("تحميل ملف", "Upload file"), remove: bi("إزالة", "Remove"), transfer: "قارن نفس نطاق المشروع قدر الإمكان", durationVariance: bi("فرق مدة المشروع", "Project duration variance"), changedActivities: bi("أنشطة مُعدّلة", "Changed activities"), scopeChanges: bi("تغييرات نطاق", "Scope changes"), from: bi("من أصل", "out of"), inUpdate: bi("نشاط في التحديث", "activities in the update"), added: bi("مضاف", "added"), removed: bi("محذوف", "removed"), days: bi("يوم", "days"),
     emptyTitle: bi("حمّل برنامجين لبدء المقارنة", "Load two schedules to start comparing"), emptyDescription: "اختر نسخة مرجعية ثم تحديثاً لنفس المشروع. يمكنك استخدام البرنامج المفتوح كأساس أو تحميل XER/XML/JSON.",
@@ -64,7 +69,9 @@ export function ScheduleComparisonPanel({ currentSchedule, selectedEvent, events
     setIsReading(slot);
     try {
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      const parsed = parseSchedule(await file.text(), file.name);
+      const parsed = file.name.toLowerCase().endsWith(".xer")
+        ? importXerBytes(await file.arrayBuffer(), file.name).schedule
+        : parseTextSchedule(await file.text(), file.name);
       if (slot === "baseline") setBaseline(parsed); else setUpdate(parsed);
       toast.success(`${tx.loadSuccess} ${slot === "baseline" ? tx.baseline : tx.update}: ${parsed.name}`);
     } catch (error) { toast.error(error instanceof Error ? error.message : tx.genericReadError); }
@@ -95,8 +102,8 @@ export function ScheduleComparisonPanel({ currentSchedule, selectedEvent, events
   function downloadPreserved(snapshot: "pre" | "post") {
     if (!selectedEvent) { toast.error(tx.selectEvent); return; }
     const output = snapshot === "pre" ? exportPreservedPreXer(currentSchedule, selectedEvent) : exportPreservedPostXer(currentSchedule, selectedEvent);
-    if (output.state === "blocked" || !output.content) { toast.error(`${tx.preservedBlocked} ${output.messages[0] ?? tx.sourceMissing}`); return; }
-    downloadText(output.fileName, output.content, "text/plain;charset=utf-8");
+    if (output.state === "blocked" || !output.bytes) { toast.error(`${tx.preservedBlocked} ${output.messages[0] ?? tx.sourceMissing}`); return; }
+    downloadBytes(output.fileName, output.bytes, "application/octet-stream");
     toast.success(`${tx.preservedDownloaded} ${output.fileName}`);
     toast.info(tx.p6Review);
   }

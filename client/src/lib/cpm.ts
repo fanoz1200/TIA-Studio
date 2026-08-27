@@ -149,11 +149,21 @@ export type Relationship = {
 };
 
 /**
- * مرجع محلي فقط لملف XER الذي اختاره المستخدم. لا يخرج النص من المتصفح؛
- * يستخدم التصدير المحافظ هذا الأصل لإخراج Pre مطابقاً وPost مشتقاً منه.
+ * مرجع محلي فقط لملف XER الذي اختاره المستخدم. البايتات والنص لا يخرجان من
+ * جلسة المتصفح؛ ويستبعد `xerSource` كاملاً قبل أي localStorage. `rawText` هو
+ * عرض parser فقط، أما `rawBytes` فهو المرجع الوحيد لتصدير Pre بايتاً ببايت.
  */
 export type PreservedXerSource = {
   rawText: string;
+  /** أصل الملف في الذاكرة فقط. لا تستخدم rawText كبديل له عند وجوده. */
+  rawBytes?: Uint8Array;
+  /** ترميز المصدر المثبت محلياً؛ single-byte-8bit عرض واحد-إلى-واحد للـparser. */
+  sourceEncoding?: "utf-8" | "single-byte-8bit";
+  /** موضع بداية نص الـparser بعد BOM UTF-8 إن وجد، بالنسبة إلى rawBytes. */
+  sourceByteOffset?: number;
+  sourceByteLength?: number;
+  /** صحيح فقط عندما يكون rawBytes هو الملف الذي اختاره المستخدم فعلياً. */
+  preByteExact?: boolean;
   originalFileName: string;
   tableNames: string[];
   projectId?: string;

@@ -25,6 +25,55 @@ export type XerDocument = {
   tables: XerTableBlock[];
 };
 
+export type XerSourceEncoding = "utf-8" | "single-byte-8bit";
+
+/**
+ * تمثيل XER في الذاكرة: UTF-8 السليم يظل نصاً مفهوماً. أما المصدر غير UTF-8
+ * فيتحول إلى عرض واحد-إلى-واحد (كل byte يصبح code unit واحداً) حتى تظل مواضع
+ * الصفوف مساوية لمواضع البايتات ولا يفقد الـparser أي byte أثناء المراجعة.
+ */
+export type DecodedXerBytes = {
+  rawBytes: Uint8Array;
+  rawText: string;
+  sourceEncoding: XerSourceEncoding;
+  sourceByteOffset: number;
+  preByteExact: boolean;
+};
+
+function hasUtf8Bom(bytes: Uint8Array) {
+  return bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf;
+}
+
+function singleByteView(bytes: Uint8Array) {
+  const chunkSize = 0x8000;
+  const chunks: string[] = [];
+  for (let start = 0; start < bytes.length; start += chunkSize) {
+    const end = Math.min(bytes.length, start + chunkSize);
+    let chunk = "";
+    for (let index = start; index < end; index += 1) chunk += String.fromCharCode(bytes[index]);
+    chunks.push(chunk);
+  }
+  return chunks.join("");
+}
+
+/** يفك المصدر للقراءة فقط ويحفظ نسخة مستقلة من البايتات الأصلية داخل الجلسة. */
+export function decodeXerBytes(raw: ArrayBuffer | Uint8Array): DecodedXerBytes {
+  const rawBytes = raw instanceof Uint8Array ? new Uint8Array(raw) : new Uint8Array(raw.slice(0));
+  const sourceByteOffset = hasUtf8Bom(rawBytes) ? 3 : 0;
+  const body = rawBytes.subarray(sourceByteOffset);
+  try {
+    const rawText = new TextDecoder("utf-8", { fatal: true }).decode(body);
+    return { rawBytes, rawText, sourceEncoding: "utf-8", sourceByteOffset, preByteExact: true };
+  } catch {
+    return { rawBytes, rawText: singleByteView(body), sourceEncoding: "single-byte-8bit", sourceByteOffset, preByteExact: true };
+  }
+}
+
+/** مسار التوافق للنداءات النصية القديمة؛ لا يثبت أن هذا النص كان ملف المستخدم حرفياً. */
+export function encodeUtf8XerText(rawText: string): DecodedXerBytes {
+  return { rawBytes: new TextEncoder().encode(rawText), rawText, sourceEncoding: "utf-8", sourceByteOffset: 0, preByteExact: false };
+}
+
 function normalizeKey(value: string) {
   return value.trim().toLowerCase();
 }
@@ -83,7 +132,8 @@ export function parseXerTableRows(rawText: string) {
   for (const block of parseXerDocument(rawText).tables) {
     if (!block.name) continue;
     const rows = tables.get(block.name) ?? [];
-    rows.push(...block.rows.map((row) => row.values));
+    // لا تستخدم spread هنا: جداول P6 الواقعية قد تتجاوز حد مكدس الاستدعاء في JavaScript.
+    for (const row of block.rows) rows.push(row.values);
     tables.set(block.name, rows);
   }
   return tables;
@@ -107,12 +157,10 @@ export type ConservativeXerPatch = {
   appendRows?: Array<{ table: XerTableBlock; rows: unknown[][] }>;
 };
 
-/**
- * يطبق تعديلات نصية موضعية بترتيب عكسي. لا يعيد كتابة BOM أو ترتيب الجداول أو الصفوف
- * غير المتأثرة أو النهايات الأصلية، ويُستخدم فقط بعد فحص اكتمال الجداول المطلوبة.
- */
-export function applyConservativeXerPatch(document: XerDocument, patch: ConservativeXerPatch) {
-  const changes: Array<{ start: number; end: number; value: string }> = [];
+type XerTextChange = { start: number; end: number; value: string };
+
+function conservativeXerChanges(document: XerDocument, patch: ConservativeXerPatch): XerTextChange[] {
+  const changes: XerTextChange[] = [];
   for (const row of patch.removeRows ?? []) changes.push({ start: row.lineStart, end: row.lineEnd, value: "" });
   for (const append of patch.appendRows ?? []) {
     if (append.table.endStart === undefined) throw new Error(`جدول XER ${append.table.name} لا يملك نهاية %E صالحة.`);
@@ -126,7 +174,63 @@ export function applyConservativeXerPatch(document: XerDocument, patch: Conserva
       value: `${needsLeadingEnding ? document.lineEnding : ""}${payload}${document.lineEnding}`,
     });
   }
-  return changes
-    .sort((left, right) => right.start - left.start || right.end - left.end)
+  return changes.sort((left, right) => right.start - left.start || right.end - left.end);
+}
+
+/**
+ * يطبق تعديلات نصية موضعية بترتيب عكسي. لا يعيد كتابة BOM أو ترتيب الجداول أو الصفوف
+ * غير المتأثرة أو النهايات الأصلية، ويُستخدم فقط بعد فحص اكتمال الجداول المطلوبة.
+ */
+export function applyConservativeXerPatch(document: XerDocument, patch: ConservativeXerPatch) {
+  return conservativeXerChanges(document, patch)
     .reduce((result, change) => `${result.slice(0, change.start)}${change.value}${result.slice(change.end)}`, document.rawText);
+}
+
+function asciiBytes(value: string) {
+  const bytes = new Uint8Array(value.length);
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code > 0x7f) throw new Error("تعذر كتابة نص غير ASCII في ملف XER غير UTF-8؛ أوقف التصدير بدلاً من تغيير ترميز المصدر.");
+    bytes[index] = code;
+  }
+  return bytes;
+}
+
+function utf8ByteOffset(text: string, codeUnitOffset: number) {
+  return new TextEncoder().encode(text.slice(0, codeUnitOffset)).length;
+}
+
+/**
+ * يطبق نفس patch المحافظ على rawBytes. الأجزاء الأصلية تنسخ من المصدر مباشرة؛
+ * لا يعاد ترميزها. في ملفات 8-bit لا يسمح إلا بالصفوف الجديدة ASCII.
+ */
+export function applyConservativeXerBytePatch(
+  document: XerDocument,
+  source: Pick<DecodedXerBytes, "rawBytes" | "sourceEncoding" | "sourceByteOffset">,
+  patch: ConservativeXerPatch,
+) {
+  const encoder = new TextEncoder();
+  const changes = conservativeXerChanges(document, patch);
+  const fragments: Uint8Array[] = [];
+  let right = document.rawText.length;
+  for (const change of changes) {
+    const byteStart = source.sourceByteOffset + (source.sourceEncoding === "utf-8" ? utf8ByteOffset(document.rawText, change.start) : change.start);
+    const byteEnd = source.sourceByteOffset + (source.sourceEncoding === "utf-8" ? utf8ByteOffset(document.rawText, change.end) : change.end);
+    const unchangedStart = source.sourceByteOffset + (source.sourceEncoding === "utf-8" ? utf8ByteOffset(document.rawText, change.end) : change.end);
+    const unchangedEnd = source.sourceByteOffset + (source.sourceEncoding === "utf-8" ? utf8ByteOffset(document.rawText, right) : right);
+    if (unchangedEnd > unchangedStart) fragments.unshift(source.rawBytes.slice(unchangedStart, unchangedEnd));
+    fragments.unshift(source.sourceEncoding === "utf-8" ? encoder.encode(change.value) : asciiBytes(change.value));
+    right = change.start;
+    if (byteEnd < byteStart) throw new Error("مواضع تعديل XER غير صالحة.");
+  }
+  const prefixEnd = source.sourceByteOffset + (source.sourceEncoding === "utf-8" ? utf8ByteOffset(document.rawText, right) : right);
+  fragments.unshift(source.rawBytes.slice(0, prefixEnd));
+  const total = fragments.reduce((sum, fragment) => sum + fragment.length, 0);
+  const output = new Uint8Array(total);
+  let offset = 0;
+  for (const fragment of fragments) {
+    output.set(fragment, offset);
+    offset += fragment.length;
+  }
+  return output;
 }

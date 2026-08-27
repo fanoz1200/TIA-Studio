@@ -3,7 +3,7 @@
  * يحول جداول Primavera P6 النصية الضرورية لتحليل CPM محلياً دون رفع الملف.
  */
 import { calendarDayCalendar, type Activity, type ActivityConstraintAudit, type Relationship, type RelationshipType, type ResourceAssignment, type Schedule, type WbsNode } from "./cpm";
-import { parseXerTableRows, type XerRow } from "./xer-format";
+import { decodeXerBytes, encodeUtf8XerText, parseXerTableRows, type DecodedXerBytes, type XerRow } from "./xer-format";
 
 export type XerImportSummary = {
   projectName: string;
@@ -117,6 +117,16 @@ function buildWbsNodes(rows: XerRow[]) {
  * لا يفك نمط تقويم P6 المشفر تلقائياً؛ يتطلب ذلك مراجعة المستخدم داخل التطبيق.
  */
 export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xer"): XerImportResult {
+  return importDecodedXerSchedule(encodeUtf8XerText(raw), fileName);
+}
+
+/** يستقبل البايتات الأصلية من File.arrayBuffer؛ لا يمر عبر File.text(). */
+export function importXerBytes(raw: ArrayBuffer | Uint8Array, fileName = "Primavera Schedule.xer"): XerImportResult {
+  return importDecodedXerSchedule(decodeXerBytes(raw), fileName);
+}
+
+function importDecodedXerSchedule(source: DecodedXerBytes, fileName: string): XerImportResult {
+  const raw = source.rawText;
   const tables = parseXerTableRows(raw);
   const tasks = tables.get("TASK") ?? [];
   const predecessors = tables.get("TASKPRED") ?? [];
@@ -263,6 +273,11 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
       resourceAssignments,
       xerSource: {
         rawText: raw,
+        rawBytes: source.rawBytes,
+        sourceEncoding: source.sourceEncoding,
+        sourceByteOffset: source.sourceByteOffset,
+        sourceByteLength: source.rawBytes.length,
+        preByteExact: source.preByteExact,
         originalFileName: fileName,
         tableNames: Array.from(tables.keys()),
         projectId,
