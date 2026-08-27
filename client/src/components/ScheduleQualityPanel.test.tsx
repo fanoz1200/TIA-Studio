@@ -17,6 +17,7 @@ const schedule: Schedule = {
   relationships: [{ id: "R1", predecessorId: "A100", successorId: "B100", type: "FS", lag: 0 }],
   wbsNodes: [{ id: "W1", code: "1", name: "أعمال اختبار", path: "1" }],
   resourceAssignments: [],
+  xerSource: { rawText: "%T\tPROJECT\n%F\tproj_id\n%R\tP1\n%E", originalFileName: "quality-source.xer", tableNames: ["PROJECT"], projectId: "P1", projectCalendarId: "CAL-01", calendarIds: ["CAL-01"], taskCalendarIds: ["CAL-01"], importedAt: "2026-08-27T00:00:00.000Z" },
 };
 
 function renderPanel(language: "ar" | "en") {
@@ -45,5 +46,8 @@ describe("بوابة جودة الجدول الثنائية", () => {
     expect(screen.getByText("Schedule quality gate and improvement ledger")).toBeTruthy();
     expect(screen.getByText("Explainable review rules")).toBeTruthy();
     expect(screen.getByText("XER export decision")).toBeTruthy();
+    expect(screen.getByText("Preserved XER path")).toBeTruthy();
+    expect(screen.getByText(/Pre returns the original bytes/)).toBeTruthy();
+    expect(screen.getByText(/does not decode clndr_data/)).toBeTruthy();
   });
 });

@@ -148,6 +148,22 @@ export type Relationship = {
   lag?: number;
 };
 
+/**
+ * مرجع محلي فقط لملف XER الذي اختاره المستخدم. لا يخرج النص من المتصفح؛
+ * يستخدم التصدير المحافظ هذا الأصل لإخراج Pre مطابقاً وPost مشتقاً منه.
+ */
+export type PreservedXerSource = {
+  rawText: string;
+  originalFileName: string;
+  tableNames: string[];
+  projectId?: string;
+  /** تعيين PROJECT.clndr_id إن ظهر في المصدر، من دون الادعاء بفك clndr_data. */
+  projectCalendarId?: string;
+  calendarIds: string[];
+  taskCalendarIds: string[];
+  importedAt: string;
+};
+
 export type Schedule = {
   id: string;
   name: string;
@@ -160,6 +176,8 @@ export type Schedule = {
   importNotes?: string[];
   wbsNodes?: WbsNode[];
   resourceAssignments?: ResourceAssignment[];
+  /** يبقى في الذاكرة المحلية؛ ولا يعيد محرك CPM كتابته أو تعديله. */
+  xerSource?: PreservedXerSource;
 };
 
 export type Fragnet = {

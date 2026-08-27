@@ -83,6 +83,7 @@ describe("معالج رحلة TIA وفق Workshop 8", () => {
     expect(within(split).getByText("Pre")).toBeTruthy();
     expect(within(split).getByText("Event")).toBeTruthy();
     expect(within(split).getByText("Post")).toBeTruthy();
+    expect(within(split).getByText(/تصدير Post-XER المحافظ يُحجب للـActivity Split/)).toBeTruthy();
   });
 
   it("يمنع المتابعة من سجل Workshop 8 حتى تضاف واقعة كاملة للمراجعة", () => {

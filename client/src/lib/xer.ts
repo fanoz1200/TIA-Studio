@@ -3,8 +3,7 @@
  * يحول جداول Primavera P6 النصية الضرورية لتحليل CPM محلياً دون رفع الملف.
  */
 import { calendarDayCalendar, type Activity, type ActivityConstraintAudit, type Relationship, type RelationshipType, type ResourceAssignment, type Schedule, type WbsNode } from "./cpm";
-
-type XerRow = Record<string, string>;
+import { parseXerTableRows, type XerRow } from "./xer-format";
 
 export type XerImportSummary = {
   projectName: string;
@@ -32,35 +31,6 @@ export type XerImportSummary = {
 };
 
 export type XerImportResult = { schedule: Schedule; summary: XerImportSummary };
-
-function normalizeKey(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function parseTables(raw: string) {
-  const tables = new Map<string, XerRow[]>();
-  let currentTable = "";
-  let headers: string[] = [];
-  for (const line of raw.replace(/^\uFEFF/, "").split(/\r?\n/)) {
-    const cells = line.split("\t");
-    const marker = cells[0]?.trim();
-    if (marker === "%T") {
-      currentTable = (cells[1] ?? "").trim().toUpperCase();
-      if (currentTable && !tables.has(currentTable)) tables.set(currentTable, []);
-      headers = [];
-    } else if (marker === "%F") {
-      headers = cells.slice(1).map(normalizeKey);
-    } else if (marker === "%R" && currentTable && headers.length) {
-      const row: XerRow = {};
-      headers.forEach((header, index) => { row[header] = (cells[index + 1] ?? "").trim(); });
-      tables.get(currentTable)?.push(row);
-    } else if (marker === "%E") {
-      currentTable = "";
-      headers = [];
-    }
-  }
-  return tables;
-}
 
 function firstValue(row: XerRow | undefined, ...keys: string[]) {
   if (!row) return "";
@@ -147,7 +117,7 @@ function buildWbsNodes(rows: XerRow[]) {
  * لا يفك نمط تقويم P6 المشفر تلقائياً؛ يتطلب ذلك مراجعة المستخدم داخل التطبيق.
  */
 export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xer"): XerImportResult {
-  const tables = parseTables(raw);
+  const tables = parseXerTableRows(raw);
   const tasks = tables.get("TASK") ?? [];
   const predecessors = tables.get("TASKPRED") ?? [];
   const projects = tables.get("PROJECT") ?? [];
@@ -258,6 +228,9 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
   }
 
   const project = projects[0];
+  const projectId = firstValue(project, "proj_id") || undefined;
+  const projectCalendarId = firstValue(project, "clndr_id") || undefined;
+  const calendarIds = Array.from(new Set(calendars.map((row) => firstValue(row, "clndr_id")).filter(Boolean))).sort();
   const projectName = firstValue(project, "proj_short_name", "proj_name") || fileName.replace(/\.xer$/i, "") || "برنامج Primavera مستورد";
   const startDate = parseXerDate(firstValue(project, "plan_start_date", "proj_start_date")) || [...earliestDates].sort()[0];
   if (!startDate) throw new Error("ملف XER لا يحتوي تاريخ بدء يمكن قراءته؛ صدّر حقول المشروع أو تواريخ الأنشطة ثم أعد المحاولة.");
@@ -288,6 +261,16 @@ export function importXerSchedule(raw: string, fileName = "Primavera Schedule.xe
       importNotes: warnings,
       wbsNodes,
       resourceAssignments,
+      xerSource: {
+        rawText: raw,
+        originalFileName: fileName,
+        tableNames: Array.from(tables.keys()),
+        projectId,
+        projectCalendarId,
+        calendarIds,
+        taskCalendarIds,
+        importedAt: new Date().toISOString(),
+      },
     },
     summary: { projectName, activitiesRead: activities.length, relationshipsRead: relationships.length, relationshipsSkipped, wbsRead: wbsNodes.length, resourcesRead: resourceRows.length, resourceAssignmentsRead: resourceAssignments.length, resourceAssignmentsSkipped, assignmentsWithCosts: resourceAssignments.filter((assignment) => Boolean(assignment.targetCost || assignment.remainingCost || assignment.actualRegularCost || assignment.actualOvertimeCost)).length, activitiesWithProgress: activities.filter((activity) => activity.percentComplete !== undefined).length, taskCalendarIds, taskCalendarCount: taskCalendarIds.length, activitiesWithoutCalendarId, constraintsRead: constraintAudits.length, supportedConstraintsRead, unsupportedConstraintsRead, calendarName: calendarName || undefined, warnings, tablesFound: Array.from(tables.keys()) },
   };

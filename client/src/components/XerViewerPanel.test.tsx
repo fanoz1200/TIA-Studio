@@ -14,7 +14,7 @@ const baseline: Schedule = {
   calendar: { id: "eg", name: "مصر 6 أيام", workingWeekdays: [0, 1, 2, 3, 4, 6], holidays: [], hoursPerDay: 8 },
   activities: [{ id: "A100", name: "أساسات", duration: 5, wbs: "1.1", owner: "المقاول" }], relationships: [],
 };
-const update: Schedule = { ...baseline, id: "update", name: "Update تجريبي", dataDate: "2026-01-20", activities: [...baseline.activities, { id: "A200", name: "صب خرسانة", duration: 4, wbs: "1.2", owner: "المقاول" }], relationships: [{ id: "R1", predecessorId: "A100", successorId: "A200", type: "FS", lag: 0 }] };
+const update: Schedule = { ...baseline, id: "update", name: "Update تجريبي", dataDate: "2026-01-20", activities: [...baseline.activities, { id: "A200", name: "صب خرسانة", duration: 4, wbs: "1.2", owner: "المقاول" }], relationships: [{ id: "R1", predecessorId: "A100", successorId: "A200", type: "FS", lag: 0 }], xerSource: { rawText: "%T\tPROJECT\n%F\tproj_id\n%R\tP1\n%E", originalFileName: "update.xer", tableNames: ["PROJECT", "CALENDAR"], projectId: "P1", projectCalendarId: "CAL-01", calendarIds: ["CAL-01"], taskCalendarIds: ["CAL-01"], importedAt: "2026-08-27T00:00:00.000Z" } };
 const baselineSummary: XerImportSummary = { projectName: "Baseline", activitiesRead: 1, relationshipsRead: 0, wbsRead: 1, resourcesRead: 0, resourceAssignmentsRead: 0, assignmentsWithCosts: 0, activitiesWithProgress: 0, warnings: [], tablesFound: [] };
 const updateSummary: XerImportSummary = { projectName: "Update", activitiesRead: 2, relationshipsRead: 1, wbsRead: 1, resourcesRead: 0, resourceAssignmentsRead: 0, assignmentsWithCosts: 0, activitiesWithProgress: 0, warnings: [], tablesFound: [] };
 const baselineSnapshot: ScheduleSnapshot = { id: "snapshot-base", stage: "baseline", fileName: "baseline.xer", schedule: baseline, summary: baselineSummary };
@@ -36,7 +36,8 @@ describe("عارض XER المحلي", () => {
 
     expect(screen.getByRole("heading", { name: "عارض XER والنسخ · XER and snapshot viewer" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "عارض XER والنسخ · XER and snapshot viewer" }).getAttribute("dir")).toBe("rtl");
-    expect(screen.getByText(/لا يعدّل ملف XER الأصلي/)).toBeTruthy();
+    expect(screen.getByText(/الملف الأصلي محفوظ محلياً داخل الجلسة/)).toBeTruthy();
+    expect(screen.getByText(/مرجع P6/)).toBeTruthy();
     expect(screen.getByText("baseline.xer")).toBeTruthy();
     expect(screen.getByText("update.xer")).toBeTruthy();
     expect(screen.getByText("أنشطة أُضيفت · Activities added")).toBeTruthy();
@@ -54,6 +55,8 @@ describe("عارض XER المحلي", () => {
     expect(viewer.getAttribute("dir")).toBe("ltr");
     expect(screen.getByRole("heading", { name: "XER and snapshot viewer" })).toBeTruthy();
     expect(screen.getByText("Viewer limits:")).toBeTruthy();
+    expect(screen.getByText(/original file is held locally for this session/)).toBeTruthy();
+    expect(screen.getByText(/P6 verification required/)).toBeTruthy();
     expect(screen.getByText("Activities added")).toBeTruthy();
     expect(screen.getAllByText("A200").length).toBeGreaterThan(0);
     expect(screen.getByText("صب خرسانة")).toBeTruthy();

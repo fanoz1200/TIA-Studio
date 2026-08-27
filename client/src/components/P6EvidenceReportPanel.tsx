@@ -574,6 +574,7 @@ export function P6EvidenceReportPanel({
       <ScheduleComparisonPanel
         currentSchedule={schedule}
         selectedEvent={selectedEvent}
+        events={events}
       />
     );
   if (view === "analysis")

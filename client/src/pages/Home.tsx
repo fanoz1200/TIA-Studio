@@ -880,26 +880,32 @@ function defaultWindow(schedule: Schedule): AnalysisWindow {
 
 const navItems: { key: ViewKey; label: string; labelEn: string; icon: typeof Network }[] = [
   { key: "guided", label: "1. ابدأ التحليل", labelEn: "1. Start analysis", icon: Play },
-  { key: "guide", label: "دليل بالصور", labelEn: "Visual guide", icon: CircleHelp },
+  { key: "guide", label: "2. الدليل بالصور", labelEn: "2. Visual guide", icon: CircleHelp },
   { key: "overview", label: "لوحة المتابعة", labelEn: "Dashboard", icon: BarChart3 },
-  { key: "schedule", label: "2. ارفع برنامج P6", labelEn: "2. Import P6 schedule", icon: Network },
-  { key: "quality", label: "2.1 فحص جودة الجدول", labelEn: "2.1 Schedule quality", icon: ShieldCheck },
-  { key: "issues", label: "3. سجّل الواقعة", labelEn: "3. Record issue", icon: ClipboardList },
-  { key: "claimConsole", label: "Claim Console", labelEn: "Claim Console", icon: Scale },
-  { key: "event", label: "4. نمذجة الحدث (Fragnet)", labelEn: "4. Model event (Fragnet)", icon: Zap },
-  { key: "analysis", label: "5. نتيجة التحليل", labelEn: "5. Analysis result", icon: ScanSearch },
-  { key: "report", label: "6. تقرير المطالبة", labelEn: "6. Claim report", icon: TextQuote },
-  { key: "windows", label: "نوافذ وتزامن", labelEn: "Windows & concurrency", icon: CalendarClock },
-  { key: "financial", label: "الأثر المالي", labelEn: "Financial impact", icon: WalletCards },
-  { key: "notices", label: "سجل Notices", labelEn: "Notice register", icon: BellRing },
-  { key: "review", label: "الاعتماد الإلكتروني", labelEn: "Electronic review", icon: ClipboardCheck },
-  { key: "members", label: "أعضاء المشروع", labelEn: "Project members", icon: UsersRound },
-  { key: "compare", label: "مقارنة التحديثات", labelEn: "Compare updates", icon: GitCompareArrows },
-  { key: "xerViewer", label: "معاينة XER قبل P6", labelEn: "Review XER before P6", icon: FileCode2 },
-  { key: "resources", label: "الأدلة والملفات", labelEn: "Guides & files", icon: HardDriveDownload },
-  { key: "learning", label: "التدريب والشرح", labelEn: "Training", icon: BookOpenCheck },
-  { key: "methods", label: "الموسوعة العلمية (SCL)", labelEn: "Technical library (SCL)", icon: LibraryBig },
+  { key: "schedule", label: "3. ارفع برنامج P6", labelEn: "3. Import P6 schedule", icon: Network },
+  { key: "quality", label: "4. فحص جودة الجدول", labelEn: "4. Schedule quality", icon: ShieldCheck },
+  { key: "xerViewer", label: "5. معاينة XER قبل P6", labelEn: "5. Review XER before P6", icon: FileCode2 },
+  { key: "issues", label: "6. سجّل الواقعة", labelEn: "6. Record issue", icon: ClipboardList },
+  { key: "event", label: "7. نمذجة الحدث (Fragnet)", labelEn: "7. Model event (Fragnet)", icon: Zap },
+  { key: "analysis", label: "8. نتيجة التحليل", labelEn: "8. Analysis result", icon: ScanSearch },
+  { key: "windows", label: "9. النوافذ والتزامن", labelEn: "9. Windows & concurrency", icon: CalendarClock },
+  { key: "compare", label: "10. المقارنة وحزمة الأحداث", labelEn: "10. Compare & event package", icon: GitCompareArrows },
+  { key: "report", label: "11. تقرير المطالبة", labelEn: "11. Claim report", icon: TextQuote },
+  { key: "notices", label: "12. سجل Notices", labelEn: "12. Notice register", icon: BellRing },
+  { key: "financial", label: "13. الأثر المالي", labelEn: "13. Financial impact", icon: WalletCards },
+  { key: "review", label: "14. الاعتماد الإلكتروني", labelEn: "14. Electronic review", icon: ClipboardCheck },
+  { key: "claimConsole", label: "15. Claim Console", labelEn: "15. Claim Console", icon: Scale },
+  { key: "members", label: "16. أعضاء المشروع", labelEn: "16. Project members", icon: UsersRound },
+  { key: "resources", label: "17. الأدلة والملفات", labelEn: "17. Guides & files", icon: HardDriveDownload },
+  { key: "learning", label: "18. التدريب والشرح", labelEn: "18. Training", icon: BookOpenCheck },
+  { key: "methods", label: "19. الموسوعة العلمية (SCL)", labelEn: "19. Technical library (SCL)", icon: LibraryBig },
 ];
+
+/** لا يُحفظ ملف XER الخام في localStorage: يظل داخل ذاكرة الصفحة الحالية فقط. */
+function scheduleForLocalStorage(schedule: Schedule): Schedule {
+  const { xerSource: _xerSource, ...persistable } = schedule;
+  return persistable;
+}
 
 function navigationLabel(item: (typeof navItems)[number], language: "ar" | "en") {
   return bilingualUiLabel(language, item.label, item.labelEn);
@@ -1205,7 +1211,7 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem("tia-v2-schedule", JSON.stringify(schedule));
+      window.localStorage.setItem("tia-v2-schedule", JSON.stringify(scheduleForLocalStorage(schedule)));
       window.localStorage.setItem("tia-v2-events", JSON.stringify(events));
       window.localStorage.setItem("tia-v2-windows", JSON.stringify(windows));
       window.localStorage.setItem(

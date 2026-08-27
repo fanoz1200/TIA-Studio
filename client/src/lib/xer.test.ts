@@ -38,6 +38,7 @@ describe("XER resource and cost import", () => {
     const result = importXerSchedule(raw, "orphan-links.xer");
 
     expect(result.summary).toMatchObject({ relationshipsRead: 0, relationshipsSkipped: 1, resourceAssignmentsRead: 1, resourceAssignmentsSkipped: 1 });
+    expect(result.schedule.xerSource).toMatchObject({ rawText: raw, originalFileName: "orphan-links.xer", tableNames: expect.arrayContaining(["PROJECT", "TASK", "TASKPRED", "TASKRSRC"]), taskCalendarIds: [] });
     expect(result.summary.warnings.join(" ")).toContain("تم تجاهل علاقة XER");
     expect(result.summary.warnings.join(" ")).toContain("تم تجاهل إسناد مورد TASKRSRC");
   });
