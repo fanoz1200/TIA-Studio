@@ -14,6 +14,7 @@ describe("عقد نسخة سطح المكتب", () => {
     expect(main).toContain("nodeIntegration: false");
     expect(main).toContain("contextIsolation: true");
     expect(main).toContain("127.0.0.1");
+    expect(main).toContain("?desktop=1&showSplash=1");
   });
 
   it("يوثق حدوده ويحتوي إعداد بناء مثبت وملف محمول", () => {
@@ -24,6 +25,9 @@ describe("عقد نسخة سطح المكتب", () => {
     expect(manifest.scripts["desktop:pack:windows:setup"]).toContain("Windows-x64-Setup");
     expect(manifest.build.files).toContain("dist/**/*");
     expect(manifest.build.files).toContain("node_modules/**/*");
+    expect(manifest.build.extraResources).toEqual([
+      { from: "/home/ubuntu/webdev-static-assets/tia-studio-opening-intro.mp3", to: "desktop-media/tia-studio-opening-intro.mp3" },
+    ]);
     expect((manifest.build.win as { signAndEditExecutable: boolean }).signAndEditExecutable).toBe(false);
     expect((manifest.build.win as { signExecutable: boolean }).signExecutable).toBe(false);
     expect((manifest.build.win as { target: string[] }).target).toEqual(expect.arrayContaining(["nsis", "portable"]));

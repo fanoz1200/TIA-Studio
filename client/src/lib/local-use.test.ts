@@ -30,9 +30,9 @@ describe("عقد التشغيل المحلي", () => {
     expect(resourcesPanel).toContain("WINDOWS_SETUP_DOWNLOAD_URL");
     expect(resourcesPanel).toContain("WINDOWS_PORTABLE_DOWNLOAD_URL");
     expect(resourcesPanel).toContain("WINDOWS_SHA256_DOWNLOAD_URL");
-    expect(releaseGuide).toContain("releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe");
-    expect(releaseGuide).toContain("releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe");
-    expect(releaseGuide).toContain("releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt");
+    expect(releaseGuide).toContain("releases/download/v1.0.13/TIA-Studio-1.0.13-Windows-x64-Setup.exe");
+    expect(releaseGuide).toContain("releases/download/v1.0.13/TIA-Studio-1.0.13-Windows-x64-Portable.exe");
+    expect(releaseGuide).toContain("releases/download/v1.0.13/TIA-Studio-1.0.13-Windows-x64-SHA256SUMS.txt");
     expect(releaseGuide).toContain("TIA-Studio-source-20260827_2edd7a7b.zip");
     expect(releaseGuide).toContain("3033435f21f6bc0b8f9c32b3a9db15d2d39ebb7c9b54740a8c73886a458b3131");
     expect(resourcesPanel).toContain("TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage");

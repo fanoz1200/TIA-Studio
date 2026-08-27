@@ -81,7 +81,9 @@ async function createWindow() {
     throw error;
   }
 
-  const localUrl = `http://127.0.0.1:${port}/`;
+  // The branded opening screen is shown on each desktop launch. Audio remains
+  // user-triggered in the renderer and is never started by the application.
+  const localUrl = `http://127.0.0.1:${port}/?desktop=1&showSplash=1`;
   await waitForLocalServer(localUrl);
 
   const window = new BrowserWindow({

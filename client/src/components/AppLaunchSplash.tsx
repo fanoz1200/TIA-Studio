@@ -14,7 +14,14 @@ type AppLaunchSplashProps = {
   onOpenKnowledge?: () => void;
 };
 
-const openingIntroductionUrl = "/manus-storage/tia-studio-opening-intro_221bda02.mp3";
+export const WEB_OPENING_INTRODUCTION_URL = "/manus-storage/tia-studio-opening-intro_221bda02.mp3";
+export const DESKTOP_OPENING_INTRODUCTION_URL = "/desktop-media/tia-studio-opening-intro.mp3";
+
+export function resolveOpeningIntroductionUrl(search = typeof window === "undefined" ? "" : window.location.search) {
+  return new URLSearchParams(search).get("desktop") === "1"
+    ? DESKTOP_OPENING_INTRODUCTION_URL
+    : WEB_OPENING_INTRODUCTION_URL;
+}
 
 export function AppLaunchSplash({ open, onOpenChange, onEnterWorkspace, onOpenGuide, onOpenKnowledge = () => undefined }: AppLaunchSplashProps) {
   const { language, direction } = useAppLanguage();
@@ -40,7 +47,7 @@ export function AppLaunchSplash({ open, onOpenChange, onEnterWorkspace, onOpenGu
       stopSound();
       return;
     }
-    const audio = new Audio(openingIntroductionUrl);
+    const audio = new Audio(resolveOpeningIntroductionUrl());
     audioRef.current = audio;
     audio.preload = "auto";
     audio.onended = () => {

@@ -2,7 +2,7 @@ import React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AppLaunchSplash } from "./AppLaunchSplash";
+import { AppLaunchSplash, DESKTOP_OPENING_INTRODUCTION_URL, resolveOpeningIntroductionUrl, WEB_OPENING_INTRODUCTION_URL } from "./AppLaunchSplash";
 
 function renderSplash(overrides: Partial<React.ComponentProps<typeof AppLaunchSplash>> = {}) {
   const props = {
@@ -58,9 +58,14 @@ describe("شاشة بداية TIA Studio", () => {
     expect(AudioMock).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "شغّل المقدمة الصوتية" }));
 
-    expect(AudioMock).toHaveBeenCalledWith("/manus-storage/tia-studio-opening-intro_221bda02.mp3");
+    expect(AudioMock).toHaveBeenCalledWith(WEB_OPENING_INTRODUCTION_URL);
     expect(play).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.getByRole("button", { name: "أوقف المقدمة الصوتية" })).toBeTruthy());
+  });
+
+  it("يستخدم مسار الصوت المضمّن في نسخة Windows فقط", () => {
+    expect(resolveOpeningIntroductionUrl("?desktop=1&showSplash=1")).toBe(DESKTOP_OPENING_INTRODUCTION_URL);
+    expect(resolveOpeningIntroductionUrl("?showSplash=1")).toBe(WEB_OPENING_INTRODUCTION_URL);
   });
 
   it("يعرض الإنجليزية واتجاه LTR مع نفس بيانات الهوية", () => {

@@ -8,7 +8,9 @@ describe("حزمة سطح المكتب المحلية", () => {
   it("تضع الخادم وواجهته داخل app.asar بجوار الاعتمادات", () => {
     const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
     expect(packageJson.build.files).toContain("dist/**/*");
-    expect(packageJson.build.extraResources).toBeUndefined();
+    expect(packageJson.build.extraResources).toEqual([
+      { from: "/home/ubuntu/webdev-static-assets/tia-studio-opening-intro.mp3", to: "desktop-media/tia-studio-opening-intro.mp3" },
+    ]);
     expect(packageJson.scripts["desktop:verify:packaged"]).toBe("node desktop/verify-packaged-local-server.mjs");
     expect(packageJson.scripts["desktop:verify:windows-sandbox"]).toBe("bash desktop/verify-windows-package-wine.sh");
   });
@@ -19,6 +21,7 @@ describe("حزمة سطح المكتب المحلية", () => {
     expect(main).toContain("tia-studio-local-server.log");
     expect(main).toContain("pathToFileURL(serverEntry).href");
     expect(main).toContain("serverModule.startServer()");
+    expect(main).toContain("?desktop=1&showSplash=1");
     expect(main).not.toContain("spawn(process.execPath");
   });
 
@@ -37,6 +40,7 @@ describe("حزمة سطح المكتب المحلية", () => {
     expect(server).toContain("const viteEntry = pathToFileURL");
     expect(server).not.toContain('from "./vite"');
     expect(staticServer).not.toContain('from "vite"');
+    expect(staticServer).toContain('app.use("/desktop-media"');
   });
 
   it("يطلب من الخادم المضمّن البقاء على حلقة الجهاز المحلية فقط", () => {

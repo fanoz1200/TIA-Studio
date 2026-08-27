@@ -1,6 +1,6 @@
 export const releaseInfo = {
-  version: "1.0.12",
-  publishedOn: "24 أغسطس 2026",
+  version: "1.0.13",
+  publishedOn: "28 أغسطس 2026",
   channel: "سطح المكتب المحلي · Windows x64 وLinux x64",
   launcher: "Windows: استخدم ملف Setup للتثبيت أو ملف Portable للتشغيل المباشر. Linux: ملف TIA-Studio-1.0.7-Linux-x64.AppImage واحد.",
 } as const;
@@ -15,17 +15,17 @@ export const GITHUB_SOURCE_REFERENCE = {
   branch: "main",
   arabicTitle: "المصدر الحالي على GitHub",
   englishTitle: "Current source on GitHub",
-  arabicDescription: "المستودع العام وفرع main هما مرجع المصدر المراجع. يثبت تقرير التسليم بصمة المزامنة قبل وصف المصدر بأنه الأحدث؛ لا تعني هذه البطاقة إصدار Windows أو GitHub Release جديداً.",
-  englishDescription: "The public repository and main branch are the reviewed source reference. The delivery record verifies the sync SHA before the source is described as current; this card does not indicate a new Windows build or GitHub Release.",
+  arabicDescription: "المستودع العام وفرع main هما مرجع المصدر المراجع. يثبت تقرير التسليم بصمة المزامنة قبل وصف المصدر بأنه الأحدث؛ إصدار Windows 1.0.13 وروابطه يظهران منفصلين في بطاقات التنزيل.",
+  englishDescription: "The public repository and main branch are the reviewed source reference. The delivery record verifies the sync SHA before the source is described as current; Windows 1.0.13 and its direct links are shown separately in the download cards.",
 } as const;
 
 /** Stable Windows release links. Keep these separate from the GitHub source branch. */
 export const WINDOWS_SETUP_DOWNLOAD_URL =
-  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe";
+  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.13/TIA-Studio-1.0.13-Windows-x64-Setup.exe";
 export const WINDOWS_PORTABLE_DOWNLOAD_URL =
-  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe";
+  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.13/TIA-Studio-1.0.13-Windows-x64-Portable.exe";
 export const WINDOWS_SHA256_DOWNLOAD_URL =
-  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt";
+  "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.13/TIA-Studio-1.0.13-Windows-x64-SHA256SUMS.txt";
 
 /**
  * A frozen, clean handoff snapshot. This must stay separate from the Windows
@@ -88,6 +88,7 @@ export const systemLinks = [
 ] as const;
 
 export const releaseChanges = [
+  "إصدار 1.0.13: أصبحت شاشة افتتاح TIA Studio والهوية الثابتة والشعار تظهر عند كل تشغيل جديد لنسخة Windows. يضم Setup وPortable ملف المقدمة الصوتية داخل الحزمة المحلية؛ لا يبدأ الصوت تلقائياً، بل يُشغّل أو يُوقف من زر واضح بضغط المستخدم.",
   "إصدار 1.0.12: أضيف اختيار واضح للغة الواجهة (العربية / English) يُحفظ محلياً ويضبط اتجاه RTL/LTR، مع ترجمة التنقل والرأس المشتركين. تظل الشاشات المتخصصة العربية القديمة قيد ترجمة تدريجية ومختبرة؛ لا يدّعي الإصدار أن كل نص قديم أصبح إنجليزياً.",
   "إصدار 1.0.12: أضيف اختيار مستقل للغة كل مخرج في لوحة التقرير. ينتج Full Claim وPDF وFact Pack وExcel عناوين واتجاهاً عربيين أو إنجليزيين بحسب الاختيار، بينما تبقى أسماء الأنشطة والوقائع والأدلة كما أدخلها المستخدم ولا تُترجم تلقائياً أو تُرسل إلى خدمة خارجية.",
   "إصدار 1.0.11: أصلح مركز الموارد التعامل مع روابط GitHub الخارجية عند تشغيل نسخة Windows المحلية؛ تبقى الروابط الخارجية كما هي ولا تُضاف إليها وصلة الخادم المحلي. وعندما لا يعرض المتصفح تثبيت PWA، يظهر زر واضح لتحميل Windows Setup بدلاً من زر معطّل.",
@@ -110,7 +111,7 @@ export const releaseChanges = [
 
 export const ENGLISH_LOCAL_RELEASE = {
   version: releaseInfo.version,
-  publishedOn: "24 August 2026",
+  publishedOn: "28 August 2026",
   channel: "Local desktop · Windows x64 and Linux x64",
   launcher: "Windows: use Setup to install or Portable to run directly. Linux: use the single TIA-Studio-1.0.7-Linux-x64.AppImage file.",
 } as const;
@@ -164,6 +165,7 @@ export const englishSystemLinks = [
 ] as const;
 
 export const englishReleaseChanges = [
+  "Version 1.0.13: the TIA Studio opening screen, fixed identity, and slogan now appear on every new Windows app launch. Setup and Portable package the opening audio locally; it never auto-plays and can only be started or stopped through an explicit user control.",
   "Version 1.0.12: a clear interface-language choice (Arabic / English) was added, saved locally, and used to set RTL/LTR direction with the shared navigation and header. Specialist screens are translated and tested progressively; the release does not claim that every legacy text is English.",
   "Version 1.0.12: a separate output-language choice was added to the report panel. Full Claim, PDF, Fact Pack, and Excel use Arabic or English headings and direction as selected, while activity names, events, and evidence remain as entered by the user and are neither automatically translated nor sent to an external service.",
   "Version 1.0.11: the resources centre was corrected to preserve external GitHub links when running the local Windows build. When the browser does not offer PWA installation, a clear Windows Setup download appears instead of a disabled button.",
