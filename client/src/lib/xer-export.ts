@@ -4,6 +4,7 @@
  */
 import JSZip from "jszip";
 import { addWorkingDays, runCPM, type Fragnet, type Schedule } from "./cpm";
+import { buildP6ReconciliationManifest, serializeP6ReconciliationManifest } from "./p6-reconciliation-manifest";
 import { importXerSchedule } from "./xer";
 import { applyConservativeXerPatch, parseXerDocument, xerTableBlocks, type XerDocumentRow, type XerTableBlock } from "./xer-format";
 
@@ -467,6 +468,90 @@ async function sha256(text: string) {
   return Array.from(new Uint8Array(digest)).map((value) => value.toString(16).padStart(2, "0")).join("");
 }
 
+function p6ReimportChecklist(
+  schedule: Schedule,
+  event: Fragnet,
+  pre: PreservedXerExportResult,
+  post: PreservedXerExportResult,
+  calendarMatch: PrimaveraCalendarMatchAssessment,
+) {
+  const safe = (value: string | number | undefined) => value === undefined || value === "" ? "غير متاح / Not available" : String(value);
+  const postAvailability = post.state === "ready" ? "متاح للمراجعة / Available for review" : "محجوب — راجع manifest.json / Blocked — see manifest.json";
+  return [
+    "# دليل إعادة الاستيراد والتحقق في Primavera P6",
+    "",
+    "> هذا الدليل سجل عمل للمراجع. لا يثبت وحده صحة Post ولا يعيد حساب P6 داخل TIA Studio.",
+    "",
+    `- **الحدث / Event:** ${event.id} — ${event.title}`,
+    `- **ملف المصدر / Source:** ${safe(schedule.xerSource?.originalFileName)}`,
+    `- **Pre:** ${pre.fileName}`,
+    `- **Post:** ${post.fileName} (${postAvailability})`,
+    "",
+    "## خطوات المراجع / Reviewer steps",
+    "",
+    "1. اعمل نسخة غير إنتاجية من مشروع P6 أو قاعدة اختبار؛ لا تستورد في البرنامج المعتمد مباشرة.",
+    "2. استورد ملف Pre وتحقق من اسم المشروع، WBS، عدد الأنشطة، وعدد العلاقات مقابل الملف الأصلي.",
+    "3. إذا كان Post متاحاً، استورده في نسخة اختبار منفصلة. راجع Import Log، ثم نفّذ Schedule/F9 باستخدام تقاويم P6 الموجودة في الملف.",
+    "4. سجّل أدناه تاريخ الإكمال، المسار الحرج، والـTotal Float بعد F9. لا تنقل الحكم على المسؤولية أو EOT من هذا الفحص وحده.",
+    "5. قارِن قيم P6 بنتائج TIA Studio، وأرفق تقرير Schedule/F9 أو لقطاته مع ملف القضية خارج هذه الحزمة عند الاقتضاء.",
+    "",
+    "## سجل مقارنة بعد Schedule/F9",
+    "",
+    "| بند المراجعة | مرجع الحزمة المحلي | قيمة P6 بعد الاستيراد وSchedule/F9 | نتيجة المراجع |",
+    "|---|---|---|---|",
+    `| حالة Post | ${postAvailability} | اكتب النتيجة | Pass / Review / Block |`,
+    `| تقويم النشاط الجديد | ${safe(post.calendarAssignmentId)} | اكتب CALENDAR المستخدم | Pass / Review / Block |`,
+    `| ساعات اليوم / day_hr_cnt | ${safe(calendarMatch.hoursPerDay.source)} | اكتب القيمة في P6 | Pass / Review / Block |`,
+    `| Data Date | ${safe(calendarMatch.dataDate.source)} | اكتب القيمة بعد F9 | Pass / Review / Block |`,
+    `| عدد الأنشطة | ${safe(post.localRoundTrip?.activityCount)} | اكتب العدد بعد الاستيراد | Pass / Review / Block |`,
+    `| عدد العلاقات | ${safe(post.localRoundTrip?.relationshipCount)} | اكتب العدد بعد الاستيراد | Pass / Review / Block |`,
+    "| تاريخ إكمال المشروع | غير محسوب من ملف XER المحافظ | اكتب التاريخ بعد F9 | Pass / Review / Block |",
+    "| المسار الحرج وTotal Float | يتطلب مقارنة مستقلة | اكتب النتيجة أو مرجع التقرير | Pass / Review / Block |",
+    "",
+    "## حدود لازمة",
+    "",
+    "- احتفظت الحزمة بجداول المصدر كما هي، مع حذف TASKPRED المعلن وإضافة TASK/TASKPRED للـFragment فقط عند جاهزية Post.",
+    "- لا يفك TIA Studio `clndr_data` أو وراثة التقويم أو الاستثناءات والشفتات؛ فرق التقويم أو Data Date يستلزم مراجعة P6.",
+    "- إذا كان Post محجوباً، لا تحاول إنشاء ملف بديل من هذه الحزمة؛ صحح سبب الحجب أولاً ثم أعد التصدير من المصدر الأصلي.",
+    "",
+  ].join("\n");
+}
+
+function p6ReconciliationArtifact(schedule: Schedule, event: Fragnet, post: PreservedXerExportResult) {
+  if (post.state !== "ready" || !post.content) {
+    return {
+      fileName: "P6-RECONCILIATION-STATUS.json",
+      content: `${JSON.stringify({
+        purpose: "p6-reconciliation-status",
+        eventId: event.id,
+        state: "blocked",
+        scopeNotice: "لم يتولد Post محافظ لهذا الحدث؛ لا توجد بيانات للمقارنة في P6. راجع manifest.json ودليل Schedule/F9.",
+        messages: post.messages,
+      }, null, 2)}\n`,
+    };
+  }
+  try {
+    const reimported = importXerSchedule(post.content, post.fileName);
+    const manifest = buildP6ReconciliationManifest({
+      schedule: reimported.schedule,
+      cpm: runCPM(reimported.schedule),
+      xerSummary: reimported.summary,
+    });
+    return { fileName: "P6-LOCAL-RECONCILIATION.json", content: serializeP6ReconciliationManifest(manifest) };
+  } catch (error) {
+    return {
+      fileName: "P6-RECONCILIATION-STATUS.json",
+      content: `${JSON.stringify({
+        purpose: "p6-reconciliation-status",
+        eventId: event.id,
+        state: "review-required",
+        scopeNotice: "تعذر إنشاء أثر المطابقة المحلي؛ لا يعني ذلك قبول أو رفض P6. أكمل إعادة الاستيراد وSchedule/F9 يدوياً.",
+        message: error instanceof Error ? error.message : "تعذر إنشاء أثر المطابقة المحلي.",
+      }, null, 2)}\n`,
+    };
+  }
+}
+
 /** يبني ZIP داخل المتصفح فقط؛ الأحداث المحجوبة تحصل على manifest واضح من دون Post مضلل. */
 export async function buildPreservedEventPackageZip(schedule: Schedule, events: Fragnet[]): Promise<PreservedEventPackageResult> {
   if (!events.length) throw new Error("اختر حدثاً واحداً على الأقل قبل إنشاء Event Package.");
@@ -482,6 +567,9 @@ export async function buildPreservedEventPackageZip(schedule: Schedule, events: 
     const eventFolder = `${root}/events/${safeFilePart(event.id, "EVENT")}`;
     if (pre.state === "ready" && pre.content) zip.file(`${eventFolder}/${pre.fileName}`, pre.content);
     if (post.state === "ready" && post.content) zip.file(`${eventFolder}/${post.fileName}`, post.content);
+    zip.file(`${eventFolder}/P6-REIMPORT-SCHEDULE-F9-CHECKLIST.md`, p6ReimportChecklist(schedule, event, pre, post, calendarMatch));
+    const reconciliationArtifact = p6ReconciliationArtifact(schedule, event, post);
+    zip.file(`${eventFolder}/${reconciliationArtifact.fileName}`, reconciliationArtifact.content);
     const manifest = {
       format: "TIA Studio Preserved XER Event Package v1",
       sourceFileName: schedule.xerSource?.originalFileName,

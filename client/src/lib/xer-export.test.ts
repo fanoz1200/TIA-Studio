@@ -143,11 +143,17 @@ describe("preserved XER event export", () => {
     expect(Object.keys(zip.files)).toEqual(expect.arrayContaining([
       `${root}/PRESERVE-DEMO--EV-001--PRE-TIA.xer`,
       `${root}/PRESERVE-DEMO--EV-001--POST-TIA.xer`,
+      `${root}/P6-REIMPORT-SCHEDULE-F9-CHECKLIST.md`,
+      `${root}/P6-LOCAL-RECONCILIATION.json`,
       `${root}/manifest.json`,
       "PRESERVE-DEMO--EVENT-PACKAGE/package-manifest.json",
     ]));
     const manifest = await zip.file(`${root}/manifest.json`)?.async("string");
+    const checklist = await zip.file(`${root}/P6-REIMPORT-SCHEDULE-F9-CHECKLIST.md`)?.async("string");
+    const reconciliation = await zip.file(`${root}/P6-LOCAL-RECONCILIATION.json`)?.async("string");
     expect(manifest).toContain("sourceSha256");
     expect(manifest).toContain("FN-001");
+    expect(checklist).toContain("Schedule/F9");
+    expect(reconciliation).toContain("local-cpm-reconciliation");
   });
 });
