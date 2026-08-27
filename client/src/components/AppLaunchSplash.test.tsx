@@ -1,5 +1,5 @@
 import React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppLaunchSplash } from "./AppLaunchSplash";
@@ -19,6 +19,7 @@ function renderSplash(overrides: Partial<React.ComponentProps<typeof AppLaunchSp
 afterEach(() => {
   cleanup();
   window.localStorage.clear();
+  vi.unstubAllGlobals();
 });
 
 describe("شاشة بداية TIA Studio", () => {
@@ -45,6 +46,21 @@ describe("شاشة بداية TIA Studio", () => {
     const guideProps = renderSplash();
     fireEvent.click(screen.getByRole("button", { name: /شاهد بداية الاستخدام/ }));
     expect(guideProps.onOpenGuide).toHaveBeenCalledTimes(1);
+  });
+
+  it("ينشئ ويشغّل ملف المقدمة الاختياري فقط بعد ضغط المستخدم", async () => {
+    const play = vi.fn().mockResolvedValue(undefined);
+    const pause = vi.fn();
+    const AudioMock = vi.fn().mockImplementation(() => ({ preload: "", onended: null, onerror: null, pause, play, currentTime: 0 }));
+    vi.stubGlobal("Audio", AudioMock);
+    renderSplash();
+
+    expect(AudioMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "شغّل المقدمة الصوتية" }));
+
+    expect(AudioMock).toHaveBeenCalledWith("/manus-storage/tia-studio-opening-intro_221bda02.mp3");
+    expect(play).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.getByRole("button", { name: "أوقف المقدمة الصوتية" })).toBeTruthy());
   });
 
   it("يعرض الإنجليزية واتجاه LTR مع نفس بيانات الهوية", () => {

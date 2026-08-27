@@ -4,7 +4,7 @@ import { BookOpenCheck, Boxes, Download, FileArchive, FileCode2, FileText, GitBr
 import { Button } from "@/components/ui/button";
 import { resolveResourceDownloadHref } from "@/lib/download-links";
 import { bilingualUiLabel } from "@/lib/language";
-import { ENGLISH_LOCAL_RELEASE, englishEngineGuide, englishMethodologyGuide, englishReleaseChanges, englishSystemLinks, englishWorkflowGuide, engineGuide, GITHUB_SOURCE_REFERENCE, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, WINDOWS_PORTABLE_DOWNLOAD_URL, WINDOWS_SETUP_DOWNLOAD_URL, WINDOWS_SHA256_DOWNLOAD_URL, workflowGuide } from "@/lib/release-guide";
+import { ENGLISH_LOCAL_RELEASE, englishEngineGuide, englishMethodologyGuide, englishReleaseChanges, englishSystemLinks, englishWorkflowGuide, engineGuide, FINAL_SOURCE_PACKAGE, GITHUB_SOURCE_REFERENCE, LOCAL_RELEASE, methodologyGuide, releaseChanges, systemLinks, WINDOWS_PORTABLE_DOWNLOAD_URL, WINDOWS_SETUP_DOWNLOAD_URL, WINDOWS_SHA256_DOWNLOAD_URL, workflowGuide } from "@/lib/release-guide";
 import { WORKSHOP_NO8_TRAINING_REFERENCE } from "@/lib/workshop-training-reference";
 import { useAppLanguage } from "@/contexts/LanguageContext";
 import "./project-resources.css";
@@ -20,7 +20,8 @@ const resources = [
   { title: "مرجع المنهجيات", description: "ارتباط واجهات التطبيق بمنهجية TIA وبروتوكول SCL وحدود النتيجة المهنية.", href: "/manus-storage/TIA_STUDIO_METHODOLOGY_AR_f914a14f.md", icon: FileText, kind: "Markdown" },
   { title: "الذكاء الاصطناعي والتشغيل المحلي", description: "توضيح ما يُحسب محلياً، وما يحتاج حساباً وخدمات تخزين، وما لا يستخدم نموذجاً ذكياً إطلاقاً.", href: "/manus-storage/TIA_STUDIO_AI_AND_LOCAL_USE_AR_edf36f0d.md", icon: Info, kind: "Markdown" },
   { title: "حزمة أمثلة التدريب", description: "برنامج أساس وتحديث وحدث تأخير وملف XER مصغر؛ ابدأ بدليل التشغيل ثم حمّل الملفات للتجربة.", href: "/manus-storage/README_AR_f843ef6f.md", icon: FileArchive, kind: "دليل الأمثلة" },
-  { title: "حزمة المصدر والاستمرارية — 1.0.7", description: "أرشيف TAR.GZ نظيف من المصدر والأدلة والأمثلة. يشمل تقويم مصر الافتراضي بستة أيام، بوابة الجودة المبكرة، عارض XER وقالب الأحداث المهني. لا يضم ملفات P6 أو Excel الأصلية للمستخدم.", href: "/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz", icon: HardDriveDownload, kind: "TAR.GZ · Source + Handoff" },
+  { title: "حزمة المصدر النهائية — GitHub main", description: `ZIP نظيف من ${FINAL_SOURCE_PACKAGE.fileCount} ملفاً للمصدر والاختبارات والوثائق، مبني من commit ${FINAL_SOURCE_PACKAGE.commit.slice(0, 8)} وبصمة SHA-256 ${FINAL_SOURCE_PACKAGE.sha256.slice(0, 12)}…. لا يضم XER/XML/XLS/XLSX خاماً أو أدلة/مطالبات أو أسراراً أو media أو node_modules. نزّل ملف البصمة المنفصل من البطاقة التالية للتحقق.`, href: FINAL_SOURCE_PACKAGE.downloadUrl, icon: HardDriveDownload, kind: "ZIP · Final Source Handoff" },
+  { title: "تحقق حزمة المصدر النهائية — SHA-256", description: `ملف البصمة لحزمة المصدر النهائية. القيمة المتوقعة: ${FINAL_SOURCE_PACKAGE.sha256}. طابقها قبل فك الضغط أو تسليم المصدر لمطور آخر.`, href: FINAL_SOURCE_PACKAGE.checksumUrl, icon: ShieldCheck, kind: "SHA-256 · Source" },
   { title: "دليل استمرارية المشروع وتسليمه", description: "خطوات حفظ المصدر، استعادة العمل، متابعة التطوير عبر GitHub أو من حزمة المصدر، وحدود ما يلزم اختباره قبل أي إصدار جديد.", href: "/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md", icon: GitBranch, kind: "Markdown · Continuity" },
   { title: "نسخة سطح المكتب — Windows 1.0.12 Setup (الموصى بها)", description: "مثبّت Windows x64 يتضمن اختيار لغة الواجهة ولغة التقرير، وClaim Console وتدقيق تقاويم/قيود وحالة Update في XER: اضغط Download ثم شغّل ملف Setup مرة واحدة. يضيف اختصاراً في Start ويثبت التطبيق في مكانه الطبيعي؛ لا تحتاج Node.js أو فك ضغط. الحزمة غير موقّعة رقمياً: افحصها قبل التشغيل من هذا الرابط الرسمي فقط.", href: WINDOWS_SETUP_DOWNLOAD_URL, icon: HardDriveDownload, kind: "Windows x64 · Setup" },
   { title: "نسخة سطح المكتب — Windows 1.0.12 المحمولة", description: "ملف EXE مباشر يتضمن اختيار لغة الواجهة ولغة التقرير، وClaim Console وتدقيق تقاويم/قيود وحالة Update في XER ولا يثبت شيئاً ولا يضيف أيقونة Start؛ شغّله من مجلد تختاره أنت. مناسب للتجربة أو عند منع التثبيت في جهاز العمل، لكنه لا يوفر تثبيتاً مركزياً أو تحديثاً تلقائياً.", href: WINDOWS_PORTABLE_DOWNLOAD_URL, icon: HardDriveDownload, kind: "Windows x64 · EXE محمول" },
@@ -41,7 +42,8 @@ const englishResources = [
   { title: "Methodology reference", description: "How the interface relates to the TIA method and SCL Protocol, with the professional limitations of any result.", kind: "Markdown · Arabic source" },
   { title: "AI and local operation", description: "What is calculated locally, what needs account or storage services, and what does not use an AI model at all.", kind: "Markdown · Arabic source" },
   { title: "Training examples package", description: "A baseline, update, delay event, and small XER file. Read the workflow guide first, then download the examples for practice.", kind: "Examples guide · Arabic source" },
-  { title: "Source and continuity package — 1.0.7", description: "A clean TAR.GZ archive of source, guides, and examples. It includes the six-day Egypt default calendar, early quality gate, XER viewer, and issue template. It does not include the user's original P6 or Excel files.", kind: "TAR.GZ · Source + handoff" },
+  { title: "Final source package — GitHub main", description: `A clean ZIP of ${FINAL_SOURCE_PACKAGE.fileCount} source, test, and documentation files, built from commit ${FINAL_SOURCE_PACKAGE.commit.slice(0, 8)} with SHA-256 ${FINAL_SOURCE_PACKAGE.sha256.slice(0, 12)}…. It excludes raw XER/XML/XLS/XLSX, evidence and claims, secrets, media, node_modules, and build output. Download the separate checksum card to verify it.`, kind: "ZIP · Final source handoff" },
+  { title: "Final source package verification — SHA-256", description: `Checksum file for the final source bundle. Expected SHA-256: ${FINAL_SOURCE_PACKAGE.sha256}. Compare it before extracting or handing the source to another developer.`, kind: "SHA-256 · Source" },
   { title: "Project continuity and handover guide", description: "How to preserve the source, restore work, continue through GitHub or the source package, and test a new release.", kind: "Markdown · Arabic source" },
   { title: "Desktop app — Windows 1.0.12 Setup (recommended)", description: "The Windows x64 installer includes interface and report language choices, Claim Console, and XER calendar/constraint/update checks. Download it, then run Setup once. It adds a Start shortcut and needs neither Node.js nor extraction. The package is not digitally signed: verify it before running and download only from this official link.", kind: "Windows x64 · Setup" },
   { title: "Desktop app — Windows 1.0.12 Portable", description: "A direct EXE with interface and report language choices, Claim Console, and XER calendar/constraint/update checks. It does not install anything or add a Start icon. Use it for trial work or where installation is blocked; it does not provide central installation or automatic updates.", kind: "Windows x64 · Portable EXE" },
@@ -182,7 +184,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
     if (choice.outcome === "accepted") setInstalled(true);
     setInstallEvent(null);
   };
-  const windowsSetupHref = resolveResourceDownloadHref(resources[7].href);
+  const windowsSetupHref = resolveResourceDownloadHref(resources[8].href);
   const copy = resourceCopy[language];
   const visibleResources = language === "en" ? resources.map((resource, index) => ({ ...resource, ...englishResources[index] })) : resources;
   const visibleExamples = examples.map((example, index) => ({ ...example, name: language === "en" ? englishExamples[index] : example.name }));
@@ -214,7 +216,7 @@ export function ProjectResourcesPanel({ view }: { view: string }) {
       <div><HardDriveDownload size={24} /><div><b>{bi(copy.desktopTitle, resourceCopy.en.desktopTitle)}</b><p>{copy.desktopDescription}</p></div></div>
       <div className="desktop-download-quick__actions">
         <a className="desktop-download-quick__primary" href={windowsSetupHref}><Download size={17} />{bi(copy.setup, resourceCopy.en.setup)}</a>
-        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[8].href)}><Download size={17} />{bi(copy.portable, resourceCopy.en.portable)}</a>
+        <a className="desktop-download-quick__secondary" href={resolveResourceDownloadHref(resources[9].href)}><Download size={17} />{bi(copy.portable, resourceCopy.en.portable)}</a>
       </div>
     </section>
 

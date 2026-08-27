@@ -25,14 +25,16 @@ describe("عقد التشغيل المحلي", () => {
     const releaseGuide = readProjectFile("client/src/lib/release-guide.ts");
     const localUseGuide = readProjectFile("docs/TIA_STUDIO_AI_AND_LOCAL_USE_AR.md");
 
-    expect(resourcesPanel).toContain("حزمة المصدر والاستمرارية — 1.0.7");
-    expect(resourcesPanel).toContain("TIA-Studio-1.0.7-Source.tar_2eb10450.gz");
+    expect(resourcesPanel).toContain("حزمة المصدر النهائية — GitHub main");
+    expect(resourcesPanel).toContain("FINAL_SOURCE_PACKAGE");
     expect(resourcesPanel).toContain("WINDOWS_SETUP_DOWNLOAD_URL");
     expect(resourcesPanel).toContain("WINDOWS_PORTABLE_DOWNLOAD_URL");
     expect(resourcesPanel).toContain("WINDOWS_SHA256_DOWNLOAD_URL");
     expect(releaseGuide).toContain("releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe");
     expect(releaseGuide).toContain("releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe");
     expect(releaseGuide).toContain("releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt");
+    expect(releaseGuide).toContain("TIA-Studio-source-20260827_10c5190d.zip");
+    expect(releaseGuide).toContain("297976f4d330bdd289b186c13f599e0fe9193fededab8536811d30fac6e0e473");
     expect(resourcesPanel).toContain("TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage");
     expect(localUseGuide).toContain("دون اتصال");
     expect(localUseGuide).toContain("PWA");

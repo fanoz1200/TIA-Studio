@@ -27,6 +27,18 @@ export const WINDOWS_PORTABLE_DOWNLOAD_URL =
 export const WINDOWS_SHA256_DOWNLOAD_URL =
   "https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt";
 
+/**
+ * A frozen, clean handoff snapshot. This must stay separate from the Windows
+ * release: it contains source and docs only, never user schedules or evidence.
+ */
+export const FINAL_SOURCE_PACKAGE = {
+  downloadUrl: "/manus-storage/TIA-Studio-source-20260827_10c5190d.zip",
+  checksumUrl: "/manus-storage/TIA-Studio-source-20260827_b6cf03a9.sha256",
+  commit: "6d4f5a345cf2db946cbc6d4d612da4a132aa9b24",
+  sha256: "297976f4d330bdd289b186c13f599e0fe9193fededab8536811d30fac6e0e473",
+  fileCount: 444,
+} as const;
+
 export const methodologyGuide = [
   {
     title: "Time Impact Analysis — TIA",

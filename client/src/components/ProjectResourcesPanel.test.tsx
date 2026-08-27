@@ -21,8 +21,10 @@ describe("ProjectResourcesPanel", () => {
     expect(screen.getByRole("heading", { name: "مركز المعرفة والتنزيل · Knowledge and download center" })).toBeTruthy();
     expect(screen.getByText("لا يعتمد المحرك الحالي على الذكاء الاصطناعي لاتخاذ نتيجة التحليل.")).toBeTruthy();
     expect(screen.getByText("01 — برنامج الأساس").closest("a")?.getAttribute("href")).toBe("/manus-storage/01-baseline-schedule_1dcca83b.json");
-    expect(screen.getAllByText("تنزيل · Download")).toHaveLength(11);
-    expect(screen.getByText("حزمة المصدر والاستمرارية — 1.0.7 · Source and continuity package — 1.0.7").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz");
+    expect(screen.getAllByText("تنزيل · Download")).toHaveLength(12);
+    expect(screen.getByText("حزمة المصدر النهائية — GitHub main · Final source package — GitHub main").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-source-20260827_10c5190d.zip");
+    expect(screen.getByText("تحقق حزمة المصدر النهائية — SHA-256 · Final source package verification — SHA-256").closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/TIA-Studio-source-20260827_b6cf03a9.sha256");
+    expect(screen.getByText(/297976f4d330bdd289b186c13f599e0fe9193fededab8536811d30fac6e0e473/)).toBeTruthy();
     expect(screen.getByText(/دليل استمرارية المشروع وتسليمه/).closest("article")?.querySelector("a")?.getAttribute("href")).toBe("/manus-storage/PROJECT_CONTINUITY_AND_HANDOFF_AR_2338b203.md");
     const setupResourceLink = screen.getByText("نسخة سطح المكتب — Windows 1.0.12 Setup (الموصى بها) · Desktop app — Windows 1.0.12 Setup (recommended)").closest("article")?.querySelector("a");
     expect(setupResourceLink?.getAttribute("href")).toBe("https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Setup.exe");

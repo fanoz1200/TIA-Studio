@@ -16,7 +16,7 @@
 | Windows x64 — **Portable 1.0.12** | [`TIA-Studio-1.0.12-Windows-x64-Portable.exe`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-Portable.exe) | للتجربة أو التشغيل المباشر بلا تثبيت. افتحه بالنقر المزدوج ولا يتوقع منه إنشاء أيقونة Start. |
 | بصمات Windows 1.0.12 | [`TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt`](https://github.com/fanoz1200/TIA-Studio/releases/download/v1.0.12/TIA-Studio-1.0.12-Windows-x64-SHA256SUMS.txt) | ملف البصمات للحزمتين؛ نزّله من مصدر الملف نفسه وطابقه قبل التشغيل. |
 | Linux x64 | [`TIA-Studio-1.0.7-Linux-x64.AppImage`](/manus-storage/TIA-Studio-1.0.7-Linux-x64_8ef18634.AppImage) | تشغيل محلي بعد جعله قابلاً للتنفيذ. |
-| المصدر والتسليم | [`TIA-Studio-1.0.7-Source.tar.gz`](/manus-storage/TIA-Studio-1.0.7-Source.tar_2eb10450.gz) | أرشيف للمصدر والأدلة، من دون XER/XLSX خام أو أسرار. |
+| المصدر والتسليم | [`TIA-Studio-source-20260827.zip`](/manus-storage/TIA-Studio-source-20260827_10c5190d.zip) و[ملف SHA-256](/manus-storage/TIA-Studio-source-20260827_b6cf03a9.sha256) | حزمة مصدر نظيفة من 444 ملفاً (كود واختبارات ووثائق) مبنية من commit `6d4f5a34…`، من دون XER/XML/XLS/XLSX خام أو أدلة/مطالبات أو أسرار أو media أو `node_modules`. |
 
 > الحزم غير موقعة رقمياً. لا تعطل الحماية بشكل عام ولا تستخدم رابطاً مجهولاً. افحص الملف ببرنامج الحماية ثم افتحه. لو ظهر SmartScreen على Windows، تحقق من اسم الملف والبصمة أدناه ومن مصدر التنزيل قبل اتخاذ أي قرار.
 
@@ -27,7 +27,7 @@
 | Windows Setup 1.0.12 | `ff374711b4432b8bc734a9bd53250ad73def9c359d983c0b24ab49424d9431c7` |
 | Windows Portable 1.0.12 | `35688d806b242c377c8289d5480a1deb6c0b745553936a8ac90d47e138e31f98` |
 | Linux AppImage | `3668d4ef09e192ec4e2ba9f7b50bf89aab999bdc6ce8e72f0284dbab480249b6` |
-| Source TAR.GZ | `fde9dbadea904b5142594eccdfff8ef8ab95f8dad4f225af43f1b5217f3b3d4d` |
+| Final Source ZIP (commit `6d4f5a34…`) | `297976f4d330bdd289b186c13f599e0fe9193fededab8536811d30fac6e0e473` |
 
 > **فهم النسخة الظاهرة في Start:** وجود أيقونة في Start ونافذة مستقلة يرجّح أن النسخة المثبتة تطبيق سطح مكتب أو تطبيق ويب مثبّت، لكنه لا يثبت نوعها بدقة من الصورة وحدها. لو النسخة الحالية تعمل عندك، فهي مسار تشغيل قائم، لكن لا تحذفها قبل تجربة Setup الجديد أو تأكيد عمل النسخة المحمولة الجديدة.
 
@@ -36,6 +36,8 @@
 ## ما أضيف في 1.0.12
 
 أضيف مفتاح لغة واضح في رأس البرنامج يبدّل اتجاه الواجهة بين العربية وEnglish ويحفظ اختيارك على الجهاز. وفي شاشة التقرير تختار لغة **المستند نفسه** بشكل مستقل؛ يمكن إنشاء Word وPDF وExcel وFact Pack بالعربية أو English، ولا تتغير لغة المخرج تلقائياً لمجرد تغيير لغة الواجهة.
+
+> **فرق مهم:** حزمة المصدر الحالية ونسخة الويب تحتويان شاشة الافتتاح وزر إعادة تشغيل المقدمة الصوتية الاختيارية ورابط المصدر النهائي. إصدار Windows المتاح هو **1.0.12** فقط، وقد صدر قبل هذه الإضافات؛ لذلك لا يُقال إن Setup أو Portable الحاليين يحتويان المقدمة الجديدة. يلزم إصدار Windows جديد مستقل إذا أريدت هذه الإضافات داخل برنامج سطح المكتب.
 
 ## ما أضيف في 1.0.11
 
